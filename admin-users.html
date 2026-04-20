@@ -420,7 +420,7 @@
       .from('profiles')
       .select(`
         id, email, full_name, role, is_active,
-        user_site_assignments(site_id, sites(id, project_code, name))
+        user_site_assignments!user_id(site_id, sites(id, project_code, name))
       `)
       .order('full_name');
 
