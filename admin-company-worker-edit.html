@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteLog — Υπάλληλος Εταιρείας</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+  .logo em { color:var(--orange); font-style:normal; }
+  .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .user-name { font-size:0.82rem; font-weight:600; }
+  .btn-signout { background:var(--black); color:var(--yellow); border:none; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:7px 12px; cursor:pointer; }
+  .btn-signout:hover { opacity:.8; }
+
+  .page { flex:1; padding:36px 28px 80px; max-width:760px; width:100%; margin:0 auto; }
+
+  .breadcrumb { display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:1px; color:var(--gray5); margin-bottom:28px; }
+  .breadcrumb a { color:var(--gray5); text-decoration:none; transition:color .15s; }
+  .breadcrumb a:hover { color:var(--yellow); }
+  .breadcrumb span { color:var(--gray4); }
+
+  .page-header { margin-bottom:32px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:4px; line-height:1; }
+  .page-title span { color:var(--yellow); }
+  .worker-id-badge { display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; background:var(--gray2); border:1px solid var(--gray3); color:var(--gray5); padding:5px 10px; border-radius:2px; margin-top:8px; }
+
+  /* USER ACCOUNT BANNER */
+  .user-banner { display:flex; align-items:center; gap:14px; background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.25); border-radius:3px; padding:14px 18px; margin-bottom:20px; }
+  .user-banner-icon { font-size:1.4rem; flex-shrink:0; }
+  .user-banner-text { flex:1; }
+  .user-banner-title { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#93c5fd; margin-bottom:3px; }
+  .user-banner-sub { font-size:0.78rem; color:var(--gray5); }
+  .btn-go-users { background:rgba(59,130,246,.2); border:1px solid rgba(59,130,246,.4); border-radius:2px; color:#93c5fd; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:7px 12px; cursor:pointer; text-decoration:none; white-space:nowrap; transition:background .15s; }
+  .btn-go-users:hover { background:rgba(59,130,246,.3); }
+
+  /* FORM SECTIONS */
+  .form-section { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; overflow:hidden; margin-bottom:20px; }
+  .section-header { background:var(--gray2); border-bottom:1px solid var(--gray3); padding:12px 20px; }
+  .section-title { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--gray5); }
+  .section-body { padding:20px; }
+
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .field-row.cols3 { grid-template-columns:1fr 1fr 1fr; }
+  .field-row.single { grid-template-columns:1fr; }
+  .field-row:last-child { margin-bottom:0; }
+  .field { display:flex; flex-direction:column; gap:6px; }
+
+  label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
+  label .req { color:var(--orange); margin-left:2px; }
+  label .hint { color:var(--gray4); font-weight:400; letter-spacing:0; text-transform:none; font-size:0.58rem; margin-left:6px; }
+
+  input[type=text], input[type=email], input[type=tel] {
+    background:var(--gray2); border:1px solid var(--gray3); border-radius:2px;
+    color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.9rem;
+    padding:10px 14px; outline:none; transition:border-color .18s; width:100%;
+  }
+  input:focus { border-color:var(--yellow); }
+  input::placeholder { color:var(--gray4); }
+  input.error-field { border-color:var(--red) !important; }
+  input:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* auto-id display */
+  .auto-id-display { background:var(--gray2); border:1px solid var(--gray3); border-radius:2px; color:var(--gray4); font-family:'IBM Plex Mono',monospace; font-size:0.82rem; padding:10px 14px; letter-spacing:1px; }
+
+  /* TOGGLE */
+  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-top:1px solid var(--gray3); margin-top:4px; }
+  .toggle-label { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
+  .toggle-desc { font-size:0.75rem; color:var(--gray5); margin-top:3px; }
+  .toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; position:absolute; }
+  .toggle-slider { position:absolute; inset:0; background:var(--gray3); border-radius:24px; transition:background .2s; }
+  .toggle-slider::after { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:transform .2s; }
+  .toggle input:checked + .toggle-slider { background:var(--green); }
+  .toggle input:checked + .toggle-slider::after { transform:translateX(20px); }
+
+  /* ACTIONS */
+  .actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+  .btn-save { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:12px 22px; cursor:pointer; transition:background .18s; }
+  .btn-save:hover:not(:disabled) { background:var(--yellow-dk); }
+  .btn-save:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-cancel { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:12px 18px; cursor:pointer; text-decoration:none; transition:border-color .15s,color .15s; display:inline-flex; align-items:center; }
+  .btn-cancel:hover { border-color:var(--white); color:var(--white); }
+
+  .spinner { width:15px; height:15px; border:2px solid rgba(0,0,0,.3); border-top-color:var(--black); border-radius:50%; animation:spin .7s linear infinite; display:none; }
+  .btn-save.loading .spinner { display:block; }
+  .btn-save.loading .btn-text { display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .msg { padding:11px 16px; border-radius:2px; font-size:0.82rem; margin-bottom:16px; display:none; line-height:1.5; }
+  .msg.error   { background:rgba(229,62,62,.12); border:1px solid rgba(229,62,62,.35); color:#fc8181; display:block; }
+  .msg.success { background:rgba(31,166,68,.12); border:1px solid rgba(31,166,68,.35); color:#68d391; display:block; }
+
+  /* DANGER ZONE */
+  .danger-zone { background:rgba(229,62,62,.05); border:1px solid rgba(229,62,62,.2); border-radius:3px; padding:20px; margin-bottom:20px; }
+  .danger-title { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; }
+  .danger-desc { font-size:0.8rem; color:var(--gray5); margin-bottom:14px; line-height:1.55; }
+  .btn-danger { background:none; border:1px solid rgba(229,62,62,.4); border-radius:2px; color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:9px 16px; cursor:pointer; transition:all .15s; }
+  .btn-danger:hover { background:rgba(229,62,62,.1); border-color:var(--red); }
+
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:500; display:none; align-items:center; justify-content:center; }
+  .overlay.show { display:flex; }
+  .dialog { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; padding:28px; max-width:380px; width:90%; }
+  .dialog-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; margin-bottom:10px; color:var(--red); }
+  .dialog-body { font-size:0.85rem; color:var(--gray5); line-height:1.6; margin-bottom:22px; }
+  .dialog-actions { display:flex; gap:10px; }
+  .btn-dialog-cancel  { flex:1; background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:11px; cursor:pointer; }
+  .btn-dialog-confirm { flex:1; background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px; cursor:pointer; }
+
+  @media(max-width:640px) {
+    .field-row, .field-row.cols3 { grid-template-columns:1fr; }
+    .page { padding:24px 16px 60px; }
+  }
+
+  footer { border-top:1px solid var(--gray3); padding:16px 28px; }
+  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+  .footer-logo em { color:var(--orange); font-style:normal; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Site<em>Log</em><sub>v3.0</sub></div>
+  <div class="header-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn-signout" id="signOutBtn">Έξοδος</button>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="breadcrumb">
+    <a href="index.html">Αρχική</a>
+    <span>›</span>
+    <a href="admin-company-workers.html">Υπάλληλοι Εταιρείας</a>
+    <span>›</span>
+    <span id="bcCurrent">Νέος</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="pageTitle">ΝΕΟΣ <span>ΥΠΑΛΛΗΛΟΣ</span></div>
+      <div class="worker-id-badge" id="workerIdBadge" style="display:none;">
+        <span style="color:var(--yellow)">ID</span>
+        <span id="workerIdVal"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- User account banner (εμφανίζεται αν έχει ήδη user account) -->
+  <div class="user-banner" id="userBanner" style="display:none;">
+    <div class="user-banner-icon">👤</div>
+    <div class="user-banner-text">
+      <div class="user-banner-title">Έχει Λογαριασμό</div>
+      <div class="user-banner-sub" id="userBannerSub">Ο υπάλληλος αυτός έχει ενεργό user account στο σύστημα.</div>
+    </div>
+    <a class="btn-go-users" href="admin-users.html">Διαχείριση Users →</a>
+  </div>
+
+  <div class="msg" id="topMsg"></div>
+
+  <!-- SECTION 1: Ταυτότητα -->
+  <div class="form-section">
+    <div class="section-header"><div class="section-title">Στοιχεία Ταυτότητας</div></div>
+    <div class="section-body">
+      <div class="field-row cols3">
+        <div class="field">
+          <label>Επώνυμο <span class="req">*</span></label>
+          <input type="text" id="fEponimo" placeholder="ΠΑΠΑΔΟΠΟΥΛΟΣ" maxlength="80">
+        </div>
+        <div class="field">
+          <label>Όνομα <span class="req">*</span></label>
+          <input type="text" id="fOnoma" placeholder="ΓΙΩΡΓΟΣ" maxlength="80">
+        </div>
+        <div class="field">
+          <label>Πατρώνυμο</label>
+          <input type="text" id="fPatronimo" placeholder="ΝΙΚΟΛΑΟΥ" maxlength="80">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>ΑΜΑ</label>
+          <input type="text" id="fAma" placeholder="Αριθμός Μητρώου Ασφαλισμένου" maxlength="20">
+        </div>
+        <div class="field">
+          <label>ΑΜΚΑ</label>
+          <input type="text" id="fAmka" placeholder="11 ψηφία" maxlength="11">
+        </div>
+      </div>
+      <div class="field-row single">
+        <div class="field">
+          <label>ΑΦΜ</label>
+          <input type="text" id="fAfm" placeholder="9 ψηφία" maxlength="9">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Επαγγελματικά -->
+  <div class="form-section">
+    <div class="section-header"><div class="section-title">Επαγγελματικά Στοιχεία</div></div>
+    <div class="section-body">
+      <div class="field-row single">
+        <div class="field">
+          <label>Ειδικότητα</label>
+          <input type="text" id="fEidikotita" placeholder="π.χ. Site Manager, Πολ. Μηχανικός" maxlength="80">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>
+            Email εταιρείας
+            <span class="hint">— απαιτείται για user account</span>
+          </label>
+          <input type="email" id="fEmail" placeholder="name@company.com" maxlength="120">
+        </div>
+        <div class="field">
+          <label>Τηλ. Εργασίας</label>
+          <input type="tel" id="fPhoneWork" placeholder="210 0000000" maxlength="20">
+        </div>
+      </div>
+      <div class="field-row single">
+        <div class="field">
+          <label>Τηλ. Προσωπικό</label>
+          <input type="tel" id="fPhonePersonal" placeholder="69X 0000000" maxlength="20">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ID (auto-generated ή existing) -->
+  <div class="form-section">
+    <div class="section-header"><div class="section-title">Αναγνωριστικό</div></div>
+    <div class="section-body">
+      <div class="field-row single">
+        <div class="field">
+          <label>ID Υπαλλήλου <span class="hint">— αυτόματο για νέες εγγραφές</span></label>
+          <div class="auto-id-display" id="autoIdDisplay">Θα ανατεθεί αυτόματα (EMP-XXXX)</div>
+        </div>
+      </div>
+
+      <!-- Κατάσταση — μόνο σε edit -->
+      <div class="toggle-row" id="statusToggleRow" style="display:none;">
+        <div>
+          <div class="toggle-label">Ενεργός Υπάλληλος</div>
+          <div class="toggle-desc">Ανενεργοί υπάλληλοι δεν εμφανίζονται στα dropdowns χρηστών.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="fIsActive" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn-save" id="saveBtn">
+      <div class="spinner"></div>
+      <span class="btn-text">Αποθήκευση</span>
+    </button>
+    <a class="btn-cancel" href="admin-company-workers.html">Ακύρωση</a>
+  </div>
+
+  <!-- DANGER ZONE (μόνο edit, μόνο αν δεν έχει user) -->
+  <div class="danger-zone" id="dangerZone" style="display:none;">
+    <div class="danger-title">⚠ Επικίνδυνη Ζώνη</div>
+    <p class="danger-desc">
+      Η οριστική διαγραφή αφαιρεί τον υπάλληλο από τη βάση. Δεν είναι δυνατή αν υπάρχει συνδεδεμένος user account.
+      Χρησιμοποίησε απενεργοποίηση (toggle παραπάνω) αντί διαγραφής.
+    </p>
+    <button class="btn-danger" id="deleteBtn">Οριστική Διαγραφή</button>
+  </div>
+
+</div>
+
+<footer><div class="footer-logo">Site<em>Log</em></div></footer>
+
+<div class="overlay" id="confirmOverlay">
+  <div class="dialog">
+    <div class="dialog-title">ΔΙΑΓΡΑΦΗ;</div>
+    <p class="dialog-body">Πρόκειται να διαγράψεις οριστικά αυτόν τον υπάλληλο. Αυτή η ενέργεια δεν αναιρείται.</p>
+    <div class="dialog-actions">
+      <button class="btn-dialog-cancel" id="confirmCancel">Ακύρωση</button>
+      <button class="btn-dialog-confirm" id="confirmOk">Διαγραφή</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared/auth.js"></script>
+<script>
+(async () => {
+
+  const ok = await Auth.requireRole(['admin']);
+  if (!ok) return;
+
+  document.getElementById('userName').textContent = Auth.getCurrentUser().full_name;
+  document.getElementById('signOutBtn').addEventListener('click', () => Auth.signOut());
+
+  const params   = new URLSearchParams(window.location.search);
+  const workerId = params.get('id');
+  const isEdit   = !!workerId;
+  let hasUser    = false;
+
+  // ── FIELDS ──
+  const fEponimo      = document.getElementById('fEponimo');
+  const fOnoma        = document.getElementById('fOnoma');
+  const fPatronimo    = document.getElementById('fPatronimo');
+  const fAma          = document.getElementById('fAma');
+  const fAmka         = document.getElementById('fAmka');
+  const fAfm          = document.getElementById('fAfm');
+  const fEidikotita   = document.getElementById('fEidikotita');
+  const fEmail        = document.getElementById('fEmail');
+  const fPhoneWork    = document.getElementById('fPhoneWork');
+  const fPhonePersonal= document.getElementById('fPhonePersonal');
+  const fIsActive     = document.getElementById('fIsActive');
+  const saveBtn       = document.getElementById('saveBtn');
+  const topMsg        = document.getElementById('topMsg');
+
+  // ── LOAD NEXT ID (για νέα εγγραφή) ──
+  if (!isEdit) {
+    const { data } = await sb
+      .from('workers_company')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+
+    let nextNum = 1;
+    if (data && data.length > 0) {
+      const lastId = data[0].id; // π.χ. EMP-0042
+      const match = lastId.match(/(\d+)$/);
+      if (match) nextNum = parseInt(match[1]) + 1;
+    }
+    const nextId = 'EMP-' + String(nextNum).padStart(4, '0');
+    document.getElementById('autoIdDisplay').textContent = nextId;
+    document.getElementById('autoIdDisplay').dataset.nextId = nextId;
+  }
+
+  // ── LOAD EXISTING ──
+  if (isEdit) {
+    document.getElementById('pageTitle').innerHTML = 'ΕΠΕΞΕΡΓΑΣΙΑ <span>ΥΠΑΛΛΗΛΟΥ</span>';
+    document.getElementById('bcCurrent').textContent = 'Επεξεργασία';
+    document.getElementById('statusToggleRow').style.display = 'flex';
+    document.getElementById('workerIdBadge').style.display   = 'inline-flex';
+    document.getElementById('workerIdVal').textContent       = workerId;
+    document.getElementById('autoIdDisplay').textContent     = workerId;
+
+    const { data, error } = await sb
+      .from('workers_company')
+      .select('*, profiles(id, email, role)')
+      .eq('id', workerId)
+      .single();
+
+    if (error || !data) {
+      showMsg('Ο υπάλληλος δεν βρέθηκε.', 'error');
+      saveBtn.disabled = true;
+      return;
+    }
+
+    fEponimo.value       = data.eponimo        || '';
+    fOnoma.value         = data.onoma          || '';
+    fPatronimo.value     = data.patronimo      || '';
+    fAma.value           = data.ama            || '';
+    fAmka.value          = data.amka           || '';
+    fAfm.value           = data.afm            || '';
+    fEidikotita.value    = data.eidikotita     || '';
+    fEmail.value         = data.email          || '';
+    fPhoneWork.value     = data.phone_work     || '';
+    fPhonePersonal.value = data.phone_personal || '';
+    fIsActive.checked    = data.is_active;
+
+    // Check if has user account
+    const profileData = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
+    if (profileData) {
+      hasUser = true;
+      document.getElementById('userBanner').style.display = 'flex';
+      document.getElementById('userBannerSub').textContent =
+        `${profileData.email} · Ρόλος: ${profileData.role}`;
+      // Disable email editing (already tied to auth account)
+      fEmail.disabled = true;
+    } else {
+      // No user → show danger zone
+      document.getElementById('dangerZone').style.display = 'block';
+    }
+  }
+
+  // ── SAVE ──
+  saveBtn.addEventListener('click', async () => {
+    const eponimo = fEponimo.value.trim();
+    const onoma   = fOnoma.value.trim();
+
+    [fEponimo, fOnoma].forEach(f => f.classList.remove('error-field'));
+    let hasError = false;
+    if (!eponimo) { fEponimo.classList.add('error-field'); hasError = true; }
+    if (!onoma)   { fOnoma.classList.add('error-field');   hasError = true; }
+    if (hasError) { showMsg('Συμπλήρωσε τα υποχρεωτικά πεδία (*).', 'error'); return; }
+
+    // Email validation (αν δοθεί)
+    const email = fEmail.value.trim() || null;
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fEmail.classList.add('error-field');
+      showMsg('Μη έγκυρη μορφή email.', 'error');
+      return;
+    }
+
+    setLoading(true);
+    topMsg.className = 'msg';
+
+    const payload = {
+      eponimo,
+      onoma,
+      patronimo:      fPatronimo.value.trim()    || null,
+      ama:            fAma.value.trim()           || null,
+      amka:           fAmka.value.trim()          || null,
+      afm:            fAfm.value.trim()           || null,
+      eidikotita:     fEidikotita.value.trim()    || null,
+      email:          hasUser ? undefined : email, // μην αλλάζεις email αν έχει user
+      phone_work:     fPhoneWork.value.trim()     || null,
+      phone_personal: fPhonePersonal.value.trim() || null,
+      is_active:      isEdit ? fIsActive.checked : true,
+    };
+
+    // Αφαίρεσε undefined keys
+    Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+
+    let error;
+    if (isEdit) {
+      ({ error } = await sb.from('workers_company').update(payload).eq('id', workerId));
+    } else {
+      const newId = document.getElementById('autoIdDisplay').dataset.nextId;
+      payload.id         = newId;
+      payload.created_by = Auth.getCurrentUser().id;
+      ({ error } = await sb.from('workers_company').insert(payload));
+    }
+
+    setLoading(false);
+
+    if (error) {
+      if (error.code === '23505') {
+        showMsg('Το email χρησιμοποιείται ήδη από άλλον υπάλληλο.', 'error');
+        fEmail.classList.add('error-field');
+      } else {
+        showMsg('Σφάλμα αποθήκευσης: ' + error.message, 'error');
+      }
+      return;
+    }
+
+    window.location.href = 'admin-company-workers.html?saved=' + (isEdit ? '1' : 'new');
+  });
+
+  // ── DELETE ──
+  if (isEdit && !hasUser) {
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+      document.getElementById('confirmOverlay').classList.add('show');
+    });
+    document.getElementById('confirmCancel').addEventListener('click', () => {
+      document.getElementById('confirmOverlay').classList.remove('show');
+    });
+    document.getElementById('confirmOk').addEventListener('click', async () => {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      setLoading(true);
+      const { error } = await sb.from('workers_company').delete().eq('id', workerId);
+      setLoading(false);
+      if (error) {
+        showMsg('Δεν είναι δυνατή η διαγραφή: ' + error.message, 'error');
+      } else {
+        window.location.href = 'admin-company-workers.html?saved=1';
+      }
+    });
+  }
+
+  // ── HELPERS ──
+  function showMsg(text, type) {
+    topMsg.textContent = text;
+    topMsg.className   = 'msg ' + type;
+    topMsg.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+  function setLoading(val) {
+    saveBtn.disabled = val;
+    saveBtn.classList.toggle('loading', val);
+  }
+
+})();
+</script>
+</body>
+</html>
