@@ -583,62 +583,77 @@
     }
   }
 
-  // ── SUBMIT INVITE ──
-  document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
-    const workerSel   = document.getElementById('inviteWorker');
-    const workerId    = workerSel.value;
-    const workerOpt   = workerSel.options[workerSel.selectedIndex];
-    const email       = document.getElementById('inviteEmail').value.trim();
-    const role        = document.getElementById('inviteRole').value;
-    const fullName    = workerOpt.dataset?.fullname || '';
+  // ── SUBMIT INVITE (μέσω Edge Function) ──
+  const EDGE_FUNCTION_URL = 'https://ikmwxsfaopjkgajebyyf.supabase.co/functions/v1/invite-user';
 
-    // Validation
-    const msgEl = document.getElementById('inviteMsg');
+  document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
+    const workerSel = document.getElementById('inviteWorker');
+    const workerId  = workerSel.value;
+    const workerOpt = workerSel.options[workerSel.selectedIndex];
+    const email     = document.getElementById('inviteEmail').value.trim();
+    const role      = document.getElementById('inviteRole').value;
+    const fullName  = workerOpt.dataset?.fullname || '';
+    const msgEl     = document.getElementById('inviteMsg');
+
+    // ── Validation ──
     msgEl.className = 'modal-msg';
-    if (!workerId)  { showModalMsg(msgEl, 'Επέλεξε υπάλληλο.', 'error'); return; }
-    if (!role)      { showModalMsg(msgEl, 'Επέλεξε ρόλο.', 'error'); return; }
+    if (!workerId) { showModalMsg(msgEl, 'Επέλεξε υπάλληλο.', 'error'); return; }
+    if (!role)     { showModalMsg(msgEl, 'Επέλεξε ρόλο.', 'error'); return; }
 
     const selectedSiteIds = getCheckedSites('inviteSitesList');
     if ((role === 'site_manager' || role === 'scanner') && selectedSiteIds.length === 0) {
-      showModalMsg(msgEl, 'Επέλεξε εργοτάξιο για αυτόν τον ρόλο.', 'error'); return;
+      showModalMsg(msgEl, 'Site Manager / Scanner πρέπει να έχουν ακριβώς 1 εργοτάξιο.', 'error'); return;
     }
     if ((role === 'site_manager' || role === 'scanner') && selectedSiteIds.length > 1) {
-      showModalMsg(msgEl, 'Site Manager και Scanner μπορούν να έχουν μόνο 1 εργοτάξιο.', 'error'); return;
+      showModalMsg(msgEl, 'Site Manager / Scanner μπορούν να έχουν μόνο 1 εργοτάξιο.', 'error'); return;
     }
 
     setModalLoading(document.getElementById('inviteSubmitBtn'), true);
 
-    // 1. Στείλε invite email μέσω Supabase Admin API (χρειάζεται service_role — δεν μπορεί από frontend)
-    // Αντίθετα: χρησιμοποιούμε το Supabase signUp με email confirm
-    // ΣΗΜΕΙΩΣΗ: Το invite απαιτεί service_role key (Edge Function).
-    // Προς το παρόν: δημιουργούμε profile χωρίς auth user,
-    // και στέλνουμε password reset (workaround για free tier).
-    // Ο admin θα ειδοποιεί εξωτερικά. TODO: Edge Function για invite.
-
-    // Το σωστό για production: Edge Function → supabase.auth.admin.inviteUserByEmail()
-    // Για τώρα: χρησιμοποιούμε το built-in resetPasswordForEmail ως proxy invite
-
-    const redirectTo = `${window.location.origin}${window.location.pathname.replace('admin-users.html','')}set-password.html`;
-
-    const { data: inviteData, error: inviteErr } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo,
-    });
-
-    if (inviteErr) {
-      // Αν ο user δεν υπάρχει ακόμα, πρέπει να τον δημιουργήσουμε πρώτα.
-      // Αυτό απαιτεί service_role. Δείχνουμε οδηγίες.
+    // ── Λήψη JWT του τρέχοντος χρήστη ──
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      showModalMsg(msgEl, 'Η συνεδρία έχει λήξει. Κάνε login ξανά.', 'error');
       setModalLoading(document.getElementById('inviteSubmitBtn'), false);
-      showModalMsg(msgEl,
-        'Για να δημιουργήσεις νέο user account, πρέπει να χρησιμοποιήσεις το Supabase Dashboard → Authentication → Add user, και μετά να επιστρέψεις εδώ για ανάθεση ρόλου και εργοταξίου.',
-        'error');
       return;
     }
 
-    // 2. Δημιούργησε profile (χωρίς id ακόμα — θα συνδεθεί όταν κάνει login)
-    // PLACEHOLDER — θα ολοκληρωθεί με Edge Function
-    setModalLoading(document.getElementById('inviteSubmitBtn'), false);
-    showModalMsg(msgEl, 'Σφάλμα: Το invite flow απαιτεί Edge Function (service_role). Δες το ARCHITECTURE §5.', 'error');
+    // ── Κλήση Edge Function ──
+    let result;
+    try {
+      const response = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          email,
+          fullName,
+          role,
+          workerId:  workerId || null,
+          siteIds:   selectedSiteIds,
+        }),
+      });
+      result = await response.json();
+    } catch (fetchErr) {
+      showModalMsg(msgEl, 'Δεν ήταν δυνατή η επικοινωνία με τον server. Δοκίμασε ξανά.', 'error');
+      setModalLoading(document.getElementById('inviteSubmitBtn'), false);
+      return;
+    }
 
+    setModalLoading(document.getElementById('inviteSubmitBtn'), false);
+
+    if (result.error) {
+      showModalMsg(msgEl, result.error, 'error');
+      return;
+    }
+
+    // ── Επιτυχία ──
+    document.getElementById('inviteOverlay').classList.remove('show');
+    const warningMsg = result.warning ? ` (⚠ ${result.warning})` : '';
+    showToast(`Το invite εστάλη στο ${email}.${warningMsg}`);
+    await loadUsers();
   });
 
   // ═══════════════════════════════════════════════
