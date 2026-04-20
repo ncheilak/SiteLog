@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteLog — Χρήστες & Αναθέσεις</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* HEADER */
+  header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+  .logo em { color:var(--orange); font-style:normal; }
+  .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .user-name { font-size:0.82rem; font-weight:600; }
+  .btn-signout { background:var(--black); color:var(--yellow); border:none; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:7px 12px; cursor:pointer; }
+  .btn-signout:hover { opacity:.8; }
+
+  /* LAYOUT */
+  .page { flex:1; padding:36px 28px 64px; max-width:1200px; width:100%; margin:0 auto; }
+
+  .breadcrumb { display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:1px; color:var(--gray5); margin-bottom:28px; }
+  .breadcrumb a { color:var(--gray5); text-decoration:none; transition:color .15s; }
+  .breadcrumb a:hover { color:var(--yellow); }
+  .breadcrumb span { color:var(--gray4); }
+
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:4px; line-height:1; }
+  .page-title span { color:var(--yellow); }
+
+  .btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:10px 18px; cursor:pointer; transition:background .18s; white-space:nowrap; }
+  .btn-primary:hover { background:var(--yellow-dk); }
+
+  /* STATS */
+  .stats-bar { display:flex; gap:24px; margin-bottom:24px; flex-wrap:wrap; }
+  .stat .stat-num { font-family:'IBM Plex Mono',monospace; font-size:1.4rem; font-weight:600; color:var(--yellow); display:block; line-height:1; }
+  .stat .stat-label { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); margin-top:3px; }
+
+  /* FILTER */
+  .filter-bar { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+  .filter-input { background:var(--gray2); border:1px solid var(--gray3); border-radius:2px; color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.88rem; padding:9px 14px; outline:none; transition:border-color .18s; flex:1; min-width:200px; }
+  .filter-input:focus { border-color:var(--yellow); }
+  .filter-input::placeholder { color:var(--gray4); }
+  .filter-toggle { display:flex; gap:1px; background:var(--gray3); border-radius:2px; overflow:hidden; flex-wrap:wrap; }
+  .filter-toggle button { background:var(--gray2); color:var(--gray5); border:none; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:9px 14px; cursor:pointer; transition:background .15s,color .15s; }
+  .filter-toggle button.active { background:var(--yellow); color:var(--black); }
+
+  /* TABLE */
+  .table-wrap { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; overflow:hidden; overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:780px; }
+  thead { background:var(--gray2); border-bottom:2px solid var(--gray3); }
+  th { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); padding:12px 16px; text-align:left; white-space:nowrap; }
+  th.center { text-align:center; }
+  tbody tr { border-bottom:1px solid var(--gray3); transition:background .15s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:var(--gray2); }
+  td { padding:13px 16px; font-size:0.85rem; vertical-align:middle; }
+
+  .td-name { font-weight:500; }
+  .td-email { font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--gray5); }
+  .td-center { text-align:center; }
+
+  /* ROLE BADGE */
+  .role-badge { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.55rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:3px 9px; border-radius:10px; white-space:nowrap; }
+  .role-admin    { background:rgba(245,200,0,.15); border:1px solid rgba(245,200,0,.35); color:var(--yellow); }
+  .role-pm       { background:rgba(232,96,10,.15); border:1px solid rgba(232,96,10,.35); color:#fb923c; }
+  .role-sm       { background:rgba(59,130,246,.15); border:1px solid rgba(59,130,246,.35); color:#93c5fd; }
+  .role-scanner  { background:rgba(31,166,68,.15); border:1px solid rgba(31,166,68,.35); color:#86efac; }
+
+  .status-badge { display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:0.55rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:3px 9px; border-radius:10px; white-space:nowrap; }
+  .status-active   { background:rgba(31,166,68,.15); border:1px solid rgba(31,166,68,.35); color:#68d391; }
+  .status-inactive { background:rgba(100,100,100,.15); border:1px solid rgba(100,100,100,.3); color:var(--gray5); }
+
+  /* SITE CHIPS IN TABLE */
+  .site-chips-cell { display:flex; flex-wrap:wrap; gap:4px; }
+  .site-chip-sm { font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:.5px; background:var(--yellow-dim); border:1px solid rgba(245,200,0,.2); color:var(--yellow); padding:2px 7px; border-radius:2px; white-space:nowrap; }
+  .site-chip-none { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gray5); }
+
+  /* ACTION BUTTONS */
+  .td-actions { text-align:center; white-space:nowrap; }
+  .btn-action { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1px; padding:5px 9px; cursor:pointer; transition:all .15s; margin:0 2px; }
+  .btn-action:hover { border-color:var(--yellow); color:var(--yellow); }
+  .btn-action.danger:hover { border-color:var(--red); color:var(--red); }
+
+  .empty-row td { text-align:center; color:var(--gray5); font-size:0.82rem; padding:40px; font-family:'IBM Plex Mono',monospace; letter-spacing:1px; }
+
+  /* ── MODALS ── */
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:500; display:none; align-items:flex-start; justify-content:center; padding:48px 16px; overflow-y:auto; }
+  .overlay.show { display:flex; }
+  .modal { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; width:100%; max-width:540px; margin:auto; }
+  .modal-header { background:var(--gray2); border-bottom:1px solid var(--gray3); padding:18px 24px; display:flex; align-items:center; justify-content:space-between; }
+  .modal-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; color:var(--white); }
+  .modal-close { background:none; border:none; color:var(--gray5); font-size:1.4rem; cursor:pointer; line-height:1; padding:0 4px; transition:color .15s; }
+  .modal-close:hover { color:var(--white); }
+  .modal-body { padding:24px; }
+  .modal-footer { padding:16px 24px; border-top:1px solid var(--gray3); display:flex; gap:10px; justify-content:flex-end; }
+
+  /* FORM inside modal */
+  .mfield { margin-bottom:18px; }
+  .mfield:last-child { margin-bottom:0; }
+  .mfield label { display:block; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); margin-bottom:7px; }
+  .mfield label .req { color:var(--orange); }
+  .mfield label .hint { color:var(--gray4); font-weight:400; letter-spacing:0; text-transform:none; font-size:0.58rem; margin-left:6px; }
+  .mfield select, .mfield input[type=text], .mfield input[type=email] {
+    width:100%; background:var(--gray2); border:1px solid var(--gray3); border-radius:2px;
+    color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.9rem;
+    padding:10px 14px; outline:none; transition:border-color .18s;
+  }
+  .mfield select { cursor:pointer; }
+  .mfield select option { background:var(--gray2); }
+  .mfield select:focus, .mfield input:focus { border-color:var(--yellow); }
+  .mfield input::placeholder { color:var(--gray4); }
+  .mfield input.err, .mfield select.err { border-color:var(--red) !important; }
+
+  /* SITE CHECKBOXES */
+  .sites-checkbox-list { background:var(--gray2); border:1px solid var(--gray3); border-radius:2px; max-height:200px; overflow-y:auto; }
+  .site-checkbox-item { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--gray3); cursor:pointer; transition:background .15s; }
+  .site-checkbox-item:last-child { border-bottom:none; }
+  .site-checkbox-item:hover { background:var(--gray3); }
+  .site-checkbox-item input[type=checkbox] { width:16px; height:16px; accent-color:var(--yellow); cursor:pointer; flex-shrink:0; }
+  .site-checkbox-label { flex:1; }
+  .site-checkbox-code { font-family:'IBM Plex Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--yellow); letter-spacing:1px; }
+  .site-checkbox-name { font-size:0.82rem; color:var(--white); margin-top:1px; }
+  .sites-empty { padding:14px; text-align:center; color:var(--gray5); font-size:0.78rem; }
+
+  /* role → cardinality hint */
+  .cardinality-hint { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:1px; color:var(--orange); margin-top:6px; min-height:16px; }
+
+  /* modal info note */
+  .modal-note { background:var(--yellow-dim); border:1px solid rgba(245,200,0,.2); border-radius:2px; padding:10px 14px; font-size:0.78rem; color:var(--gray5); line-height:1.55; margin-bottom:18px; }
+  .modal-note strong { color:var(--yellow); }
+
+  /* BUTTONS */
+  .btn-modal-primary { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px 20px; cursor:pointer; transition:background .18s; }
+  .btn-modal-primary:hover:not(:disabled) { background:var(--yellow-dk); }
+  .btn-modal-primary:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-modal-cancel { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:11px 16px; cursor:pointer; transition:all .15s; }
+  .btn-modal-cancel:hover { border-color:var(--white); color:var(--white); }
+  .btn-modal-danger { background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px 20px; cursor:pointer; }
+
+  .spinner { width:15px; height:15px; border:2px solid rgba(0,0,0,.3); border-top-color:var(--black); border-radius:50%; animation:spin .7s linear infinite; display:none; }
+  .btn-modal-primary.loading .spinner { display:block; }
+  .btn-modal-primary.loading .btn-text { display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .modal-msg { padding:10px 14px; border-radius:2px; font-size:0.8rem; margin-bottom:16px; display:none; line-height:1.5; }
+  .modal-msg.error   { background:rgba(229,62,62,.12); border:1px solid rgba(229,62,62,.35); color:#fc8181; display:block; }
+  .modal-msg.success { background:rgba(31,166,68,.12); border:1px solid rgba(31,166,68,.35); color:#68d391; display:block; }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:28px; right:28px; background:var(--gray); border:1px solid var(--gray3); border-left:3px solid var(--green); border-radius:2px; padding:14px 18px; font-size:0.82rem; color:var(--white); z-index:1000; transform:translateY(20px); opacity:0; transition:all .3s; pointer-events:none; max-width:340px; line-height:1.5; }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.error { border-left-color:var(--red); }
+
+  footer { border-top:1px solid var(--gray3); padding:16px 28px; }
+  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+  .footer-logo em { color:var(--orange); font-style:normal; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Site<em>Log</em><sub>v3.0</sub></div>
+  <div class="header-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn-signout" id="signOutBtn">Έξοδος</button>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="breadcrumb">
+    <a href="index.html">Αρχική</a>
+    <span>›</span>
+    <span>Χρήστες & Αναθέσεις</span>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">ΧΡΗΣΤΕΣ & <span>ΑΝΑΘΕΣΕΙΣ</span></div>
+    <button class="btn-primary" id="inviteBtn">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Νέος Χρήστης
+    </button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-num" id="statTotal">—</span><div class="stat-label">Σύνολο</div></div>
+    <div class="stat"><span class="stat-num" id="statActive" style="color:var(--green)">—</span><div class="stat-label">Ενεργοί</div></div>
+    <div class="stat"><span class="stat-num" id="statNoSite" style="color:var(--orange)">—</span><div class="stat-label">Χωρίς Εργοτάξιο</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input class="filter-input" type="text" id="searchInput" placeholder="Αναζήτηση (όνομα, email)…">
+    <div class="filter-toggle">
+      <button class="active" data-filter="all">Όλοι</button>
+      <button data-filter="admin">Admin</button>
+      <button data-filter="project_manager">Proj. Mgr</button>
+      <button data-filter="site_manager">Site Mgr</button>
+      <button data-filter="scanner">Scanner</button>
+      <button data-filter="inactive">Ανενεργοί</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Όνομα</th>
+          <th>Email</th>
+          <th class="center">Ρόλος</th>
+          <th>Εργοτάξια</th>
+          <th class="center">Κατάσταση</th>
+          <th class="center">Ενέργειες</th>
+        </tr>
+      </thead>
+      <tbody id="usersBody">
+        <tr class="empty-row"><td colspan="6">Φόρτωση…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer><div class="footer-logo">Site<em>Log</em></div></footer>
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL 1: INVITE NEW USER
+═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="inviteOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ΝΕΟΣ ΧΡΗΣΤΗΣ</div>
+      <button class="modal-close" data-close="inviteOverlay">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-note">
+        Ο χρήστης θα λάβει <strong>email με invite link</strong> για να ορίσει τον κωδικό του.
+        Η ανάθεση σε εργοτάξιο μπορεί να γίνει αργότερα.
+      </div>
+
+      <div class="modal-msg" id="inviteMsg"></div>
+
+      <!-- Βήμα 1: Επιλογή υπαλλήλου -->
+      <div class="mfield">
+        <label>Υπάλληλος Εταιρείας <span class="req">*</span>
+          <span class="hint">— μόνο αυτοί με email και χωρίς ήδη user account</span>
+        </label>
+        <select id="inviteWorker">
+          <option value="">— Επιλογή υπαλλήλου —</option>
+        </select>
+      </div>
+
+      <!-- Email (auto-fill από worker) -->
+      <div class="mfield">
+        <label>Email <span class="hint">— συμπληρώνεται αυτόματα</span></label>
+        <input type="email" id="inviteEmail" placeholder="Επιλέξτε υπάλληλο πρώτα" readonly
+               style="opacity:.7;cursor:not-allowed;">
+      </div>
+
+      <!-- Ρόλος -->
+      <div class="mfield">
+        <label>Ρόλος <span class="req">*</span></label>
+        <select id="inviteRole">
+          <option value="">— Επιλογή ρόλου —</option>
+          <option value="project_manager">Project Manager</option>
+          <option value="site_manager">Site Manager</option>
+          <option value="scanner">Scanner</option>
+        </select>
+        <div class="cardinality-hint" id="inviteCardHint"></div>
+      </div>
+
+      <!-- Sites (εμφανίζεται μόνο αν ο ρόλος το απαιτεί) -->
+      <div class="mfield" id="inviteSitesField" style="display:none;">
+        <label>Ανάθεση Εργοταξίου <span class="req" id="inviteSiteReq">*</span></label>
+        <div class="sites-checkbox-list" id="inviteSitesList"></div>
+        <div class="cardinality-hint" id="inviteSiteHint"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" data-close="inviteOverlay">Ακύρωση</button>
+      <button class="btn-modal-primary" id="inviteSubmitBtn">
+        <div class="spinner"></div>
+        <span class="btn-text">Αποστολή Invite</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL 2: EDIT USER (role + active + assignments)
+═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">ΕΠΕΞΕΡΓΑΣΙΑ ΧΡΗΣΤΗ</div>
+      <button class="modal-close" data-close="editOverlay">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="modal-msg" id="editMsg"></div>
+
+      <!-- User info (read-only) -->
+      <div class="mfield">
+        <label>Χρήστης</label>
+        <input type="text" id="editUserName" readonly style="opacity:.6;cursor:not-allowed;">
+      </div>
+      <div class="mfield">
+        <label>Email</label>
+        <input type="email" id="editEmail" readonly style="opacity:.6;cursor:not-allowed;">
+      </div>
+
+      <!-- Ρόλος -->
+      <div class="mfield" id="editRoleField">
+        <label>Ρόλος <span class="req">*</span></label>
+        <select id="editRole">
+          <option value="project_manager">Project Manager</option>
+          <option value="site_manager">Site Manager</option>
+          <option value="scanner">Scanner</option>
+        </select>
+      </div>
+
+      <!-- Sites -->
+      <div class="mfield" id="editSitesField">
+        <label>Ανάθεση Εργοταξίων</label>
+        <div class="sites-checkbox-list" id="editSitesList"></div>
+        <div class="cardinality-hint" id="editCardHint"></div>
+      </div>
+
+      <!-- is_active toggle -->
+      <div class="mfield" style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--gray3);">
+        <div>
+          <label style="margin-bottom:0;">Ενεργός Λογαριασμός</label>
+          <div style="font-size:0.75rem;color:var(--gray5);margin-top:3px;">Ανενεργοί δεν μπορούν να συνδεθούν.</div>
+        </div>
+        <label style="position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0;">
+          <input type="checkbox" id="editIsActive" style="opacity:0;width:0;height:0;position:absolute;">
+          <span style="position:absolute;inset:0;background:var(--gray3);border-radius:24px;transition:background .2s;" id="editToggleSlider"></span>
+        </label>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" data-close="editOverlay">Ακύρωση</button>
+      <button class="btn-modal-primary" id="editSubmitBtn">
+        <div class="spinner"></div>
+        <span class="btn-text">Αποθήκευση</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL 3: CONFIRM DEACTIVATE
+═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="deactivateOverlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--red);">ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ;</div>
+      <button class="modal-close" data-close="deactivateOverlay">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.85rem;color:var(--gray5);line-height:1.65;" id="deactivateBody"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" data-close="deactivateOverlay">Ακύρωση</button>
+      <button class="btn-modal-danger" id="deactivateConfirmBtn">Απενεργοποίηση</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared/auth.js"></script>
+<script>
+(async () => {
+
+  const ok = await Auth.requireRole(['admin', 'project_manager']);
+  if (!ok) return;
+
+  const myRole = Auth.getCurrentRole();
+  const myId   = Auth.getCurrentUser().id;
+  const isAdmin = Auth.isAdmin();
+
+  document.getElementById('userName').textContent = Auth.getCurrentUser().full_name;
+  document.getElementById('signOutBtn').addEventListener('click', () => Auth.signOut());
+
+  // Project manager: δεν μπορεί να κάνει invite
+  if (!isAdmin) document.getElementById('inviteBtn').style.display = 'none';
+
+  // ── GLOBAL DATA ──
+  let allUsers  = [];
+  let allSites  = [];
+  let filterRole = 'all';
+  let searchTerm = '';
+
+  // ── LOAD SITES ──
+  async function loadSites() {
+    if (isAdmin) {
+      const { data } = await sb.from('sites').select('id,project_code,name').eq('is_active',true).order('project_code');
+      allSites = data || [];
+    } else {
+      // Project manager: μόνο τα δικά του sites
+      allSites = Auth.getAssignedSites();
+    }
+  }
+
+  // ── LOAD USERS ──
+  async function loadUsers() {
+    const { data, error } = await sb
+      .from('profiles')
+      .select(`
+        id, email, full_name, role, is_active,
+        user_site_assignments(site_id, sites(id, project_code, name))
+      `)
+      .order('full_name');
+
+    if (error) { showToast('Σφάλμα: ' + error.message, true); return; }
+
+    allUsers = (data || []).map(u => ({
+      ...u,
+      sites: (u.user_site_assignments || []).map(a => a.sites).filter(Boolean),
+    }));
+
+    updateStats();
+    renderTable();
+  }
+
+  function updateStats() {
+    const active  = allUsers.filter(u => u.is_active).length;
+    const noSite  = allUsers.filter(u => u.is_active && u.role !== 'admin' && u.sites.length === 0).length;
+    document.getElementById('statTotal').textContent  = allUsers.length;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statNoSite').textContent = noSite;
+  }
+
+  // ── RENDER TABLE ──
+  const ROLE_LABELS = { admin:'Admin', project_manager:'Proj. Manager', site_manager:'Site Manager', scanner:'Scanner' };
+  const ROLE_CLASSES = { admin:'role-admin', project_manager:'role-pm', site_manager:'role-sm', scanner:'role-scanner' };
+
+  function renderTable() {
+    const body = document.getElementById('usersBody');
+    let filtered = allUsers;
+
+    if (filterRole === 'inactive') filtered = filtered.filter(u => !u.is_active);
+    else if (filterRole !== 'all') filtered = filtered.filter(u => u.role === filterRole && u.is_active);
+
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter(u =>
+        (u.full_name||'').toLowerCase().includes(q) ||
+        (u.email    ||'').toLowerCase().includes(q)
+      );
+    }
+
+    if (filtered.length === 0) {
+      body.innerHTML = '<tr class="empty-row"><td colspan="6">Δεν βρέθηκαν χρήστες</td></tr>';
+      return;
+    }
+
+    const isSelf = (uid) => uid === myId;
+
+    body.innerHTML = filtered.map(u => {
+      const sitesHtml = u.role === 'admin'
+        ? '<span class="site-chip-none" style="color:var(--yellow);font-size:0.6rem;">Όλα</span>'
+        : u.sites.length === 0
+          ? '<span class="site-chip-none">—</span>'
+          : u.sites.map(s => `<span class="site-chip-sm">${esc(s.project_code)}</span>`).join('');
+
+      // project_manager: δεν μπορεί να επεξεργαστεί admin ή άλλον project_manager
+      const canEdit = isAdmin
+        ? !isSelf(u.id)  // admin δεν επεξεργάζεται τον εαυτό του (θα χάσει admin)
+        : (u.role === 'site_manager' || u.role === 'scanner') && u.sites.some(s => allSites.find(ms => ms.id === s.id));
+
+      return `
+        <tr>
+          <td class="td-name">${esc(u.full_name)}${isSelf(u.id) ? ' <span style="font-size:0.65rem;color:var(--gray5);font-family:\'IBM Plex Mono\',monospace;">(εσύ)</span>' : ''}</td>
+          <td class="td-email">${esc(u.email)}</td>
+          <td class="td-center"><span class="role-badge ${ROLE_CLASSES[u.role]||''}">${ROLE_LABELS[u.role]||u.role}</span></td>
+          <td><div class="site-chips-cell">${sitesHtml}</div></td>
+          <td class="td-center"><span class="status-badge ${u.is_active ? 'status-active':'status-inactive'}">${u.is_active ? 'Ενεργός':'Ανενεργός'}</span></td>
+          <td class="td-actions">
+            ${canEdit
+              ? `<button class="btn-action" onclick="openEdit('${u.id}')">Επεξ.</button>
+                 ${isAdmin && u.is_active ? `<button class="btn-action danger" onclick="openDeactivate('${u.id}','${esc(u.full_name)}')">Απενεργ.</button>` : ''}`
+              : '<span style="color:var(--gray4);font-size:0.65rem;font-family:\'IBM Plex Mono\',monospace;">—</span>'}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── CLOSE MODALS ──
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.close).classList.remove('show');
+    });
+  });
+  document.querySelectorAll('.overlay').forEach(ov => {
+    ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('show'); });
+  });
+
+  // ═══════════════════════════════════════════════
+  // INVITE MODAL
+  // ═══════════════════════════════════════════════
+  document.getElementById('inviteBtn').addEventListener('click', async () => {
+    document.getElementById('inviteMsg').className = 'modal-msg';
+    document.getElementById('inviteWorker').value = '';
+    document.getElementById('inviteEmail').value  = '';
+    document.getElementById('inviteRole').value   = '';
+    document.getElementById('inviteCardHint').textContent = '';
+    document.getElementById('inviteSitesField').style.display = 'none';
+
+    // Φόρτωσε workers_company που έχουν email αλλά δεν έχουν ακόμα profile
+    const existingIds = allUsers.map(u => u.id);
+
+    const { data: workers } = await sb
+      .from('workers_company')
+      .select('id,eponimo,onoma,email')
+      .eq('is_active', true)
+      .not('email', 'is', null)
+      .order('eponimo');
+
+    // Φιλτράρισε αυτούς που ΔΕΝ έχουν ήδη user account
+    const available = (workers || []).filter(w =>
+      !allUsers.find(u => u.email === w.email)
+    );
+
+    const sel = document.getElementById('inviteWorker');
+    sel.innerHTML = '<option value="">— Επιλογή υπαλλήλου —</option>';
+    if (available.length === 0) {
+      sel.innerHTML += '<option disabled>Δεν υπάρχουν διαθέσιμοι υπάλληλοι</option>';
+    } else {
+      available.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w.id;
+        opt.textContent = `${w.eponimo} ${w.onoma} — ${w.email}`;
+        opt.dataset.email     = w.email;
+        opt.dataset.fullname  = `${w.eponimo} ${w.onoma}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    renderSitesCheckboxes('inviteSitesList', []);
+    document.getElementById('inviteOverlay').classList.add('show');
+  });
+
+  // Auto-fill email on worker select
+  document.getElementById('inviteWorker').addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    document.getElementById('inviteEmail').value = opt.dataset.email || '';
+  });
+
+  // Role change → update sites field visibility + hint
+  document.getElementById('inviteRole').addEventListener('change', function() {
+    updateInviteSitesVisibility(this.value);
+  });
+
+  function updateInviteSitesVisibility(role) {
+    const field = document.getElementById('inviteSitesField');
+    const hint  = document.getElementById('inviteCardHint');
+    if (role === 'project_manager') {
+      field.style.display = 'block';
+      hint.textContent = '→ Μπορεί να ανατεθεί σε πολλά εργοτάξια';
+      document.getElementById('inviteSiteReq').style.display = 'none';
+      document.getElementById('inviteSiteHint').textContent = 'Προαιρετικό — μπορεί να ανατεθεί αργότερα';
+    } else if (role === 'site_manager' || role === 'scanner') {
+      field.style.display = 'block';
+      hint.textContent = '→ Ακριβώς 1 εργοτάξιο (απαιτείται)';
+      document.getElementById('inviteSiteReq').style.display = 'inline';
+      document.getElementById('inviteSiteHint').textContent = 'Επιλέξτε ένα εργοτάξιο';
+    } else {
+      field.style.display = 'none';
+      hint.textContent = '';
+    }
+  }
+
+  // ── SUBMIT INVITE ──
+  document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
+    const workerSel   = document.getElementById('inviteWorker');
+    const workerId    = workerSel.value;
+    const workerOpt   = workerSel.options[workerSel.selectedIndex];
+    const email       = document.getElementById('inviteEmail').value.trim();
+    const role        = document.getElementById('inviteRole').value;
+    const fullName    = workerOpt.dataset?.fullname || '';
+
+    // Validation
+    const msgEl = document.getElementById('inviteMsg');
+    msgEl.className = 'modal-msg';
+    if (!workerId)  { showModalMsg(msgEl, 'Επέλεξε υπάλληλο.', 'error'); return; }
+    if (!role)      { showModalMsg(msgEl, 'Επέλεξε ρόλο.', 'error'); return; }
+
+    const selectedSiteIds = getCheckedSites('inviteSitesList');
+    if ((role === 'site_manager' || role === 'scanner') && selectedSiteIds.length === 0) {
+      showModalMsg(msgEl, 'Επέλεξε εργοτάξιο για αυτόν τον ρόλο.', 'error'); return;
+    }
+    if ((role === 'site_manager' || role === 'scanner') && selectedSiteIds.length > 1) {
+      showModalMsg(msgEl, 'Site Manager και Scanner μπορούν να έχουν μόνο 1 εργοτάξιο.', 'error'); return;
+    }
+
+    setModalLoading(document.getElementById('inviteSubmitBtn'), true);
+
+    // 1. Στείλε invite email μέσω Supabase Admin API (χρειάζεται service_role — δεν μπορεί από frontend)
+    // Αντίθετα: χρησιμοποιούμε το Supabase signUp με email confirm
+    // ΣΗΜΕΙΩΣΗ: Το invite απαιτεί service_role key (Edge Function).
+    // Προς το παρόν: δημιουργούμε profile χωρίς auth user,
+    // και στέλνουμε password reset (workaround για free tier).
+    // Ο admin θα ειδοποιεί εξωτερικά. TODO: Edge Function για invite.
+
+    // Το σωστό για production: Edge Function → supabase.auth.admin.inviteUserByEmail()
+    // Για τώρα: χρησιμοποιούμε το built-in resetPasswordForEmail ως proxy invite
+
+    const redirectTo = `${window.location.origin}${window.location.pathname.replace('admin-users.html','')}set-password.html`;
+
+    const { data: inviteData, error: inviteErr } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+
+    if (inviteErr) {
+      // Αν ο user δεν υπάρχει ακόμα, πρέπει να τον δημιουργήσουμε πρώτα.
+      // Αυτό απαιτεί service_role. Δείχνουμε οδηγίες.
+      setModalLoading(document.getElementById('inviteSubmitBtn'), false);
+      showModalMsg(msgEl,
+        'Για να δημιουργήσεις νέο user account, πρέπει να χρησιμοποιήσεις το Supabase Dashboard → Authentication → Add user, και μετά να επιστρέψεις εδώ για ανάθεση ρόλου και εργοταξίου.',
+        'error');
+      return;
+    }
+
+    // 2. Δημιούργησε profile (χωρίς id ακόμα — θα συνδεθεί όταν κάνει login)
+    // PLACEHOLDER — θα ολοκληρωθεί με Edge Function
+    setModalLoading(document.getElementById('inviteSubmitBtn'), false);
+    showModalMsg(msgEl, 'Σφάλμα: Το invite flow απαιτεί Edge Function (service_role). Δες το ARCHITECTURE §5.', 'error');
+
+  });
+
+  // ═══════════════════════════════════════════════
+  // EDIT MODAL
+  // ═══════════════════════════════════════════════
+  window.openEdit = async (userId) => {
+    const user = allUsers.find(u => u.id === userId);
+    if (!user) return;
+
+    document.getElementById('editMsg').className = 'modal-msg';
+    document.getElementById('editUserName').value = user.full_name;
+    document.getElementById('editEmail').value    = user.email;
+    document.getElementById('editIsActive').checked = user.is_active;
+    updateToggleUI(document.getElementById('editIsActive'));
+
+    // Role field: admin δεν αλλάζει ρόλο άλλου admin
+    const roleField = document.getElementById('editRoleField');
+    const roleSel   = document.getElementById('editRole');
+    if (user.role === 'admin' || !isAdmin) {
+      roleField.style.display = 'none';
+    } else {
+      roleField.style.display = 'block';
+      roleSel.value = user.role;
+    }
+
+    // Sites
+    const currentSiteIds = user.sites.map(s => s.id);
+    renderSitesCheckboxes('editSitesList', currentSiteIds);
+    updateEditCardHint(user.role);
+
+    // Αν είναι admin, κρύψε sites (admin βλέπει όλα)
+    document.getElementById('editSitesField').style.display =
+      (user.role === 'admin') ? 'none' : 'block';
+
+    document.getElementById('editOverlay').classList.add('show');
+    document.getElementById('editOverlay').dataset.userId = userId;
+  };
+
+  document.getElementById('editRole').addEventListener('change', function() {
+    updateEditCardHint(this.value);
+  });
+
+  function updateEditCardHint(role) {
+    const hints = {
+      project_manager: '→ Πολλά εργοτάξια επιτρέπονται',
+      site_manager:    '→ Ακριβώς 1 εργοτάξιο',
+      scanner:         '→ Ακριβώς 1 εργοτάξιο',
+    };
+    document.getElementById('editCardHint').textContent = hints[role] || '';
+  }
+
+  // Toggle visual update
+  document.getElementById('editIsActive').addEventListener('change', function() {
+    updateToggleUI(this);
+  });
+  function updateToggleUI(checkbox) {
+    const slider = document.getElementById('editToggleSlider');
+    if (checkbox.checked) {
+      slider.style.background = 'var(--green)';
+      slider.style.setProperty('--tw', 'translateX(20px)');
+    } else {
+      slider.style.background = 'var(--gray3)';
+    }
+    // Simple pseudo-element hack: use a child
+    slider.innerHTML = `<span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .2s;transform:${checkbox.checked ? 'translateX(20px)' : 'none'};"></span>`;
+  }
+
+  // ── SUBMIT EDIT ──
+  document.getElementById('editSubmitBtn').addEventListener('click', async () => {
+    const userId  = document.getElementById('editOverlay').dataset.userId;
+    const user    = allUsers.find(u => u.id === userId);
+    const msgEl   = document.getElementById('editMsg');
+    msgEl.className = 'modal-msg';
+
+    const newRole     = isAdmin && user.role !== 'admin'
+      ? document.getElementById('editRole').value
+      : user.role;
+    const newIsActive = document.getElementById('editIsActive').checked;
+    const newSiteIds  = getCheckedSites('editSitesList');
+
+    // Cardinality validation
+    if ((newRole === 'site_manager' || newRole === 'scanner') && newSiteIds.length > 1) {
+      showModalMsg(msgEl, 'Site Manager και Scanner μπορούν να έχουν μόνο 1 εργοτάξιο.', 'error'); return;
+    }
+
+    setModalLoading(document.getElementById('editSubmitBtn'), true);
+
+    // 1. Update profile
+    const { error: profErr } = await sb
+      .from('profiles')
+      .update({ role: newRole, is_active: newIsActive })
+      .eq('id', userId);
+
+    if (profErr) {
+      showModalMsg(msgEl, 'Σφάλμα: ' + profErr.message, 'error');
+      setModalLoading(document.getElementById('editSubmitBtn'), false);
+      return;
+    }
+
+    // 2. Update assignments: διαγραφή παλαιών + εισαγωγή νέων
+    if (user.role !== 'admin') {
+      await sb.from('user_site_assignments').delete().eq('user_id', userId);
+
+      if (newSiteIds.length > 0) {
+        const inserts = newSiteIds.map(sid => ({
+          user_id:     userId,
+          site_id:     sid,
+          assigned_by: myId,
+        }));
+        const { error: assErr } = await sb.from('user_site_assignments').insert(inserts);
+        if (assErr) {
+          showModalMsg(msgEl, 'Σφάλμα αναθέσεων: ' + assErr.message, 'error');
+          setModalLoading(document.getElementById('editSubmitBtn'), false);
+          return;
+        }
+      }
+    }
+
+    setModalLoading(document.getElementById('editSubmitBtn'), false);
+    document.getElementById('editOverlay').classList.remove('show');
+    showToast('Ο χρήστης ενημερώθηκε επιτυχώς.');
+    await loadUsers();
+  });
+
+  // ═══════════════════════════════════════════════
+  // DEACTIVATE MODAL
+  // ═══════════════════════════════════════════════
+  window.openDeactivate = (userId, userName) => {
+    document.getElementById('deactivateBody').textContent =
+      `Πρόκειται να απενεργοποιήσεις τον χρήστη "${userName}". Δεν θα μπορεί πλέον να συνδεθεί στο σύστημα.`;
+    document.getElementById('deactivateOverlay').classList.add('show');
+    document.getElementById('deactivateOverlay').dataset.userId = userId;
+  };
+
+  document.getElementById('deactivateConfirmBtn').addEventListener('click', async () => {
+    const userId = document.getElementById('deactivateOverlay').dataset.userId;
+    const { error } = await sb.from('profiles').update({ is_active: false }).eq('id', userId);
+    document.getElementById('deactivateOverlay').classList.remove('show');
+    if (error) { showToast('Σφάλμα: ' + error.message, true); return; }
+    showToast('Ο χρήστης απενεργοποιήθηκε.');
+    await loadUsers();
+  });
+
+  // ═══════════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════════
+  function renderSitesCheckboxes(containerId, checkedIds) {
+    const container = document.getElementById(containerId);
+    if (allSites.length === 0) {
+      container.innerHTML = '<div class="sites-empty">Δεν υπάρχουν ενεργά εργοτάξια.</div>';
+      return;
+    }
+    container.innerHTML = allSites.map(s => `
+      <label class="site-checkbox-item">
+        <input type="checkbox" value="${s.id}" ${checkedIds.includes(s.id) ? 'checked' : ''}>
+        <div class="site-checkbox-label">
+          <div class="site-checkbox-code">${esc(s.project_code)}</div>
+          <div class="site-checkbox-name">${esc(s.name)}</div>
+        </div>
+      </label>`
+    ).join('');
+  }
+
+  function getCheckedSites(containerId) {
+    return [...document.querySelectorAll(`#${containerId} input[type=checkbox]:checked`)]
+      .map(cb => parseInt(cb.value));
+  }
+
+  function showModalMsg(el, text, type) {
+    el.textContent = text;
+    el.className = 'modal-msg ' + type;
+  }
+
+  function setModalLoading(btn, val) {
+    btn.disabled = val;
+    btn.classList.toggle('loading', val);
+  }
+
+  function showToast(msg, isError=false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => { t.className = 'toast'; }, 3500);
+  }
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  document.querySelectorAll('.filter-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filterRole = btn.dataset.filter;
+      renderTable();
+    });
+  });
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchTerm = e.target.value.trim();
+    renderTable();
+  });
+
+  // ── INIT ──
+  await loadSites();
+  await loadUsers();
+
+  // Toggle initial state
+  updateToggleUI(document.getElementById('editIsActive'));
+
+})();
+</script>
+</body>
+</html>
