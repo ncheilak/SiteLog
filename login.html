@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteLog — Είσοδος</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:    #0c0c0c;
+    --yellow:   #f5c800;
+    --yellow-dk:#c9a000;
+    --orange:   #e8600a;
+    --white:    #f0ebe0;
+    --gray:     #181818;
+    --gray2:    #222;
+    --gray3:    #2e2e2e;
+    --gray4:    #444;
+    --gray5:    #666;
+    --green:    #1fa644;
+    --red:      #e53e3e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Diagonal stripes background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -55deg,
+      transparent,
+      transparent 28px,
+      rgba(245,200,0,0.018) 28px,
+      rgba(245,200,0,0.018) 29px
+    );
+    pointer-events: none;
+  }
+
+  /* Orange left accent */
+  body::after {
+    content: '';
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: var(--orange);
+  }
+
+  /* ── CARD ── */
+  .login-card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    background: var(--gray);
+    border: 1px solid var(--gray3);
+    border-radius: 3px;
+    overflow: hidden;
+    animation: slideUp 0.35s ease both;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-top {
+    background: var(--yellow);
+    padding: 22px 28px 18px;
+    border-bottom: 3px solid var(--orange);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    color: var(--black);
+    line-height: 1;
+  }
+  .logo em { color: var(--orange); font-style: normal; }
+  .logo sub {
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+    opacity: 0.55;
+    vertical-align: middle;
+    margin-left: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+  }
+
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--black);
+    opacity: 0.5;
+    margin-top: 6px;
+  }
+
+  .card-body {
+    padding: 28px;
+  }
+
+  /* ── FORM ── */
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gray5);
+    margin-bottom: 7px;
+  }
+
+  input[type="email"],
+  input[type="password"],
+  input[type="text"] {
+    width: 100%;
+    background: var(--gray2);
+    border: 1px solid var(--gray3);
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.18s;
+  }
+  input:focus { border-color: var(--yellow); }
+  input::placeholder { color: var(--gray4); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--yellow);
+    color: var(--black);
+    border: none;
+    border-radius: 2px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    padding: 13px;
+    cursor: pointer;
+    transition: background 0.18s, opacity 0.18s;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--yellow-dk); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: var(--black);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+  .btn-primary.loading .spinner { display: block; }
+  .btn-primary.loading .btn-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MESSAGES ── */
+  .msg {
+    padding: 11px 14px;
+    border-radius: 2px;
+    font-size: 0.82rem;
+    margin-bottom: 16px;
+    display: none;
+    line-height: 1.5;
+  }
+  .msg.error {
+    background: rgba(229,62,62,0.12);
+    border: 1px solid rgba(229,62,62,0.35);
+    color: #fc8181;
+    display: block;
+  }
+  .msg.success {
+    background: rgba(31,166,68,0.12);
+    border: 1px solid rgba(31,166,68,0.35);
+    color: #68d391;
+    display: block;
+  }
+
+  /* ── FORGOT PASSWORD ── */
+  .forgot-link {
+    display: block;
+    text-align: right;
+    margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.5px;
+    color: var(--gray5);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .forgot-link:hover { color: var(--yellow); }
+
+  /* ── RESET MODE ── */
+  .reset-mode { display: none; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 1px;
+    color: var(--gray5);
+    text-decoration: none;
+    cursor: pointer;
+    margin-bottom: 18px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--yellow); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--gray3);
+    margin: 20px 0;
+  }
+
+  /* ── VERSION BADGE ── */
+  .version-badge {
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 1.5px;
+    color: var(--gray4);
+    text-align: center;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+
+  <!-- HEADER -->
+  <div class="card-top">
+    <div class="logo">Site<em>Log</em><sub>v3.0</sub></div>
+    <div class="card-label">Σύστημα Παρουσίας Εργοταξίου</div>
+  </div>
+
+  <!-- BODY -->
+  <div class="card-body">
+
+    <!-- ── LOGIN MODE ── -->
+    <div id="loginMode">
+      <div id="loginMsg" class="msg"></div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="name@company.com" autocomplete="email">
+      </div>
+
+      <div class="field">
+        <label for="password">Κωδικός</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        <a class="forgot-link" id="showResetBtn">Ξεχάσατε τον κωδικό;</a>
+      </div>
+
+      <button class="btn-primary" id="loginBtn">
+        <div class="spinner"></div>
+        <span class="btn-text">Είσοδος</span>
+      </button>
+    </div>
+
+    <!-- ── RESET MODE ── -->
+    <div id="resetMode" class="reset-mode">
+      <a class="back-link" id="backToLoginBtn">← Πίσω στη σύνδεση</a>
+
+      <div id="resetMsg" class="msg"></div>
+
+      <div class="field">
+        <label for="resetEmail">Email λογαριασμού</label>
+        <input type="email" id="resetEmail" placeholder="name@company.com" autocomplete="email">
+      </div>
+
+      <button class="btn-primary" id="resetBtn">
+        <div class="spinner"></div>
+        <span class="btn-text">Αποστολή συνδέσμου</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<div class="version-badge">SiteLog v3.0 · Σύστημα Παρουσίας</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared/auth.js"></script>
+<script>
+(async () => {
+
+  // Αν ήδη logged in → index.html
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // ── DOM ──
+  const loginMode   = document.getElementById('loginMode');
+  const resetMode   = document.getElementById('resetMode');
+  const loginMsg    = document.getElementById('loginMsg');
+  const resetMsg    = document.getElementById('resetMsg');
+  const emailEl     = document.getElementById('email');
+  const passwordEl  = document.getElementById('password');
+  const loginBtn    = document.getElementById('loginBtn');
+  const resetEmailEl= document.getElementById('resetEmail');
+  const resetBtn    = document.getElementById('resetBtn');
+
+  // ── HELPERS ──
+  function showMsg(el, text, type) {
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+  function setLoading(btn, val) {
+    btn.disabled = val;
+    btn.classList.toggle('loading', val);
+  }
+
+  // ── LOGIN ──
+  loginBtn.addEventListener('click', async () => {
+    const email    = emailEl.value.trim();
+    const password = passwordEl.value;
+
+    if (!email || !password) {
+      showMsg(loginMsg, 'Συμπλήρωσε email και κωδικό.', 'error');
+      return;
+    }
+
+    setLoading(loginBtn, true);
+    loginMsg.className = 'msg';
+
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setLoading(loginBtn, false);
+      // Φιλικά μηνύματα
+      if (error.message.includes('Invalid login') || error.message.includes('invalid_credentials')) {
+        showMsg(loginMsg, 'Λάθος email ή κωδικός.', 'error');
+      } else if (error.message.includes('Email not confirmed')) {
+        showMsg(loginMsg, 'Το email δεν έχει επιβεβαιωθεί ακόμα.', 'error');
+      } else {
+        showMsg(loginMsg, 'Σφάλμα: ' + error.message, 'error');
+      }
+      return;
+    }
+
+    // Επιτυχία — έλεγχος αν υπάρχει profile
+    const { data: profile, error: pErr } = await sb
+      .from('profiles')
+      .select('role, is_active')
+      .eq('id', data.user.id)
+      .single();
+
+    if (pErr || !profile) {
+      await sb.auth.signOut();
+      showMsg(loginMsg, 'Ο λογαριασμός δεν έχει ρυθμιστεί ακόμα. Επικοινώνησε με τον διαχειριστή.', 'error');
+      setLoading(loginBtn, false);
+      return;
+    }
+
+    if (!profile.is_active) {
+      await sb.auth.signOut();
+      showMsg(loginMsg, 'Ο λογαριασμός σου είναι ανενεργός. Επικοινώνησε με τον διαχειριστή.', 'error');
+      setLoading(loginBtn, false);
+      return;
+    }
+
+    window.location.href = 'index.html';
+  });
+
+  // Enter key
+  passwordEl.addEventListener('keydown', e => { if (e.key === 'Enter') loginBtn.click(); });
+  emailEl.addEventListener('keydown',    e => { if (e.key === 'Enter') passwordEl.focus(); });
+
+  // ── FORGOT PASSWORD ──
+  document.getElementById('showResetBtn').addEventListener('click', () => {
+    loginMode.style.display = 'none';
+    resetMode.style.display = 'block';
+    resetEmailEl.value = emailEl.value; // pre-fill
+  });
+
+  document.getElementById('backToLoginBtn').addEventListener('click', () => {
+    resetMode.style.display = 'none';
+    loginMode.style.display = 'block';
+  });
+
+  resetBtn.addEventListener('click', async () => {
+    const email = resetEmailEl.value.trim();
+    if (!email) {
+      showMsg(resetMsg, 'Συμπλήρωσε το email σου.', 'error');
+      return;
+    }
+
+    setLoading(resetBtn, true);
+    resetMsg.className = 'msg';
+
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname.replace('login.html', '') + 'set-password.html',
+    });
+
+    setLoading(resetBtn, false);
+
+    if (error) {
+      showMsg(resetMsg, 'Σφάλμα: ' + error.message, 'error');
+    } else {
+      showMsg(resetMsg, 'Εάν υπάρχει λογαριασμός με αυτό το email, θα σταλεί σύνδεσμος επαναφοράς.', 'success');
+      resetBtn.disabled = true;
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
