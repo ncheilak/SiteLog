@@ -472,7 +472,7 @@
 
   <div class="export-bar">
     <button class="btn btn-orange" onclick="exportCSV()" style="flex:1">⬇ Εξαγωγή CSV</button>
-    <button class="btn btn-red btn-outline" onclick="clearLog()">✕ Καθαρισμός</button>
+    <button class="btn btn-red btn-outline" id="clearLogBtn" onclick="clearLog()">✕ Καθαρισμός</button>
   </div>
 </div>
 
@@ -499,9 +499,10 @@
   let scanning     = false;
   let lastScan     = '';
   let lastScanTime = 0;
-  let currentSite  = null; // { id, name }
+  let currentSite  = null; // { id, name, projectCode }
   let sites        = [];
   let pendingWorker = null; // worker waiting for phase selection
+  let _canDelete   = false; // set after auth — admin και site_manager μόνο
 
   // ── INIT ──
   const today = new Date();
@@ -513,6 +514,13 @@
     if (!ok) return;
     const user = Auth.getCurrentUser();
     if (user) document.getElementById('userPill').textContent = user.full_name || user.email;
+
+    // Ορισμός δικαιωμάτων διαγραφής — μόνο admin και site_manager
+    const role = Auth.getCurrentRole();
+    _canDelete = (role === 'admin' || role === 'site_manager');
+    if (!_canDelete) {
+      document.getElementById('clearLogBtn').style.display = 'none';
+    }
 
     await loadSites();
 
@@ -601,25 +609,26 @@
     const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
     const { data, error } = await db
       .from('attendance_log')
-      .select('*')
+      .select('*, workers(eponimo, onoma, eidikotita, ergolabos, ama, amka)')
       .eq('site_id', currentSite.id)
       .eq('log_date', todayStr)
       .order('created_at');
     if (error) { console.error(error); return; }
 
     todayLog = (data || []).map(r => {
-      // Enrich with worker info from in-memory workerDB
-      const w = workerDB.find(x => x.id === r.worker_id);
+      const w = r.workers || {};
       return {
         id:         r.worker_id,
-        eponimo:    w?.eponimo  || '',
-        onoma:      w?.onoma    || '',
-        eidikotita: w?.eidikotita || '',
-        ergolabos:  w?.ergolabos  || '',
-        fasi:       r.fasi || w?.defaultPhase || '',
+        eponimo:    w.eponimo     || '',
+        onoma:      w.onoma       || '',
+        eidikotita: w.eidikotita  || '',
+        ergolabos:  w.ergolabos   || '',
+        fasi:       r.fasi        || '',
         timeIn:     r.time_in,
         date:       r.log_date,
-        db_id:      r.id
+        db_id:      r.id,
+        ama:        w.ama         || '',
+        amka:       w.amka        || '',
       };
     });
     renderLog();
@@ -905,7 +914,7 @@
           </div>
         </div>
         <div class="log-time">${e.timeIn}</div>
-        <button class="log-delete" onclick="deleteEntry(${e.db_id})" title="Διαγραφή εγγραφής">✕</button>
+        ${_canDelete ? `<button class="log-delete" onclick="deleteEntry(${e.db_id})" title="Διαγραφή εγγραφής">✕</button>` : ''}
       </div>
     `).join('');
   }
