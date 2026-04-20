@@ -518,7 +518,7 @@
 
     // Non-admin με ένα μόνο assigned site → auto-select, χωρίς modal
     if (!Auth.isAdmin() && sites.length === 1) {
-      await selectSite(sites[0].id, sites[0].name);
+      await selectSite(sites[0].id, sites[0].name, sites[0].project_code || '');
     } else {
       showSiteModal();
     }
@@ -534,8 +534,9 @@
   function renderSiteButtons() {
     const icons = ['🏗', '🏢', '🏛'];
     document.getElementById('siteButtons').innerHTML = sites.map((s, i) => `
-      <button class="site-btn" onclick="selectSite(${s.id}, '${s.name}')">
-        <span class="site-icon">${icons[i] || '🏗'}</span>${s.name}
+      <button class="site-btn" onclick="selectSite(${s.id}, '${s.name}', '${s.project_code || ''}')">
+        <span class="site-icon">${icons[i] || '🏗'}</span>
+        ${s.project_code ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.7rem;opacity:0.6;margin-right:6px">${s.project_code}</span>` : ''}${s.name}
       </button>
     `).join('');
   }
@@ -544,10 +545,10 @@
     document.getElementById('siteModal').classList.remove('hidden');
   }
 
-  async function selectSite(id, name) {
-    currentSite = { id, name };
+  async function selectSite(id, name, projectCode) {
+    currentSite = { id, name, projectCode };
     document.getElementById('siteModal').classList.add('hidden');
-    document.getElementById('sitePill').textContent = name;
+    document.getElementById('sitePill').textContent = projectCode ? `${projectCode} · ${name}` : name;
     await loadWorkers();
     await loadTodayLog();
   }
@@ -585,7 +586,7 @@
       el.innerHTML = '<span class="spinner"></span> Φόρτωση εργαζομένων…';
       el.className = 'db-status';
     } else if (state === 'loaded') {
-      el.textContent = `✓ ${workerDB.length} εργαζόμενοι · ${currentSite?.name || ''}`;
+      el.textContent = `✓ ${workerDB.length} εργαζόμενοι · ${currentSite?.projectCode ? currentSite.projectCode + ' · ' : ''}${currentSite?.name || ''}`;
       el.className = 'db-status loaded';
     } else {
       el.textContent = 'Σφάλμα σύνδεσης με βάση';

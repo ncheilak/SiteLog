@@ -179,7 +179,7 @@
     sel.innerHTML = '<option value="">— Όλα τα Εργοτάξια —</option>';
     sites.forEach(s => {
       const o = document.createElement('option');
-      o.value = s.id; o.textContent = s.name;
+      o.value = s.id; o.textContent = s.project_code ? `${s.project_code} · ${s.name}` : s.name;
       sel.appendChild(o);
     });
     // Non-admin με ένα site → προεπιλογή στο dropdown
