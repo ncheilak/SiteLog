@@ -365,6 +365,11 @@
     }).join('');
   }
 
+  // ── EXPOSE TO GLOBAL SCOPE (needed for inline onclick attributes) ──
+  window.openDetail = openDetail;
+  window.closeDetail = closeDetail;
+  window.doAction = doAction;
+
   // ── DETAIL MODAL ──
   function openDetail(id) {
     const a = allAdhoc.find(x => x.id === id);
