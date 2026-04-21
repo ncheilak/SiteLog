@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Εργοτάξιο</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <style>
   :root {
     --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
@@ -52,7 +55,7 @@
   .field { display:flex; flex-direction:column; gap:6px; }
   label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
   label .req { color:var(--orange); margin-left:2px; }
-  input[type=text], input[type=date] {
+  input[type=text] {
     background:var(--gray2); border:1px solid var(--gray3); border-radius:2px;
     color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.9rem;
     padding:10px 14px; outline:none; transition:border-color .18s; width:100%;
@@ -61,8 +64,18 @@
   input::placeholder { color:var(--gray4); }
   input.error-field { border-color:var(--red) !important; }
 
-  /* COLOR SCHEME DATE INPUTS */
-  input[type=date]::-webkit-calendar-picker-indicator { filter:invert(0.5); cursor:pointer; }
+  /* Flatpickr overrides */
+  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+  .flatpickr-day{color:var(--white)}
+  .flatpickr-day:hover{background:var(--gray3)}
+  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+  .flatpickr-day.today{border-color:var(--orange)}
+  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+  .numInputWrapper:hover{background:var(--gray3)}
+  .numInput{color:var(--white)!important;background:transparent}
 
   /* TOGGLE (is_active) */
   .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-top:1px solid var(--gray3); margin-top:4px; }
@@ -193,11 +206,11 @@
       <div class="field-row">
         <div class="field">
           <label>Ημ/νία Έναρξης</label>
-          <input type="date" lang="el-GR" id="fStartDate">
+          <input type="text" id="fStartDate" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="cursor:pointer">
         </div>
         <div class="field">
           <label>Προβλ. Ολοκλήρωση</label>
-          <input type="date" lang="el-GR" id="fEndDate">
+          <input type="text" id="fEndDate" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="cursor:pointer">
         </div>
       </div>
     </div>
@@ -285,6 +298,15 @@
   const saveBtn      = document.getElementById('saveBtn');
   const topMsg       = document.getElementById('topMsg');
 
+  // ── FLATPICKR ──
+  const fpConfig = { locale:'gr', dateFormat:'d/m/Y', allowInput:false, disableMobile:true };
+  const fpStart  = flatpickr('#fStartDate', fpConfig);
+  const fpEnd    = flatpickr('#fEndDate',   fpConfig);
+
+  function getISO(fp) {
+    return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
+  }
+
   // ── LOAD EXISTING ──
   if (isEdit) {
     document.getElementById('pageTitle').innerHTML = 'ΕΠΕΞΕΡΓΑΣΙΑ <span>ΕΡΓΟΤΑΞΙΟΥ</span>';
@@ -311,8 +333,10 @@
     fClient.value         = data.client        || '';
     fAddress.value        = data.address       || '';
     fRegion.value         = data.region        || '';
-    fStartDate.value      = data.start_date    || '';
-    fEndDate.value        = data.end_date      || '';
+    fStartDate.value      = '';
+    fEndDate.value        = '';
+    if (data.start_date) fpStart.setDate(data.start_date, false);
+    if (data.end_date)   fpEnd.setDate(data.end_date,     false);
     fIsActive.checked     = data.is_active;
   }
 
@@ -337,8 +361,8 @@
       client:     fClient.value.trim()    || null,
       address:    fAddress.value.trim()   || null,
       region:     fRegion.value.trim()    || null,
-      start_date: fStartDate.value        || null,
-      end_date:   fEndDate.value          || null,
+      start_date: getISO(fpStart) || null,
+      end_date:   getISO(fpEnd)   || null,
       is_active:  fIsActive.checked,
     };
 

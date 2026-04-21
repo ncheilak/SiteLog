@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Αναφορές Εργατοημερών</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <style>
   :root {
     --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
@@ -50,6 +53,19 @@
   .btn-run { background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:9px 22px; cursor:pointer; white-space:nowrap; transition:background .18s; height:40px; align-self:end; }
   .btn-run:hover { background:var(--yellow-dk); }
   .btn-run:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* Flatpickr overrides */
+  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+  .flatpickr-day{color:var(--white)}
+  .flatpickr-day:hover{background:var(--gray3)}
+  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+  .flatpickr-day.today{border-color:var(--orange)}
+  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+  .numInputWrapper:hover{background:var(--gray3)}
+  .numInput{color:var(--white)!important;background:transparent}
 
   /* SITE INFO BAR */
   .site-info { display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
@@ -141,12 +157,12 @@
         </select>
       </div>
       <div class="filter-group">
-        <label>Από (ΗΗ/ΜΜ/ΕΕΕΕ)</label>
-        <input type="text" id="filterFrom" placeholder="π.χ. 01/04/2026" maxlength="10" oninput="autoSlash(this)">
+        <label>Από</label>
+        <input type="text" id="filterFrom" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="cursor:pointer">
       </div>
       <div class="filter-group">
-        <label>Έως (ΗΗ/ΜΜ/ΕΕΕΕ)</label>
-        <input type="text" id="filterTo" placeholder="π.χ. 22/04/2026" maxlength="10" oninput="autoSlash(this)">
+        <label>Έως</label>
+        <input type="text" id="filterTo" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="cursor:pointer">
       </div>
       <button class="btn-run" id="runBtn" onclick="runReport()">▶ Εκτέλεση</button>
     </div>
@@ -205,70 +221,52 @@
     });
   }
 
-  // ── DATE HELPERS ──
-  // Τοπική ημερομηνία σε YYYY-MM-DD (για queries)
-  function localToday() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  // ── FLATPICKR INIT ──
+  const fpConfig = {
+    locale: 'gr',
+    dateFormat: 'd/m/Y',
+    allowInput: false,
+    disableMobile: true,
+  };
+  const fpFrom = flatpickr('#filterFrom', fpConfig);
+  const fpTo   = flatpickr('#filterTo',   fpConfig);
+
+  // Default: Έως = σήμερα (τοπική ώρα)
+  fpTo.setDate(new Date(), false);
+
+  // Helper: παίρνει ISO YYYY-MM-DD από flatpickr instance
+  function getISO(fp) {
+    return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
   }
-  // Τοπική ημερομηνία σε DD/MM/YYYY (για εμφάνιση στα text inputs)
-  function localTodayDisplay() {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-  }
-  // DD/MM/YYYY → YYYY-MM-DD (για queries)
-  function parseDisplayDate(str) {
-    if (!str || str.length !== 10) return null;
-    const [dd, mm, yyyy] = str.split('/');
-    if (!dd || !mm || !yyyy) return null;
-    const iso = `${yyyy}-${mm}-${dd}`;
-    return isNaN(Date.parse(iso)) ? null : iso;
-  }
-  // YYYY-MM-DD → DD/MM/YYYY (για εμφάνιση)
+  // YYYY-MM-DD → DD/MM/YYYY για εμφάνιση
   function toDisplayDate(iso) {
     if (!iso) return '';
     const [y, m, d] = iso.split('-');
     return `${d}/${m}/${y}`;
   }
-  // Auto-εισαγωγή '/' καθώς πληκτρολογεί ο χρήστης
-  window.autoSlash = function(input) {
-    let v = input.value.replace(/[^\d]/g, '');
-    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
-    if (v.length >= 6) v = v.slice(0,5) + '/' + v.slice(5);
-    input.value = v.slice(0, 10);
-  };
-
-  // Default: Έως = σήμερα (τοπική ώρα, DD/MM/YYYY)
-  document.getElementById('filterTo').value = localTodayDisplay();
 
   siteSelect.addEventListener('change', async () => {
     const siteId = siteSelect.value;
     if (!siteId) return;
     const { data } = await sb.from('sites').select('start_date').eq('id', siteId).single();
-    if (data?.start_date) {
-      document.getElementById('filterFrom').value = toDisplayDate(data.start_date);
-    }
+    if (data?.start_date) fpFrom.setDate(data.start_date, false);
   });
 
   // Auto-load για SM
   if (role === 'site_manager' && sites.length > 0) {
     const { data } = await sb.from('sites').select('start_date').eq('id', sites[0].id).single();
-    if (data?.start_date) document.getElementById('filterFrom').value = toDisplayDate(data.start_date);
+    if (data?.start_date) fpFrom.setDate(data.start_date, false);
   }
 
   // ── RUN REPORT ──
   window.runReport = async function() {
-    const siteId      = siteSelect.value;
-    const dateFromRaw = document.getElementById('filterFrom').value.trim();
-    const dateToRaw   = document.getElementById('filterTo').value.trim();
+    const siteId   = siteSelect.value;
+    const dateFrom = getISO(fpFrom);
+    const dateTo   = getISO(fpTo);
 
-    if (!siteId) { showToast('Επιλέξτε εργοτάξιο', true); return; }
-
-    const dateFrom = parseDisplayDate(dateFromRaw);
-    const dateTo   = parseDisplayDate(dateToRaw);
-
-    if (!dateFrom) { showToast('⚠ Λανθασμένη μορφή "Από" — χρησιμοποιήστε ΗΗ/ΜΜ/ΕΕΕΕ', true); return; }
-    if (!dateTo)   { showToast('⚠ Λανθασμένη μορφή "Έως" — χρησιμοποιήστε ΗΗ/ΜΜ/ΕΕΕΕ', true); return; }
+    if (!siteId)    { showToast('Επιλέξτε εργοτάξιο', true); return; }
+    if (!dateFrom)  { showToast('Επιλέξτε ημερομηνία "Από"', true); return; }
+    if (!dateTo)    { showToast('Επιλέξτε ημερομηνία "Έως"', true); return; }
     if (dateFrom > dateTo) { showToast('⚠ Η "Από" πρέπει να είναι πριν την "Έως"', true); return; }
 
     const btn = document.getElementById('runBtn');

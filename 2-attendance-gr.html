@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Παρουσιολόγιο</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
@@ -50,13 +53,24 @@
     background:var(--gray2);border-bottom:1px solid var(--gray3);
     padding:10px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;
   }
-  .filters-bar select,.filters-bar input[type="date"]{
+  .filters-bar select,.filters-bar input[type="text"]{
     background:var(--black);border:1px solid var(--gray3);border-radius:2px;
     color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.88rem;
     padding:7px 10px;outline:none;
   }
   .filters-bar select:focus,.filters-bar input:focus{border-color:var(--yellow)}
-  .filters-bar select option{background:var(--black)}
+  /* Flatpickr overrides */
+  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+  .flatpickr-day{color:var(--white)}
+  .flatpickr-day:hover{background:var(--gray3)}
+  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+  .flatpickr-day.today{border-color:var(--orange)}
+  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+  .numInputWrapper:hover{background:var(--gray3)}
+  .numInput{color:var(--white)!important;background:transparent}
   .filters-bar .spacer{flex:1}
   .filters-bar .count{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--gray4);white-space:nowrap}
 
@@ -116,8 +130,8 @@
   <select id="filterSite" onchange="loadAttendance()">
     <option value="">— Όλα τα Εργοτάξια —</option>
   </select>
-  <input type="text" id="filterDateFrom" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" maxlength="10" oninput="autoSlash(this);loadAttendance()" title="Από">
-  <input type="text" id="filterDateTo"   placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" maxlength="10" oninput="autoSlash(this);loadAttendance()" title="Έως">
+  <input type="text" id="filterDateFrom" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="width:130px;cursor:pointer">
+  <input type="text" id="filterDateTo"   placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="width:130px;cursor:pointer">
   <button class="btn btn-outline btn-sm" onclick="setToday()">Σήμερα</button>
   <div class="spacer"></div>
   <div class="count" id="attCount"></div>
@@ -161,24 +175,16 @@
   let attRecords = [];
   let sites = [];
 
-  // ── DATE HELPERS ──
-  function localTodayDisplay() {
-    const d = new Date();
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-  }
-  function parseDisplayDate(str) {
-    if (!str || str.length !== 10) return null;
-    const [dd, mm, yyyy] = str.split('/');
-    if (!dd || !mm || !yyyy) return null;
-    const iso = `${yyyy}-${mm}-${dd}`;
-    return isNaN(Date.parse(iso)) ? null : iso;
-  }
-  function autoSlash(input) {
-    let v = input.value.replace(/[^\d]/g, '');
-    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
-    if (v.length >= 6) v = v.slice(0,5) + '/' + v.slice(5);
-    input.value = v.slice(0, 10);
-  }
+  // ── FLATPICKR INIT ──
+  const fpConfig = {
+    locale: 'gr',
+    dateFormat: 'd/m/Y',
+    allowInput: false,
+    disableMobile: true,
+    onChange: () => loadAttendance(),
+  };
+  const fpFrom = flatpickr('#filterDateFrom', fpConfig);
+  const fpTo   = flatpickr('#filterDateTo',   fpConfig);
 
   // ── INIT ──
   async function init() {
@@ -211,8 +217,8 @@
   async function loadAttendance() {
     setStatus('loading', 'Φόρτωση…');
     const siteId   = document.getElementById('filterSite').value;
-    const dateFrom = parseDisplayDate(document.getElementById('filterDateFrom').value);
-    const dateTo   = parseDisplayDate(document.getElementById('filterDateTo').value);
+    const dateFrom = fpFrom.selectedDates[0] ? fpFrom.formatDate(fpFrom.selectedDates[0], 'Y-m-d') : '';
+    const dateTo   = fpTo.selectedDates[0]   ? fpTo.formatDate(fpTo.selectedDates[0],   'Y-m-d') : '';
 
     let query = db
       .from('attendance_log')
@@ -284,10 +290,9 @@
   }
 
   function setToday() {
-    const d = localTodayDisplay();
-    document.getElementById('filterDateFrom').value = d;
-    document.getElementById('filterDateTo').value   = d;
-    loadAttendance();
+    const now = new Date();
+    fpFrom.setDate(now, true);
+    fpTo.setDate(now, true);
   }
 
   function exportCSV() {
