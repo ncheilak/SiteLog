@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteLog — Αναφορές Εργατοημερών</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+
+  /* HEADER */
+  header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+  .logo em { color:var(--orange); font-style:normal; }
+  .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+  .header-right { display:flex; align-items:center; gap:12px; }
+  .user-name { font-size:0.82rem; font-weight:600; color:var(--black); }
+  .btn-signout { background:var(--black); color:var(--yellow); border:none; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:7px 12px; cursor:pointer; }
+  .btn-signout:hover { opacity:.8; }
+
+  /* PAGE */
+  .page { flex:1; padding:36px 28px 64px; max-width:1200px; width:100%; margin:0 auto; }
+
+  /* BREADCRUMB */
+  .breadcrumb { display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:1px; color:var(--gray5); margin-bottom:28px; }
+  .breadcrumb a { color:var(--gray5); text-decoration:none; transition:color .15s; }
+  .breadcrumb a:hover { color:var(--yellow); }
+  .breadcrumb span { color:var(--gray4); }
+
+  /* PAGE HEADER */
+  .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:4px; color:var(--white); line-height:1; }
+  .page-title span { color:var(--yellow); }
+
+  /* FILTERS */
+  .filters-card { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; padding:20px 22px; margin-bottom:28px; }
+  .filters-grid { display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:12px; align-items:end; }
+  .filter-group label { display:block; font-family:'IBM Plex Mono',monospace; font-size:0.55rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); margin-bottom:6px; }
+  .filter-group select,
+  .filter-group input { width:100%; background:var(--gray2); border:1px solid var(--gray3); border-radius:2px; color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.88rem; padding:9px 12px; outline:none; transition:border-color .18s; }
+  .filter-group select:focus,
+  .filter-group input:focus { border-color:var(--yellow); }
+  .filter-group select option { background:var(--black); }
+  .btn-run { background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:9px 22px; cursor:pointer; white-space:nowrap; transition:background .18s; height:40px; align-self:end; }
+  .btn-run:hover { background:var(--yellow-dk); }
+  .btn-run:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* SITE INFO BAR */
+  .site-info { display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+  .site-info-code { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; color:var(--yellow); }
+  .site-info-name { font-family:'IBM Plex Sans',sans-serif; font-size:1rem; font-weight:600; color:var(--white); }
+  .site-info-meta { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gray5); }
+  .site-info-sep { width:1px; height:32px; background:var(--gray3); }
+
+  /* TOTAL STAT */
+  .total-bar { display:flex; gap:24px; margin-bottom:28px; flex-wrap:wrap; }
+  .total-stat { font-family:'IBM Plex Mono',monospace; }
+  .total-num { font-size:2rem; font-weight:600; color:var(--yellow); display:block; line-height:1; }
+  .total-label { font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); margin-top:4px; }
+
+  /* ERGOLABOS CARD */
+  .erg-card { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; margin-bottom:16px; overflow:hidden; }
+  .erg-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--gray3); gap:12px; flex-wrap:wrap; }
+  .erg-name { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:2px; color:var(--white); }
+  .erg-total { font-family:'IBM Plex Mono',monospace; font-size:0.72rem; font-weight:600; color:var(--yellow); background:var(--yellow-dim); border:1px solid rgba(245,200,0,0.2); padding:4px 12px; border-radius:2px; white-space:nowrap; }
+
+  /* MONTHS ROW */
+  .months-row { display:flex; flex-wrap:wrap; gap:1px; background:var(--gray3); border-top:1px solid var(--gray3); }
+  .month-cell { background:var(--gray2); flex:1; min-width:90px; padding:12px 14px; cursor:pointer; transition:background .15s; position:relative; }
+  .month-cell:hover { background:rgba(245,200,0,0.06); }
+  .month-cell:hover .month-label { color:var(--yellow); }
+  .month-label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--gray5); margin-bottom:6px; transition:color .15s; }
+  .month-num { font-family:'Bebas Neue',sans-serif; font-size:1.8rem; color:var(--white); line-height:1; }
+  .month-unit { font-family:'IBM Plex Mono',monospace; font-size:0.52rem; color:var(--gray5); margin-top:2px; text-transform:uppercase; letter-spacing:1px; }
+  .month-csv-hint { position:absolute; top:8px; right:10px; font-family:'IBM Plex Mono',monospace; font-size:0.48rem; color:var(--gray4); opacity:0; transition:opacity .15s; letter-spacing:0.5px; }
+  .month-cell:hover .month-csv-hint { opacity:1; }
+
+  /* EMPTY / LOADING */
+  .empty-state { text-align:center; padding:60px 20px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.78rem; letter-spacing:1px; }
+  .empty-state .big { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:4px; color:var(--gray3); display:block; margin-bottom:12px; }
+
+  /* SPINNER */
+  .spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--gray3); border-top-color:var(--yellow); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:28px; right:28px; background:var(--gray); border:1px solid var(--gray3); border-left:3px solid var(--green); border-radius:2px; padding:14px 18px; font-size:0.82rem; color:var(--white); z-index:1000; transform:translateY(20px); opacity:0; transition:all .3s; pointer-events:none; max-width:360px; }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.error { border-left-color:var(--red); }
+
+  footer { border-top:1px solid var(--gray3); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
+  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+  .footer-logo em { color:var(--orange); font-style:normal; }
+
+  @media (max-width:700px) {
+    .filters-grid { grid-template-columns:1fr 1fr; }
+    .btn-run { grid-column:1/-1; }
+    .page { padding:20px 16px 40px; }
+    .page-title { font-size:1.6rem; }
+  }
+  @media (max-width:480px) {
+    .filters-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Site<em>Log</em><sub>v3.0</sub></div>
+  <div class="header-right">
+    <span class="user-name" id="userName"></span>
+    <button class="btn-signout" id="signOutBtn">Έξοδος</button>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="breadcrumb">
+    <a href="index.html">Αρχική</a>
+    <span>›</span>
+    <span>Αναφορές Εργατοημερών</span>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">ΕΡΓΑΤΟ<span>ΗΜΕΡΕΣ</span></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-card">
+    <div class="filters-grid">
+      <div class="filter-group" id="siteFilterGroup">
+        <label>Εργοτάξιο</label>
+        <select id="filterSite">
+          <option value="">— Επιλέξτε Εργοτάξιο —</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Από</label>
+        <input type="date" id="filterFrom">
+      </div>
+      <div class="filter-group">
+        <label>Έως</label>
+        <input type="date" id="filterTo">
+      </div>
+      <button class="btn-run" id="runBtn" onclick="runReport()">▶ Εκτέλεση</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="empty-state">
+      <span class="big">📊</span>
+      Επιλέξτε εργοτάξιο και πατήστε Εκτέλεση
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">Site<em>Log</em></div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared/auth.js"></script>
+<script>
+(async () => {
+
+  const ok = await Auth.requireRole(['admin', 'project_manager', 'site_manager']);
+  if (!ok) return;
+
+  const role  = Auth.getCurrentRole();
+  const user  = Auth.getCurrentUser();
+  const sites = Auth.getAssignedSites();
+
+  document.getElementById('userName').textContent = user.full_name;
+  document.getElementById('signOutBtn').addEventListener('click', () => Auth.signOut());
+
+  // ── SITES DROPDOWN ──
+  const siteSelect = document.getElementById('filterSite');
+
+  if (role === 'site_manager') {
+    // SM έχει μόνο 1 site — κρύψε dropdown, auto-select
+    document.getElementById('siteFilterGroup').style.display = 'none';
+    if (sites.length > 0) {
+      const opt = document.createElement('option');
+      opt.value = sites[0].id;
+      opt.textContent = sites[0].name;
+      opt.selected = true;
+      siteSelect.appendChild(opt);
+    }
+  } else {
+    sites.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = (s.project_code ? s.project_code + ' · ' : '') + s.name;
+      siteSelect.appendChild(opt);
+    });
+  }
+
+  // ── SET DEFAULT DATES ──
+  // "Από" = start_date του site (φορτώνεται μετά την επιλογή site)
+  // "Έως" = σήμερα
+  const todayStr = new Date().toISOString().slice(0, 10);
+  document.getElementById('filterTo').value = todayStr;
+
+  siteSelect.addEventListener('change', async () => {
+    const siteId = siteSelect.value;
+    if (!siteId) return;
+    const { data } = await sb.from('sites').select('start_date').eq('id', siteId).single();
+    if (data?.start_date) {
+      document.getElementById('filterFrom').value = data.start_date;
+    }
+  });
+
+  // Auto-load για SM
+  if (role === 'site_manager' && sites.length > 0) {
+    const { data } = await sb.from('sites').select('start_date').eq('id', sites[0].id).single();
+    if (data?.start_date) document.getElementById('filterFrom').value = data.start_date;
+  }
+
+  // ── RUN REPORT ──
+  window.runReport = async function() {
+    const siteId   = siteSelect.value;
+    const dateFrom = document.getElementById('filterFrom').value;
+    const dateTo   = document.getElementById('filterTo').value;
+
+    if (!siteId) { showToast('Επιλέξτε εργοτάξιο', true); return; }
+    if (!dateFrom || !dateTo) { showToast('Ορίστε ημερομηνίες', true); return; }
+    if (dateFrom > dateTo) { showToast('Η "Από" πρέπει να είναι πριν την "Έως"', true); return; }
+
+    const btn = document.getElementById('runBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Φόρτωση…';
+
+    document.getElementById('results').innerHTML =
+      '<div class="empty-state"><span class="spinner"></span> Φόρτωση δεδομένων…</div>';
+
+    try {
+      // Φόρτωση site info
+      const { data: siteData } = await sb
+        .from('sites')
+        .select('id, project_code, name, client, start_date')
+        .eq('id', siteId)
+        .single();
+
+      // Φόρτωση παρουσιών — workers + adhoc
+      const { data: logs, error } = await sb
+        .from('attendance_log')
+        .select(`
+          log_date,
+          workers ( ergolabos ),
+          adhoc_workers ( ergolabos )
+        `)
+        .eq('site_id', siteId)
+        .gte('log_date', dateFrom)
+        .lte('log_date', dateTo)
+        .order('log_date');
+
+      if (error) { showToast('Σφάλμα: ' + error.message, true); return; }
+
+      renderReport(siteData, logs || [], dateFrom, dateTo);
+
+    } catch(err) {
+      showToast('Απρόσμενο σφάλμα: ' + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '▶ Εκτέλεση';
+    }
+  };
+
+  // ── RENDER REPORT ──
+  function renderReport(site, logs, dateFrom, dateTo) {
+    if (logs.length === 0) {
+      document.getElementById('results').innerHTML = `
+        <div class="empty-state">
+          <span class="big">0</span>
+          Δεν βρέθηκαν παρουσίες για το επιλεγμένο διάστημα
+        </div>`;
+      return;
+    }
+
+    // Ομαδοποίηση: ergolabos → log_date → count
+    // Κάθε εγγραφή = 1 εργατοημέρα
+    const data = {}; // { ergolabos: { 'YYYY-MM-DD': count } }
+    logs.forEach(r => {
+      const erg = (r.workers?.ergolabos || r.adhoc_workers?.ergolabos || 'Άγνωστος').trim();
+      const date = r.log_date;
+      if (!data[erg]) data[erg] = {};
+      data[erg][date] = (data[erg][date] || 0) + 1;
+    });
+
+    // Όλες οι ημερομηνίες στο διάστημα ανά μήνα
+    const allDates = getAllDates(dateFrom, dateTo);
+    const months   = getMonths(dateFrom, dateTo); // [{ key:'2025-04', label:'Απρ 2025', dates:[...] }]
+
+    // Σύνολο εργατοημερών
+    const grandTotal = logs.length;
+    const ergCount   = Object.keys(data).length;
+
+    let html = `
+      <div class="site-info">
+        ${site.project_code ? `<div class="site-info-code">${esc(site.project_code)}</div><div class="site-info-sep"></div>` : ''}
+        <div class="site-info-name">${esc(site.name)}</div>
+        ${site.client ? `<div class="site-info-sep"></div><div class="site-info-meta">${esc(site.client)}</div>` : ''}
+        <div class="site-info-sep"></div>
+        <div class="site-info-meta">${fmtDate(dateFrom)} → ${fmtDate(dateTo)}</div>
+      </div>
+      <div class="total-bar">
+        <div class="total-stat">
+          <span class="total-num">${grandTotal}</span>
+          <div class="total-label">Συνολικές Εργατοημέρες</div>
+        </div>
+        <div class="total-stat">
+          <span class="total-num" style="color:var(--orange)">${ergCount}</span>
+          <div class="total-label">Εργολάβοι</div>
+        </div>
+      </div>
+    `;
+
+    // Κάρτα ανά εργολάβο
+    Object.entries(data)
+      .sort((a, b) => {
+        const ta = Object.values(a[1]).reduce((s,v)=>s+v,0);
+        const tb = Object.values(b[1]).reduce((s,v)=>s+v,0);
+        return tb - ta; // φθίνουσα σειρά
+      })
+      .forEach(([ergolabos, dateMap]) => {
+        const total = Object.values(dateMap).reduce((s, v) => s + v, 0);
+
+        html += `<div class="erg-card">
+          <div class="erg-header">
+            <div class="erg-name">${esc(ergolabos)}</div>
+            <div class="erg-total">⚒ ${total} εργατοημέρες</div>
+          </div>
+          <div class="months-row">`;
+
+        months.forEach(m => {
+          const monthTotal = m.dates.reduce((s, d) => s + (dateMap[d] || 0), 0);
+          html += `
+            <div class="month-cell"
+              onclick="exportMonthCSV('${esc(site.name)}','${esc(site.project_code||'')}','${esc(ergolabos)}','${m.key}','${m.label}')"
+              title="Λήψη CSV για ${m.label}">
+              <div class="month-csv-hint">⬇ CSV</div>
+              <div class="month-label">${m.label}</div>
+              <div class="month-num">${monthTotal}</div>
+              <div class="month-unit">εργατοημέρες</div>
+            </div>`;
+        });
+
+        html += `</div></div>`;
+      });
+
+    document.getElementById('results').innerHTML = html;
+
+    // Αποθηκεύουμε τα data για CSV export
+    window._reportData   = data;
+    window._reportMonths = months;
+    window._reportSite   = site;
+  }
+
+  // ── EXPORT MONTH CSV ──
+  window.exportMonthCSV = function(siteName, projectCode, ergolabos, monthKey, monthLabel) {
+    const data   = window._reportData;
+    const months = window._reportMonths;
+    if (!data || !data[ergolabos]) return;
+
+    const month = months.find(m => m.key === monthKey);
+    if (!month) return;
+
+    const dateMap = data[ergolabos];
+    const siteDisplay = projectCode ? `${projectCode} · ${siteName}` : siteName;
+
+    // Χτίζουμε CSV
+    const lines = [];
+    lines.push(`Εργοτάξιο,${siteDisplay}`);
+    lines.push(`Εργολάβος,${ergolabos}`);
+    lines.push(`Μήνας,${monthLabel}`);
+    lines.push(''); // κενή γραμμή
+    lines.push('Ημερομηνία,Εργάτες');
+
+    month.dates.forEach(d => {
+      const count = dateMap[d] || 0;
+      const display = count === 0 ? 'Χ' : count;
+      lines.push(`${fmtDate(d)},${display}`);
+    });
+
+    const monthTotal = month.dates.reduce((s, d) => s + (dateMap[d] || 0), 0);
+    lines.push(''); // κενή γραμμή
+    lines.push(`Σύνολο,${monthTotal}`);
+
+    const csv  = lines.join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = `εργατοημερες-${slugify(ergolabos)}-${monthKey}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    showToast(`✓ CSV ${monthLabel} — ${ergolabos}`);
+  };
+
+  // ── HELPERS ──
+  function getAllDates(from, to) {
+    const dates = [];
+    const cur = new Date(from);
+    const end = new Date(to);
+    while (cur <= end) {
+      dates.push(cur.toISOString().slice(0, 10));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return dates;
+  }
+
+  function getMonths(from, to) {
+    const months = [];
+    const cur  = new Date(from + '-01');
+    const end  = new Date(to.slice(0, 7) + '-01');
+    const MONTH_LABELS = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
+
+    while (cur <= end) {
+      const y  = cur.getFullYear();
+      const m  = cur.getMonth();
+      const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+
+      // Ημερομηνίες αυτού του μήνα που ανήκουν στο διάστημα
+      const firstDay = new Date(Math.max(new Date(from), new Date(y, m, 1)));
+      const lastDay  = new Date(Math.min(new Date(to),   new Date(y, m + 1, 0)));
+      const dates = [];
+      const d = new Date(firstDay);
+      while (d <= lastDay) {
+        dates.push(d.toISOString().slice(0, 10));
+        d.setDate(d.getDate() + 1);
+      }
+
+      months.push({ key, label: `${MONTH_LABELS[m]} ${y}`, dates });
+      cur.setMonth(cur.getMonth() + 1);
+    }
+    return months;
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    const [y, mo, day] = d.split('-');
+    return `${day}/${mo}/${y}`;
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9α-ωά-ώ]/gi, '-').slice(0, 40);
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => { t.className = 'toast'; }, 3500);
+  }
+
+})();
+</script>
+</body>
+</html>
