@@ -436,9 +436,11 @@
   }
 
   function updateStats() {
-    const active  = allUsers.filter(u => u.is_active).length;
-    const noSite  = allUsers.filter(u => u.is_active && u.role !== 'admin' && u.sites.length === 0).length;
-    document.getElementById('statTotal').textContent  = allUsers.length;
+    // PM: μέτρα μόνο site_manager/scanner
+    const relevant = isAdmin ? allUsers : allUsers.filter(u => u.role === 'site_manager' || u.role === 'scanner');
+    const active  = relevant.filter(u => u.is_active).length;
+    const noSite  = relevant.filter(u => u.is_active && u.role !== 'admin' && u.sites.length === 0).length;
+    document.getElementById('statTotal').textContent  = relevant.length;
     document.getElementById('statActive').textContent = active;
     document.getElementById('statNoSite').textContent = noSite;
   }
@@ -482,12 +484,27 @@
           : u.sites.map(s => `<span class="site-chip-sm">${esc(s.project_code)}</span>`).join('');
 
       // PM μπορεί να edit: site_manager/scanner που είναι ελεύθεροι ή στα sites του
-      const canEdit = isAdmin
-        ? !isSelf(u.id)  // admin δεν επεξεργάζεται τον εαυτό του (θα χάσει admin)
-        : (u.role === 'site_manager' || u.role === 'scanner') && (
-            u.sites.length === 0  // ελεύθερος
-            || u.sites.some(s => allSites.find(ms => ms.id === s.id))  // στα sites μου
-          );
+      let canEdit;
+      let isOtherPm = false; // assigned σε site άλλου PM
+      if (isAdmin) {
+        canEdit = !isSelf(u.id);
+      } else {
+        if (u.role !== 'site_manager' && u.role !== 'scanner') {
+          canEdit = false;
+        } else if (u.sites.length === 0) {
+          canEdit = true; // ελεύθερος
+        } else if (u.sites.some(s => allSites.find(ms => ms.id === s.id))) {
+          canEdit = true; // στα sites μου
+        } else {
+          canEdit = false;
+          isOtherPm = true; // σε site άλλου PM
+        }
+      }
+
+      // Label όταν δεν μπορεί να κάνει edit
+      const lockedLabel = isOtherPm
+        ? '<span title="Ανατεθειμένος σε εργοτάξιο άλλου PM" style="color:var(--orange);font-size:0.6rem;font-family:\'IBM Plex Mono\',monospace;">🔒 Απασχολημένος</span>'
+        : '<span style="color:var(--gray4);font-size:0.65rem;font-family:\'IBM Plex Mono\',monospace;">—</span>';
 
       return `
         <tr>
@@ -499,8 +516,8 @@
           <td class="td-actions">
             ${canEdit
               ? `<button class="btn-action" onclick="openEdit('${u.id}')">Επεξ.</button>
-                 ${u.is_active ? `<button class="btn-action danger" onclick="openDeactivate('${u.id}','${esc(u.full_name)}')">Απενεργ.</button>` : ''}`
-              : '<span style="color:var(--gray4);font-size:0.65rem;font-family:\'IBM Plex Mono\',monospace;">—</span>'}
+                 ${isAdmin && u.is_active ? `<button class="btn-action danger" onclick="openDeactivate('${u.id}','${esc(u.full_name)}')">Απενεργ.</button>` : ''}`
+              : lockedLabel}
           </td>
         </tr>`;
     }).join('');
