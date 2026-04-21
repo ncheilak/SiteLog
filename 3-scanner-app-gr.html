@@ -340,84 +340,68 @@
     margin-bottom: 18px;
   }
 
-  /* ── ADHOC MODAL ── */
-  #adhocModal .modal-box {
-    border-top-color: var(--orange);
-    max-width: 420px;
-    max-height: 92vh;
-    overflow-y: auto;
+  /* ── CONFIRM MODAL ── */
+  .confirm-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 600; padding: 20px;
   }
-  .adhoc-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  .adhoc-form-grid .full { grid-column: 1 / -1; }
-  .adhoc-field label {
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    font-weight: 600;
-    color: var(--gray4);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .adhoc-field label em { color: var(--orange); font-style: normal; }
-  .adhoc-field input,
-  .adhoc-field select {
-    width: 100%;
-    background: var(--black);
+  .confirm-overlay.hidden { display: none; }
+  .confirm-box {
+    background: var(--gray);
     border: 1px solid var(--gray3);
+    border-top: 4px solid var(--red);
+    border-radius: 4px;
+    padding: 24px 22px;
+    width: 100%; max-width: 320px;
+  }
+  .confirm-icon { font-size: 2rem; margin-bottom: 10px; }
+  .confirm-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem; letter-spacing: 2px;
+    color: var(--white); margin-bottom: 6px;
+  }
+  .confirm-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--yellow); margin-bottom: 4px;
+  }
+  .confirm-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem; color: var(--gray4);
+    margin-bottom: 18px;
+  }
+  .confirm-step2 {
+    background: rgba(217,59,59,0.08);
+    border: 1px solid rgba(217,59,59,0.25);
     border-radius: 2px;
-    color: var(--white);
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 0.82rem;
-    padding: 8px 10px;
-    outline: none;
+    padding: 10px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem; color: var(--red);
+    margin-bottom: 16px;
+    display: none;
+  }
+  .confirm-step2.visible { display: block; }
+  .confirm-actions { display: flex; gap: 8px; }
+  .confirm-btn-cancel {
+    flex: 1; background: transparent;
+    border: 1px solid var(--gray3); border-radius: 2px;
+    color: var(--white); font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem; letter-spacing: 1.5px;
+    padding: 10px; cursor: pointer;
     transition: border-color 0.15s;
   }
-  .adhoc-field input:focus,
-  .adhoc-field select:focus { border-color: var(--orange); }
-  .adhoc-field select option { background: var(--black); }
-  .adhoc-section-label {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.55rem;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin: 12px 0 8px;
-    padding-bottom: 4px;
-    border-bottom: 1px solid rgba(232,96,10,0.2);
+  .confirm-btn-cancel:hover { border-color: var(--gray5); }
+  .confirm-btn-delete {
+    flex: 1; background: var(--red);
+    border: none; border-radius: 2px;
+    color: #fff; font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem; letter-spacing: 1.5px;
+    padding: 10px; cursor: pointer;
+    transition: opacity 0.15s;
   }
-  .adhoc-hint {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.58rem;
-    color: var(--gray4);
-    margin-bottom: 12px;
-    line-height: 1.5;
-    padding: 8px 10px;
-    background: rgba(232,96,10,0.06);
-    border: 1px solid rgba(232,96,10,0.15);
-    border-radius: 2px;
-  }
-  .adhoc-badge-tag {
-    display: inline-block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.5rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    background: rgba(232,96,10,0.15);
-    color: var(--orange);
-    border: 1px solid rgba(232,96,10,0.3);
-    padding: 1px 5px;
-    border-radius: 2px;
-    margin-left: 4px;
-    vertical-align: middle;
-  }
+  .confirm-btn-delete:hover { opacity: 0.85; }
 
   /* Loading spinner */
   .spinner {
@@ -475,7 +459,6 @@
     <div class="adhoc-hint">
       Εργαζόμενος χωρίς QR badge. Συμπληρώστε <strong>όλα</strong> τα στοιχεία — η εγγραφή παραμένει <strong style="color:var(--orange)">εκκρεμής</strong> μέχρι να εγκριθεί από τον διαχειριστή.
     </div>
-
     <div class="adhoc-section-label">Στοιχεία Ταυτοποίησης</div>
     <div class="adhoc-form-grid">
       <div class="adhoc-field">
@@ -507,12 +490,11 @@
         <input type="text" id="adhocArAdErgasias" placeholder="Αριθμός αδείας εργασίας">
       </div>
     </div>
-
     <div class="adhoc-section-label">Εργασιακά Στοιχεία</div>
     <div class="adhoc-form-grid">
       <div class="adhoc-field">
         <label>Ειδικότητα <em>*</em></label>
-        <input type="text" id="adhocEidikotita" placeholder="π.χ. Χτίστης, Σιδηράς…">
+        <input type="text" id="adhocEidikotita" placeholder="π.χ. Χτίστης…">
       </div>
       <div class="adhoc-field">
         <label>Εργολάβος <em>*</em></label>
@@ -535,7 +517,6 @@
         </select>
       </div>
     </div>
-
     <div style="display:flex;gap:8px;">
       <button class="btn btn-orange" style="flex:1" id="adhocSubmitBtn" onclick="submitAdhocWorker()">⚡ Καταχώρηση &amp; Check-in</button>
       <button class="btn btn-outline" onclick="cancelAdhoc()">Ακύρωση</button>
@@ -626,7 +607,23 @@
 
   <div class="export-bar">
     <button class="btn btn-orange" onclick="exportCSV()" style="flex:1">⬇ Εξαγωγή CSV</button>
-    <button class="btn btn-red btn-outline" id="clearLogBtn" onclick="clearLog()">✕ Καθαρισμός</button>
+  </div>
+</div>
+
+<!-- ── CONFIRM DELETE MODAL ── -->
+<div class="confirm-overlay hidden" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑</div>
+    <div class="confirm-title">Διαγραφή Παρουσίας;</div>
+    <div class="confirm-name" id="confirmName">—</div>
+    <div class="confirm-meta" id="confirmMeta">—</div>
+    <div class="confirm-step2" id="confirmStep2">
+      ⚠ Επιβεβαίωση: Η εγγραφή θα διαγραφεί οριστικά από τη βάση.
+    </div>
+    <div class="confirm-actions">
+      <button class="confirm-btn-cancel" id="confirmCancel">Ακύρωση</button>
+      <button class="confirm-btn-delete" id="confirmOk">Διαγραφή</button>
+    </div>
   </div>
 </div>
 
@@ -656,7 +653,7 @@
   let currentSite  = null; // { id, name, projectCode }
   let sites        = [];
   let pendingWorker = null; // worker waiting for phase selection
-  let _canDelete   = false; // set after auth — admin και site_manager μόνο
+  let _canDelete   = false; // admin, site_manager, scanner
 
   // ── INIT ──
   const today = new Date();
@@ -669,12 +666,9 @@
     const user = Auth.getCurrentUser();
     if (user) document.getElementById('userPill').textContent = user.full_name || user.email;
 
-    // Ορισμός δικαιωμάτων διαγραφής — μόνο admin και site_manager
+    // Δικαίωμα διαγραφής — admin, site_manager, scanner (today-only, RLS enforced στη βάση)
     const role = Auth.getCurrentRole();
-    _canDelete = (role === 'admin' || role === 'site_manager');
-    if (!_canDelete) {
-      document.getElementById('clearLogBtn').style.display = 'none';
-    }
+    _canDelete = (role === 'admin' || role === 'site_manager' || role === 'scanner');
 
     await loadSites();
 
@@ -1071,7 +1065,7 @@
           </div>
         </div>
         <div class="log-time">${e.timeIn}</div>
-        ${_canDelete ? `<button class="log-delete" onclick="deleteEntry(${e.db_id})" title="Διαγραφή εγγραφής">✕</button>` : ''}
+        ${_canDelete ? `<button class="log-delete" onclick="showConfirmModal(${e.db_id})" title="Διαγραφή εγγραφής">✕</button>` : ''}
       </div>
     `).join('');
   }
@@ -1095,178 +1089,58 @@
     showToast(`✓ Εξαγωγή ${todayLog.length} εργαζομένων`);
   }
 
-  // ── CLEAR LOG ──
-  async function clearLog() {
-    if (todayLog.length === 0) return;
-    if (!confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν ΟΛΕΣ οι ${todayLog.length} παρουσίες από τη βάση δεδομένων.\n\nΕίστε σίγουροι;`)) return;
-    if (!confirm('ΕΠΑΛΗΘΕΥΣΗ: Θέλετε σίγουρα να διαγράψετε όλες τις εγγραφές;')) return;
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const { error } = await db.from('attendance_log')
-      .delete()
-      .eq('site_id', currentSite.id)
-      .eq('log_date', todayStr);
-    if (error) { showToast('⚠ Σφάλμα διαγραφής', '#e8600a'); return; }
-    todayLog = [];
-    renderLog();
-    showToast('Ημερολόγιο καθαρίστηκε', '#888');
+  // ── CONFIRM MODAL ──
+  let _pendingDeleteId = null;
+  let _confirmStep     = 1;
+
+  function showConfirmModal(dbId) {
+    const entry = todayLog.find(e => e.db_id === dbId);
+    if (!entry) return;
+    _pendingDeleteId = dbId;
+    _confirmStep = 1;
+
+    const name = `${entry.eponimo || ''} ${entry.onoma || ''}`.trim() || 'Άγνωστος';
+    document.getElementById('confirmName').textContent = name;
+    document.getElementById('confirmMeta').textContent = `Παρουσία: ${entry.timeIn}  ·  ${entry.eidikotita || ''}`;
+    document.getElementById('confirmStep2').classList.remove('visible');
+    document.getElementById('confirmOk').textContent = 'Διαγραφή';
+
+    document.getElementById('confirmModal').classList.remove('hidden');
   }
+
+  function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+    _pendingDeleteId = null;
+    _confirmStep = 1;
+  }
+
+  document.getElementById('confirmCancel').addEventListener('click', closeConfirmModal);
+
+  document.getElementById('confirmOk').addEventListener('click', async () => {
+    if (_confirmStep === 1) {
+      // Βήμα 1 → Βήμα 2: δείξε επιβεβαίωση
+      _confirmStep = 2;
+      document.getElementById('confirmStep2').classList.add('visible');
+      document.getElementById('confirmOk').textContent = 'Ναι, Διέγραψε';
+      return;
+    }
+    // Βήμα 2: πραγματική διαγραφή
+    const dbId = _pendingDeleteId;
+    closeConfirmModal();
+    await deleteEntry(dbId);
+  });
 
   // ── DELETE SINGLE ENTRY ──
   async function deleteEntry(dbId) {
-    const entry = todayLog.find(e => e.db_id === dbId);
-    if (!entry) return;
-    const name = `${entry.eponimo || ''} ${entry.onoma || ''}`.trim() || 'Άγνωστος';
-    if (!confirm(`Διαγραφή εγγραφής:\n\n${name}\nΏρα εισόδου: ${entry.timeIn}\n\nΕίστε σίγουροι;`)) return;
-    if (!confirm('ΕΠΑΛΗΘΕΥΣΗ: Θέλετε σίγουρα να διαγράψετε αυτή την εγγραφή;')) return;
     const { error } = await db.from('attendance_log').delete().eq('id', dbId);
-    if (error) { showToast('⚠ Σφάλμα διαγραφής', '#e8600a'); console.error(error); return; }
-    todayLog = todayLog.filter(e => e.db_id !== dbId);
-    renderLog();
-    showToast(`✓ Η εγγραφή διαγράφηκε`, '#23a045');
-  }
-
-  // ── ADHOC WORKER ──
-  function showAdhocModal() {
-    if (!currentSite) { showToast('⚠ Επιλέξτε εργοτάξιο πρώτα', '#e8600a'); return; }
-    ['adhocEponimo','adhocOnoma','adhocPatronimo','adhocAma','adhocAmka',
-     'adhocAfm','adhocArAdErgasias','adhocEidikotita','adhocErgolabos','adhocAfmErg'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    document.getElementById('adhocFasi').value = '';
-    document.getElementById('adhocSubmitBtn').disabled = false;
-    document.getElementById('adhocModal').classList.remove('hidden');
-    document.getElementById('adhocEponimo').focus();
-  }
-
-  function cancelAdhoc() {
-    document.getElementById('adhocModal').classList.add('hidden');
-  }
-
-  async function getNextAdhocId() {
-    const { data } = await db
-      .from('adhoc_workers')
-      .select('id')
-      .like('id', 'AH-%')
-      .order('id', { ascending: false })
-      .limit(1);
-    if (!data || data.length === 0) return 'AH-1001';
-    const lastNum = parseInt(data[0].id.replace('AH-', ''), 10);
-    return 'AH-' + (isNaN(lastNum) ? 1001 : lastNum + 1);
-  }
-
-  async function submitAdhocWorker() {
-    const eponimo       = document.getElementById('adhocEponimo').value.trim();
-    const onoma         = document.getElementById('adhocOnoma').value.trim();
-    const patronimo     = document.getElementById('adhocPatronimo').value.trim();
-    const ama           = document.getElementById('adhocAma').value.trim();
-    const amka          = document.getElementById('adhocAmka').value.trim();
-    const afm           = document.getElementById('adhocAfm').value.trim();
-    const arAdErgasias  = document.getElementById('adhocArAdErgasias').value.trim();
-    const eidikotita    = document.getElementById('adhocEidikotita').value.trim();
-    const ergolabos     = document.getElementById('adhocErgolabos').value.trim();
-    const afmErg        = document.getElementById('adhocAfmErg').value.trim();
-    const fasi          = document.getElementById('adhocFasi').value;
-
-    // Validation — όλα τα πεδία υποχρεωτικά
-    const missing = [];
-    if (!eponimo)      missing.push('Επώνυμο');
-    if (!onoma)        missing.push('Όνομα');
-    if (!patronimo)    missing.push('Πατρώνυμο');
-    if (!ama)          missing.push('Α.Μ.Α.');
-    if (!amka)         missing.push('Α.Μ.Κ.Α.');
-    if (!afm)          missing.push('Α.Φ.Μ.');
-    if (!arAdErgasias) missing.push('Αρ. Αδείας Εργασίας');
-    if (!eidikotita)   missing.push('Ειδικότητα');
-    if (!ergolabos)    missing.push('Εργολάβος');
-    if (!afmErg)       missing.push('ΑΦΜ Εργολάβου');
-    if (!fasi)         missing.push('Φάση Κατασκευής');
-
-    if (missing.length > 0) {
-      showToast('⚠ Λείπουν: ' + missing.join(', '), '#e8600a');
+    if (error) {
+      showToast('⚠ Σφάλμα διαγραφής', '#e8600a');
+      console.error(error);
       return;
     }
-
-    const btn = document.getElementById('adhocSubmitBtn');
-    btn.disabled = true;
-    btn.textContent = '⏳ Αποθήκευση…';
-
-    try {
-      const adhocId = await getNextAdhocId();
-      const user = Auth.getCurrentUser();
-      const now = new Date();
-      const timeIn  = now.toTimeString().slice(0, 5);
-      const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-
-      // 1. INSERT adhoc_workers
-      const { error: adhocErr } = await db
-        .from('adhoc_workers')
-        .insert({
-          id:             adhocId,
-          eponimo,
-          onoma,
-          patronimo,
-          ama,
-          amka,
-          afm,
-          ar_ad_ergasias: arAdErgasias,
-          eidikotita,
-          default_phase:  fasi,
-          is_multi_phase: false,
-          ergolabos,
-          afm_ergolabou:  afmErg,
-          site_id:        currentSite.id,
-          created_by:     user.id,
-          status:         'pending'
-        });
-
-      if (adhocErr) {
-        console.error(adhocErr);
-        showToast('⚠ Σφάλμα καταχώρησης: ' + (adhocErr.message || ''), '#e8600a');
-        return;
-      }
-
-      // 2. INSERT attendance_log
-      const { data: logData, error: logErr } = await db
-        .from('attendance_log')
-        .insert({
-          adhoc_worker_id: adhocId,
-          site_id:         currentSite.id,
-          fasi,
-          time_in:         timeIn,
-          log_date:        dateStr
-        })
-        .select('id')
-        .single();
-
-      if (logErr) {
-        console.error(logErr);
-        showToast('⚠ Καταχωρήθηκε αλλά αποτυχία check-in', '#e8600a');
-      }
-
-      // 3. Ενημέρωση local log
-      todayLog.push({
-        id: adhocId, eponimo, onoma, eidikotita, ergolabos,
-        fasi, timeIn, date: dateStr,
-        db_id: logData?.id || null,
-        ama, amka, isAdhoc: true, adhocStatus: 'pending',
-      });
-      renderLog();
-
-      document.getElementById('adhocModal').classList.add('hidden');
-      showFlash('success', '⚡',
-        `${eponimo} ${onoma}`,
-        `ΕΚΤΑΚΤΟΣ · ${eidikotita} | ${fasi}`,
-        'Παρουσία: ' + timeIn
-      );
-      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-
-    } catch (err) {
-      console.error(err);
-      showToast('⚠ Απρόσμενο σφάλμα', '#e8600a');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '⚡ Καταχώρηση & Check-in';
-    }
+    todayLog = todayLog.filter(e => e.db_id !== dbId);
+    renderLog();
+    showToast('✓ Η εγγραφή διαγράφηκε', '#23a045');
   }
 
   // ── START ──
