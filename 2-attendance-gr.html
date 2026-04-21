@@ -116,8 +116,8 @@
   <select id="filterSite" onchange="loadAttendance()">
     <option value="">— Όλα τα Εργοτάξια —</option>
   </select>
-  <input type="date" lang="el-GR" id="filterDateFrom" onchange="loadAttendance()" title="Από">
-  <input type="date" lang="el-GR" id="filterDateTo"   onchange="loadAttendance()" title="Έως">
+  <input type="text" id="filterDateFrom" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" maxlength="10" oninput="autoSlash(this);loadAttendance()" title="Από">
+  <input type="text" id="filterDateTo"   placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" maxlength="10" oninput="autoSlash(this);loadAttendance()" title="Έως">
   <button class="btn btn-outline btn-sm" onclick="setToday()">Σήμερα</button>
   <div class="spacer"></div>
   <div class="count" id="attCount"></div>
@@ -161,6 +161,25 @@
   let attRecords = [];
   let sites = [];
 
+  // ── DATE HELPERS ──
+  function localTodayDisplay() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+  function parseDisplayDate(str) {
+    if (!str || str.length !== 10) return null;
+    const [dd, mm, yyyy] = str.split('/');
+    if (!dd || !mm || !yyyy) return null;
+    const iso = `${yyyy}-${mm}-${dd}`;
+    return isNaN(Date.parse(iso)) ? null : iso;
+  }
+  function autoSlash(input) {
+    let v = input.value.replace(/[^\d]/g, '');
+    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    if (v.length >= 6) v = v.slice(0,5) + '/' + v.slice(5);
+    input.value = v.slice(0, 10);
+  }
+
   // ── INIT ──
   async function init() {
     const ok = await Auth.requireLogin();
@@ -192,8 +211,8 @@
   async function loadAttendance() {
     setStatus('loading', 'Φόρτωση…');
     const siteId   = document.getElementById('filterSite').value;
-    const dateFrom = document.getElementById('filterDateFrom').value;
-    const dateTo   = document.getElementById('filterDateTo').value;
+    const dateFrom = parseDisplayDate(document.getElementById('filterDateFrom').value);
+    const dateTo   = parseDisplayDate(document.getElementById('filterDateTo').value);
 
     let query = db
       .from('attendance_log')
@@ -265,8 +284,7 @@
   }
 
   function setToday() {
-    const now = new Date();
-    const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const d = localTodayDisplay();
     document.getElementById('filterDateFrom').value = d;
     document.getElementById('filterDateTo').value   = d;
     loadAttendance();
@@ -292,8 +310,8 @@
     a.href = URL.createObjectURL(blob);
     const siteEl = document.getElementById('filterSite');
     const siteName = siteEl.options[siteEl.selectedIndex]?.text || 'all';
-    const from = document.getElementById('filterDateFrom').value || 'all';
-    const to   = document.getElementById('filterDateTo').value   || 'all';
+    const from = document.getElementById('filterDateFrom').value.replace(/\//g,'-') || 'all';
+    const to   = document.getElementById('filterDateTo').value.replace(/\//g,'-')   || 'all';
     a.download = `sitelog-${siteName}-${from === to ? from : from+'_to_'+to}.csv`;
     a.click(); URL.revokeObjectURL(a.href);
     showToast(`✓ CSV εξαγωγή ${attRecords.length} εγγραφών`);

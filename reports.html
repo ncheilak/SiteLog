@@ -141,12 +141,12 @@
         </select>
       </div>
       <div class="filter-group">
-        <label>Από</label>
-        <input type="date" lang="el-GR" id="filterFrom">
+        <label>Από (ΗΗ/ΜΜ/ΕΕΕΕ)</label>
+        <input type="text" id="filterFrom" placeholder="π.χ. 01/04/2026" maxlength="10" oninput="autoSlash(this)">
       </div>
       <div class="filter-group">
-        <label>Έως</label>
-        <input type="date" lang="el-GR" id="filterTo">
+        <label>Έως (ΗΗ/ΜΜ/ΕΕΕΕ)</label>
+        <input type="text" id="filterTo" placeholder="π.χ. 22/04/2026" maxlength="10" oninput="autoSlash(this)">
       </div>
       <button class="btn-run" id="runBtn" onclick="runReport()">▶ Εκτέλεση</button>
     </div>
@@ -205,41 +205,71 @@
     });
   }
 
-  // ── SET DEFAULT DATES ──
-  // Τοπική ημερομηνία (όχι UTC)
+  // ── DATE HELPERS ──
+  // Τοπική ημερομηνία σε YYYY-MM-DD (για queries)
   function localToday() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
+  // Τοπική ημερομηνία σε DD/MM/YYYY (για εμφάνιση στα text inputs)
+  function localTodayDisplay() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+  // DD/MM/YYYY → YYYY-MM-DD (για queries)
+  function parseDisplayDate(str) {
+    if (!str || str.length !== 10) return null;
+    const [dd, mm, yyyy] = str.split('/');
+    if (!dd || !mm || !yyyy) return null;
+    const iso = `${yyyy}-${mm}-${dd}`;
+    return isNaN(Date.parse(iso)) ? null : iso;
+  }
+  // YYYY-MM-DD → DD/MM/YYYY (για εμφάνιση)
+  function toDisplayDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  // Auto-εισαγωγή '/' καθώς πληκτρολογεί ο χρήστης
+  window.autoSlash = function(input) {
+    let v = input.value.replace(/[^\d]/g, '');
+    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    if (v.length >= 6) v = v.slice(0,5) + '/' + v.slice(5);
+    input.value = v.slice(0, 10);
+  };
 
-  // "Από" = start_date του site (φορτώνεται μετά την επιλογή site)
-  // "Έως" = σήμερα (τοπική ώρα)
-  document.getElementById('filterTo').value = localToday();
+  // Default: Έως = σήμερα (τοπική ώρα, DD/MM/YYYY)
+  document.getElementById('filterTo').value = localTodayDisplay();
 
   siteSelect.addEventListener('change', async () => {
     const siteId = siteSelect.value;
     if (!siteId) return;
     const { data } = await sb.from('sites').select('start_date').eq('id', siteId).single();
     if (data?.start_date) {
-      document.getElementById('filterFrom').value = data.start_date;
+      document.getElementById('filterFrom').value = toDisplayDate(data.start_date);
     }
   });
 
   // Auto-load για SM
   if (role === 'site_manager' && sites.length > 0) {
     const { data } = await sb.from('sites').select('start_date').eq('id', sites[0].id).single();
-    if (data?.start_date) document.getElementById('filterFrom').value = data.start_date;
+    if (data?.start_date) document.getElementById('filterFrom').value = toDisplayDate(data.start_date);
   }
 
   // ── RUN REPORT ──
   window.runReport = async function() {
-    const siteId   = siteSelect.value;
-    const dateFrom = document.getElementById('filterFrom').value;
-    const dateTo   = document.getElementById('filterTo').value;
+    const siteId      = siteSelect.value;
+    const dateFromRaw = document.getElementById('filterFrom').value.trim();
+    const dateToRaw   = document.getElementById('filterTo').value.trim();
 
     if (!siteId) { showToast('Επιλέξτε εργοτάξιο', true); return; }
-    if (!dateFrom || !dateTo) { showToast('Ορίστε ημερομηνίες', true); return; }
-    if (dateFrom > dateTo) { showToast('Η "Από" πρέπει να είναι πριν την "Έως"', true); return; }
+
+    const dateFrom = parseDisplayDate(dateFromRaw);
+    const dateTo   = parseDisplayDate(dateToRaw);
+
+    if (!dateFrom) { showToast('⚠ Λανθασμένη μορφή "Από" — χρησιμοποιήστε ΗΗ/ΜΜ/ΕΕΕΕ', true); return; }
+    if (!dateTo)   { showToast('⚠ Λανθασμένη μορφή "Έως" — χρησιμοποιήστε ΗΗ/ΜΜ/ΕΕΕΕ', true); return; }
+    if (dateFrom > dateTo) { showToast('⚠ Η "Από" πρέπει να είναι πριν την "Έως"', true); return; }
 
     const btn = document.getElementById('runBtn');
     btn.disabled = true;
