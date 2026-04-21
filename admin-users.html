@@ -338,7 +338,7 @@
       </div>
 
       <!-- is_active toggle -->
-      <div class="mfield" style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--gray3);">
+      <div class="mfield" id="editStatusField" style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--gray3);">
         <div>
           <label style="margin-bottom:0;">Ενεργός Λογαριασμός</label>
           <div style="font-size:0.75rem;color:var(--gray5);margin-top:3px;">Ανενεργοί δεν μπορούν να συνδεθούν.</div>
@@ -416,13 +416,13 @@
 
   // ── LOAD USERS ──
   async function loadUsers() {
-    const { data, error } = await sb
-      .from('profiles')
-      .select(`
-        id, email, full_name, role, is_active,
-        user_site_assignments(site_id, sites(id, project_code, name))
-      `)
-      .order('full_name');
+   const { data, error } = await sb
+  .from('profiles')
+  .select(`
+    id, email, full_name, role, is_active,
+    user_site_assignments!user_id(site_id, sites(id, project_code, name))
+  `)
+  .order('full_name');
 
     if (error) { showToast('Σφάλμα: ' + error.message, true); return; }
 
@@ -453,6 +453,11 @@
 
     if (filterRole === 'inactive') filtered = filtered.filter(u => !u.is_active);
     else if (filterRole !== 'all') filtered = filtered.filter(u => u.role === filterRole && u.is_active);
+
+    // PM βλέπει μόνο site_manager και scanner (όχι admin/project_manager)
+    if (!isAdmin) {
+      filtered = filtered.filter(u => u.role === 'site_manager' || u.role === 'scanner');
+    }
 
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
@@ -669,6 +674,9 @@
     document.getElementById('editIsActive').checked = user.is_active;
     updateToggleUI(document.getElementById('editIsActive'));
 
+    // Status toggle: μόνο admin μπορεί να αλλάξει is_active
+    document.getElementById('editStatusField').style.display = isAdmin ? 'flex' : 'none';
+
     // Role field: admin δεν αλλάζει ρόλο άλλου admin
     const roleField = document.getElementById('editRoleField');
     const roleSel   = document.getElementById('editRole');
@@ -741,16 +749,18 @@
 
     setModalLoading(document.getElementById('editSubmitBtn'), true);
 
-    // 1. Update profile
-    const { error: profErr } = await sb
-      .from('profiles')
-      .update({ role: newRole, is_active: newIsActive })
-      .eq('id', userId);
+    // 1. Update profile (μόνο admin — PM δεν αλλάζει role/is_active)
+    if (isAdmin) {
+      const { error: profErr } = await sb
+        .from('profiles')
+        .update({ role: newRole, is_active: newIsActive })
+        .eq('id', userId);
 
-    if (profErr) {
-      showModalMsg(msgEl, 'Σφάλμα: ' + profErr.message, 'error');
-      setModalLoading(document.getElementById('editSubmitBtn'), false);
-      return;
+      if (profErr) {
+        showModalMsg(msgEl, 'Σφάλμα: ' + profErr.message, 'error');
+        setModalLoading(document.getElementById('editSubmitBtn'), false);
+        return;
+      }
     }
 
     // 2. Update assignments: διαγραφή παλαιών + εισαγωγή νέων
@@ -861,6 +871,15 @@
 
   // Toggle initial state
   updateToggleUI(document.getElementById('editIsActive'));
+
+  // PM: κρύψε tabs που δεν αφορούν (ADMIN, PROJ.MGR)
+  if (!isAdmin) {
+    document.querySelectorAll('.filter-toggle button').forEach(btn => {
+      if (btn.dataset.filter === 'admin' || btn.dataset.filter === 'project_manager') {
+        btn.style.display = 'none';
+      }
+    });
+  }
 
 })();
 </script>
