@@ -142,11 +142,11 @@
       </div>
       <div class="filter-group">
         <label>Από</label>
-        <input type="date" id="filterFrom">
+        <input type="date" lang="el-GR" id="filterFrom">
       </div>
       <div class="filter-group">
         <label>Έως</label>
-        <input type="date" id="filterTo">
+        <input type="date" lang="el-GR" id="filterTo">
       </div>
       <button class="btn-run" id="runBtn" onclick="runReport()">▶ Εκτέλεση</button>
     </div>
@@ -206,10 +206,15 @@
   }
 
   // ── SET DEFAULT DATES ──
+  // Τοπική ημερομηνία (όχι UTC)
+  function localToday() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
   // "Από" = start_date του site (φορτώνεται μετά την επιλογή site)
-  // "Έως" = σήμερα
-  const todayStr = new Date().toISOString().slice(0, 10);
-  document.getElementById('filterTo').value = todayStr;
+  // "Έως" = σήμερα (τοπική ώρα)
+  document.getElementById('filterTo').value = localToday();
 
   siteSelect.addEventListener('change', async () => {
     const siteId = siteSelect.value;
@@ -421,26 +426,36 @@
 
   function getMonths(from, to) {
     const months = [];
-    const cur  = new Date(from + '-01');
-    const end  = new Date(to.slice(0, 7) + '-01');
+    // Παίρνουμε μόνο το YYYY-MM κομμάτι για να φτιάξουμε την 1η του μήνα
+    const cur  = new Date(from.slice(0, 7) + '-01');
+    const end  = new Date(to.slice(0, 7)   + '-01');
     const MONTH_LABELS = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιουν','Ιουλ','Αυγ','Σεπ','Οκτ','Νοε','Δεκ'];
 
     while (cur <= end) {
-      const y  = cur.getFullYear();
-      const m  = cur.getMonth();
+      const y   = cur.getFullYear();
+      const m   = cur.getMonth();
       const key = `${y}-${String(m + 1).padStart(2, '0')}`;
 
       // Ημερομηνίες αυτού του μήνα που ανήκουν στο διάστημα
-      const firstDay = new Date(Math.max(new Date(from), new Date(y, m, 1)));
-      const lastDay  = new Date(Math.min(new Date(to),   new Date(y, m + 1, 0)));
+      const monthFirst = new Date(y, m, 1);
+      const monthLast  = new Date(y, m + 1, 0); // τελευταία μέρα μήνα
+      const rangeFirst = new Date(from);
+      const rangeLast  = new Date(to);
+
+      const startD = new Date(Math.max(monthFirst, rangeFirst));
+      const endD   = new Date(Math.min(monthLast,  rangeLast));
+
       const dates = [];
-      const d = new Date(firstDay);
-      while (d <= lastDay) {
-        dates.push(d.toISOString().slice(0, 10));
+      const d = new Date(startD);
+      while (d <= endD) {
+        dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
         d.setDate(d.getDate() + 1);
       }
 
-      months.push({ key, label: `${MONTH_LABELS[m]} ${y}`, dates });
+      if (dates.length > 0) {
+        months.push({ key, label: `${MONTH_LABELS[m]} ${y}`, dates });
+      }
+
       cur.setMonth(cur.getMonth() + 1);
     }
     return months;
