@@ -481,10 +481,13 @@
           ? '<span class="site-chip-none">—</span>'
           : u.sites.map(s => `<span class="site-chip-sm">${esc(s.project_code)}</span>`).join('');
 
-      // project_manager: δεν μπορεί να επεξεργαστεί admin ή άλλον project_manager
+      // PM μπορεί να edit: site_manager/scanner που είναι ελεύθεροι ή στα sites του
       const canEdit = isAdmin
         ? !isSelf(u.id)  // admin δεν επεξεργάζεται τον εαυτό του (θα χάσει admin)
-        : (u.role === 'site_manager' || u.role === 'scanner') && u.sites.some(s => allSites.find(ms => ms.id === s.id));
+        : (u.role === 'site_manager' || u.role === 'scanner') && (
+            u.sites.length === 0  // ελεύθερος
+            || u.sites.some(s => allSites.find(ms => ms.id === s.id))  // στα sites μου
+          );
 
       return `
         <tr>
@@ -496,7 +499,7 @@
           <td class="td-actions">
             ${canEdit
               ? `<button class="btn-action" onclick="openEdit('${u.id}')">Επεξ.</button>
-                 ${isAdmin && u.is_active ? `<button class="btn-action danger" onclick="openDeactivate('${u.id}','${esc(u.full_name)}')">Απενεργ.</button>` : ''}`
+                 ${u.is_active ? `<button class="btn-action danger" onclick="openDeactivate('${u.id}','${esc(u.full_name)}')">Απενεργ.</button>` : ''}`
               : '<span style="color:var(--gray4);font-size:0.65rem;font-family:\'IBM Plex Mono\',monospace;">—</span>'}
           </td>
         </tr>`;
@@ -674,16 +677,31 @@
     document.getElementById('editIsActive').checked = user.is_active;
     updateToggleUI(document.getElementById('editIsActive'));
 
-    // Status toggle: μόνο admin μπορεί να αλλάξει is_active
-    document.getElementById('editStatusField').style.display = isAdmin ? 'flex' : 'none';
+    // Status toggle: admin + PM μπορούν να αλλάξουν is_active (ο PM μόνο για site_manager/scanner)
+    document.getElementById('editStatusField').style.display = 'flex';
 
-    // Role field: admin δεν αλλάζει ρόλο άλλου admin
+    // Role field
     const roleField = document.getElementById('editRoleField');
     const roleSel   = document.getElementById('editRole');
-    if (user.role === 'admin' || !isAdmin) {
+    if (user.role === 'admin') {
+      // Admins: δεν αλλάζει ο ρόλος τους από κανέναν
       roleField.style.display = 'none';
-    } else {
+    } else if (isAdmin) {
+      // Admin βλέπει όλες τις επιλογές
       roleField.style.display = 'block';
+      roleSel.innerHTML = `
+        <option value="project_manager">Project Manager</option>
+        <option value="site_manager">Site Manager</option>
+        <option value="scanner">Scanner</option>
+      `;
+      roleSel.value = user.role;
+    } else {
+      // PM: μόνο site_manager ↔ scanner
+      roleField.style.display = 'block';
+      roleSel.innerHTML = `
+        <option value="site_manager">Site Manager</option>
+        <option value="scanner">Scanner</option>
+      `;
       roleSel.value = user.role;
     }
 
@@ -691,6 +709,19 @@
     const currentSiteIds = user.sites.map(s => s.id);
     renderSitesCheckboxes('editSitesList', currentSiteIds);
     updateEditCardHint(user.role);
+
+    // PM info: αν ο user είναι σε sites άλλου PM, βλέπει μόνο τα δικά του checkbox sites.
+    // Δείχνουμε ενημέρωση για σαφήνεια.
+    const otherPmSites = !isAdmin
+      ? user.sites.filter(s => !allSites.find(ms => ms.id === s.id))
+      : [];
+    const editHintEl = document.getElementById('editCardHint');
+    if (otherPmSites.length > 0) {
+      editHintEl.innerHTML = `⚠ Ανατεθειμένος σε εργοτάξιο άλλου PM (${otherPmSites.map(s => esc(s.project_code)).join(', ')}). Μπορείς να προσθέσεις στα δικά σου sites, όχι να αφαιρέσεις από αλλού.`;
+      editHintEl.style.color = 'var(--orange)';
+    } else {
+      editHintEl.style.color = '';
+    }
 
     // Αν είναι admin, κρύψε sites (admin βλέπει όλα)
     document.getElementById('editSitesField').style.display =
@@ -710,7 +741,9 @@
       site_manager:    '→ Ακριβώς 1 εργοτάξιο',
       scanner:         '→ Ακριβώς 1 εργοτάξιο',
     };
-    document.getElementById('editCardHint').textContent = hints[role] || '';
+    const el = document.getElementById('editCardHint');
+    el.textContent = hints[role] || '';
+    el.style.color = '';
   }
 
   // Toggle visual update
@@ -736,9 +769,14 @@
     const msgEl   = document.getElementById('editMsg');
     msgEl.className = 'modal-msg';
 
-    const newRole     = isAdmin && user.role !== 'admin'
-      ? document.getElementById('editRole').value
-      : user.role;
+    // Υπολογισμός νέου ρόλου
+    let newRole = user.role;
+    if (user.role !== 'admin') {
+      // Τόσο admin όσο και PM μπορούν να αλλάξουν ρόλο (με τους δικούς τους περιορισμούς)
+      if (document.getElementById('editRoleField').style.display !== 'none') {
+        newRole = document.getElementById('editRole').value;
+      }
+    }
     const newIsActive = document.getElementById('editIsActive').checked;
     const newSiteIds  = getCheckedSites('editSitesList');
 
@@ -749,8 +787,8 @@
 
     setModalLoading(document.getElementById('editSubmitBtn'), true);
 
-    // 1. Update profile (μόνο admin — PM δεν αλλάζει role/is_active)
-    if (isAdmin) {
+    // 1. Update profile — RLS θα αποτρέψει μη επιτρεπτές αλλαγές
+    if (user.role !== 'admin') {
       const { error: profErr } = await sb
         .from('profiles')
         .update({ role: newRole, is_active: newIsActive })
@@ -765,8 +803,19 @@
 
     // 2. Update assignments: διαγραφή παλαιών + εισαγωγή νέων
     if (user.role !== 'admin') {
-      await sb.from('user_site_assignments').delete().eq('user_id', userId);
+      if (isAdmin) {
+        // Admin: σβήνει όλα τα assignments του user
+        await sb.from('user_site_assignments').delete().eq('user_id', userId);
+      } else {
+        // PM: σβήνει ΜΟΝΟ τα assignments στα δικά του sites (RLS το εξασφαλίζει επίσης)
+        const mySiteIds = allSites.map(s => s.id);
+        await sb.from('user_site_assignments')
+          .delete()
+          .eq('user_id', userId)
+          .in('site_id', mySiteIds);
+      }
 
+      // Εισαγωγή νέων (μόνο από τα sites που βλέπει ο user)
       if (newSiteIds.length > 0) {
         const inserts = newSiteIds.map(sid => ({
           user_id:     userId,
