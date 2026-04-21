@@ -303,6 +303,12 @@
   const fpStart  = flatpickr('#fStartDate', fpConfig);
   const fpEnd    = flatpickr('#fEndDate',   fpConfig);
 
+  // Μετατρέπει 'YYYY-MM-DD' σε τοπικό Date (αποφεύγει UTC offset)
+  function isoToLocalDate(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
   function getISO(fp) {
     return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
   }
@@ -335,8 +341,8 @@
     fRegion.value         = data.region        || '';
     fStartDate.value      = '';
     fEndDate.value        = '';
-    if (data.start_date) fpStart.setDate(data.start_date, false);
-    if (data.end_date)   fpEnd.setDate(data.end_date,     false);
+    if (data.start_date) fpStart.setDate(isoToLocalDate(data.start_date), false);
+    if (data.end_date)   fpEnd.setDate(isoToLocalDate(data.end_date),     false);
     fIsActive.checked     = data.is_active;
   }
 

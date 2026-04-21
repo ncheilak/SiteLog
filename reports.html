@@ -234,6 +234,12 @@
   // Default: Έως = σήμερα (τοπική ώρα)
   fpTo.setDate(new Date(), false);
 
+  // Μετατρέπει 'YYYY-MM-DD' σε τοπικό Date (αποφεύγει UTC offset)
+  function isoToLocalDate(iso) {
+    if (!iso) return null;
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
   // Helper: παίρνει ISO YYYY-MM-DD από flatpickr instance
   function getISO(fp) {
     return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
@@ -249,13 +255,13 @@
     const siteId = siteSelect.value;
     if (!siteId) return;
     const { data } = await sb.from('sites').select('start_date').eq('id', siteId).single();
-    if (data?.start_date) fpFrom.setDate(data.start_date, false);
+    if (data?.start_date) fpFrom.setDate(isoToLocalDate(data.start_date), false);
   });
 
   // Auto-load για SM
   if (role === 'site_manager' && sites.length > 0) {
     const { data } = await sb.from('sites').select('start_date').eq('id', sites[0].id).single();
-    if (data?.start_date) fpFrom.setDate(data.start_date, false);
+    if (data?.start_date) fpFrom.setDate(isoToLocalDate(data.start_date), false);
   }
 
   // ── RUN REPORT ──
