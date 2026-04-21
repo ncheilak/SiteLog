@@ -358,7 +358,7 @@
 
     const { data, error } = await sb
       .from('workers_company')
-      .select('*, profiles!company_worker_id(id, email, role)')
+      .select('*, profiles(id, email, role)')
       .eq('id', workerId)
       .single();
 

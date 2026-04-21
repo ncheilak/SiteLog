@@ -200,6 +200,7 @@
       .select(`
         id,
         worker_id,
+        adhoc_worker_id,
         site_id,
         time_in,
         log_date,
@@ -211,6 +212,13 @@
           eidikotita, ergolabos,
           ama, amka, afm,
           ar_ad_ergasias, afm_ergolabou
+        ),
+        adhoc_workers (
+          eponimo, onoma, patronimo,
+          eidikotita, ergolabos,
+          ama, amka, afm,
+          ar_ad_ergasias, afm_ergolabou,
+          status
         )
       `)
       .order('log_date', { ascending: false })
@@ -243,7 +251,9 @@
     }
 
     document.getElementById('attBody').innerHTML = attRecords.map((r, i) => {
-      const w = r.workers || {};
+      const isAdhoc = !!r.adhoc_worker_id;
+      const w = isAdhoc ? (r.adhoc_workers || {}) : (r.workers || {});
+      const adhocTag = isAdhoc ? '<span style="display:inline-block;font-family:\'IBM Plex Mono\',monospace;font-size:0.45rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;background:rgba(232,96,10,0.15);color:#e8600a;border:1px solid rgba(232,96,10,0.3);padding:1px 4px;border-radius:2px;margin-left:4px;vertical-align:middle">ΕΚΤ</span>' : '';
       return `<tr>
         <td class="td-mono">${i + 1}</td>
         <td><span class="badge badge-orange">${r.sites?.name || '—'}</span></td>
@@ -253,7 +263,7 @@
         <td class="td-mono">${w.amka || '—'}</td>
         <td class="td-mono">${w.afm || '—'}</td>
         <td class="td-mono">${w.ar_ad_ergasias || '—'}</td>
-        <td style="font-weight:600">${w.eponimo || '—'}</td>
+        <td style="font-weight:600">${w.eponimo || '—'}${adhocTag}</td>
         <td>${w.onoma || '—'}</td>
         <td class="td-mono">${w.patronimo || '—'}</td>
         <td><span class="badge badge-yellow">${w.eidikotita || '—'}</span></td>
@@ -275,14 +285,16 @@
   function exportCSV() {
     if (!attRecords.length) { showToast('Δεν υπάρχουν εγγραφές', '#e8600a'); return; }
 
-    const headers = ['#','Εργοτάξιο','Ώρα Προσέλευσης','Ημερομηνία','Α.Μ.Α.','Α.Μ.Κ.Α.','Α.Φ.Μ.','Αρ. Αδ. Εργασίας','Επώνυμο','Όνομα','Πατρώνυμο','Ειδικότητα','Φάση Κατασκευής','Εργολάβος','ΑΦΜ Εργολάβου'];
+    const headers = ['#','Εργοτάξιο','Ώρα Προσέλευσης','Ημερομηνία','Α.Μ.Α.','Α.Μ.Κ.Α.','Α.Φ.Μ.','Αρ. Αδ. Εργασίας','Επώνυμο','Όνομα','Πατρώνυμο','Ειδικότητα','Φάση Κατασκευής','Εργολάβος','ΑΦΜ Εργολάβου','Τύπος'];
     const rows = attRecords.map((r, i) => {
-      const w = r.workers || {};
+      const isAdhoc = !!r.adhoc_worker_id;
+      const w = isAdhoc ? (r.adhoc_workers || {}) : (r.workers || {});
       return [
         i+1, r.sites?.name||'', r.time_in||'', r.log_date||'',
         w.ama||'', w.amka||'', w.afm||'', w.ar_ad_ergasias||'',
         w.eponimo||'', w.onoma||'', w.patronimo||'',
-        w.eidikotita||'', r.fasi||'', w.ergolabos||'', w.afm_ergolabou||''
+        w.eidikotita||'', r.fasi||'', w.ergolabos||'', w.afm_ergolabou||'',
+        isAdhoc ? 'Έκτακτος' : 'Κανονικός'
       ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
     });
 
