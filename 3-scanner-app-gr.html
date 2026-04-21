@@ -343,8 +343,8 @@
   /* ── ADHOC MODAL ── */
   #adhocModal .modal-box {
     border-top-color: var(--orange);
-    max-width: 400px;
-    max-height: 90vh;
+    max-width: 420px;
+    max-height: 92vh;
     overflow-y: auto;
   }
   .adhoc-form-grid {
@@ -381,11 +381,22 @@
   .adhoc-field input:focus,
   .adhoc-field select:focus { border-color: var(--orange); }
   .adhoc-field select option { background: var(--black); }
+  .adhoc-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin: 12px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(232,96,10,0.2);
+  }
   .adhoc-hint {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.58rem;
     color: var(--gray4);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     line-height: 1.5;
     padding: 8px 10px;
     background: rgba(232,96,10,0.06);
@@ -460,11 +471,12 @@
 <!-- ── ADHOC WORKER MODAL ── -->
 <div class="modal-overlay hidden" id="adhocModal">
   <div class="modal-box">
-    <div class="modal-label" style="margin-bottom:6px;color:var(--orange)">⚠ Έκτακτος Εργαζόμενος</div>
+    <div class="modal-label" style="margin-bottom:6px;color:var(--orange)">⚠ Έκτακτος Εργαζόμενος — Νέα Καταχώρηση</div>
     <div class="adhoc-hint">
-      ⓘ Γρήγορη καταχώρηση εργαζομένου χωρίς QR badge.<br>
-      Η εγγραφή θα εμφανίζεται ως <strong style="color:var(--orange)">εκκρεμής</strong> μέχρι να εγκριθεί από τον διαχειριστή.
+      Εργαζόμενος χωρίς QR badge. Συμπληρώστε <strong>όλα</strong> τα στοιχεία — η εγγραφή παραμένει <strong style="color:var(--orange)">εκκρεμής</strong> μέχρι να εγκριθεί από τον διαχειριστή.
     </div>
+
+    <div class="adhoc-section-label">Στοιχεία Ταυτοποίησης</div>
     <div class="adhoc-form-grid">
       <div class="adhoc-field">
         <label>Επώνυμο <em>*</em></label>
@@ -475,9 +487,29 @@
         <input type="text" id="adhocOnoma" placeholder="π.χ. Γιώργος">
       </div>
       <div class="adhoc-field">
-        <label>Πατρώνυμο</label>
-        <input type="text" id="adhocPatronimo" placeholder="(προαιρετικό)">
+        <label>Πατρώνυμο <em>*</em></label>
+        <input type="text" id="adhocPatronimo" placeholder="π.χ. Δημητρίου">
       </div>
+      <div class="adhoc-field">
+        <label>Α.Μ.Α. <em>*</em></label>
+        <input type="text" id="adhocAma" placeholder="π.χ. 123456789">
+      </div>
+      <div class="adhoc-field">
+        <label>Α.Μ.Κ.Α. <em>*</em></label>
+        <input type="text" id="adhocAmka" placeholder="π.χ. 01010101234">
+      </div>
+      <div class="adhoc-field">
+        <label>Α.Φ.Μ. <em>*</em></label>
+        <input type="text" id="adhocAfm" placeholder="π.χ. 123456789">
+      </div>
+      <div class="adhoc-field full">
+        <label>Αρ. Αδείας Εργασίας <em>*</em></label>
+        <input type="text" id="adhocArAdErgasias" placeholder="Αριθμός αδείας εργασίας">
+      </div>
+    </div>
+
+    <div class="adhoc-section-label">Εργασιακά Στοιχεία</div>
+    <div class="adhoc-form-grid">
       <div class="adhoc-field">
         <label>Ειδικότητα <em>*</em></label>
         <input type="text" id="adhocEidikotita" placeholder="π.χ. Χτίστης, Σιδηράς…">
@@ -486,9 +518,9 @@
         <label>Εργολάβος <em>*</em></label>
         <input type="text" id="adhocErgolabos" placeholder="Επωνυμία εργολάβου">
       </div>
-      <div class="adhoc-field">
-        <label>ΑΦΜ Εργολάβου</label>
-        <input type="text" id="adhocAfmErg" placeholder="(προαιρετικό)">
+      <div class="adhoc-field full">
+        <label>ΑΦΜ Εργολάβου <em>*</em></label>
+        <input type="text" id="adhocAfmErg" placeholder="π.χ. 800123456">
       </div>
       <div class="adhoc-field full">
         <label>Φάση Κατασκευής <em>*</em></label>
@@ -503,6 +535,7 @@
         </select>
       </div>
     </div>
+
     <div style="display:flex;gap:8px;">
       <button class="btn btn-orange" style="flex:1" id="adhocSubmitBtn" onclick="submitAdhocWorker()">⚡ Καταχώρηση &amp; Check-in</button>
       <button class="btn btn-outline" onclick="cancelAdhoc()">Ακύρωση</button>
@@ -550,7 +583,7 @@
   <div class="cam-controls">
     <button class="btn btn-yellow" id="camBtn" onclick="toggleCamera()">▶ Έναρξη Κάμερας</button>
     <button class="btn btn-outline" onclick="toggleManual()">✏ Χειροκίνητη Εισαγωγή</button>
-    <button class="btn btn-outline" onclick="showAdhocModal()" style="border-color:var(--orange);color:var(--orange)" title="Έκτακτος εργαζόμενος — χωρίς QR badge">+ Έκτακτος</button>
+    <button class="btn btn-outline" onclick="showAdhocModal()" style="border-color:var(--orange);color:var(--orange)" title="Καταχώρηση έκτακτου εργαζομένου">+ Έκτακτος</button>
   </div>
 
   <div class="manual-panel" id="manualPanel">
@@ -740,18 +773,18 @@
       const isAdhoc = !!r.adhoc_worker_id;
       const w = isAdhoc ? (r.adhoc_workers || {}) : (r.workers || {});
       return {
-        id:         r.worker_id || r.adhoc_worker_id,
-        eponimo:    w.eponimo     || '',
-        onoma:      w.onoma       || '',
-        eidikotita: w.eidikotita  || '',
-        ergolabos:  w.ergolabos   || '',
-        fasi:       r.fasi        || '',
-        timeIn:     r.time_in,
-        date:       r.log_date,
-        db_id:      r.id,
-        ama:        w.ama         || '',
-        amka:       w.amka        || '',
-        isAdhoc:    isAdhoc,
+        id:          r.worker_id || r.adhoc_worker_id,
+        eponimo:     w.eponimo    || '',
+        onoma:       w.onoma      || '',
+        eidikotita:  w.eidikotita || '',
+        ergolabos:   w.ergolabos  || '',
+        fasi:        r.fasi       || '',
+        timeIn:      r.time_in,
+        date:        r.log_date,
+        db_id:       r.id,
+        ama:         w.ama        || '',
+        amka:        w.amka       || '',
+        isAdhoc:     isAdhoc,
         adhocStatus: isAdhoc ? (w.status || 'pending') : null,
       };
     });
@@ -1095,8 +1128,8 @@
   // ── ADHOC WORKER ──
   function showAdhocModal() {
     if (!currentSite) { showToast('⚠ Επιλέξτε εργοτάξιο πρώτα', '#e8600a'); return; }
-    // Clear form
-    ['adhocEponimo','adhocOnoma','adhocPatronimo','adhocEidikotita','adhocErgolabos','adhocAfmErg'].forEach(id => {
+    ['adhocEponimo','adhocOnoma','adhocPatronimo','adhocAma','adhocAmka',
+     'adhocAfm','adhocArAdErgasias','adhocEidikotita','adhocErgolabos','adhocAfmErg'].forEach(id => {
       document.getElementById(id).value = '';
     });
     document.getElementById('adhocFasi').value = '';
@@ -1122,17 +1155,34 @@
   }
 
   async function submitAdhocWorker() {
-    const eponimo    = document.getElementById('adhocEponimo').value.trim();
-    const onoma      = document.getElementById('adhocOnoma').value.trim();
-    const patronimo  = document.getElementById('adhocPatronimo').value.trim();
-    const eidikotita = document.getElementById('adhocEidikotita').value.trim();
-    const ergolabos  = document.getElementById('adhocErgolabos').value.trim();
-    const afmErg     = document.getElementById('adhocAfmErg').value.trim();
-    const fasi       = document.getElementById('adhocFasi').value;
+    const eponimo       = document.getElementById('adhocEponimo').value.trim();
+    const onoma         = document.getElementById('adhocOnoma').value.trim();
+    const patronimo     = document.getElementById('adhocPatronimo').value.trim();
+    const ama           = document.getElementById('adhocAma').value.trim();
+    const amka          = document.getElementById('adhocAmka').value.trim();
+    const afm           = document.getElementById('adhocAfm').value.trim();
+    const arAdErgasias  = document.getElementById('adhocArAdErgasias').value.trim();
+    const eidikotita    = document.getElementById('adhocEidikotita').value.trim();
+    const ergolabos     = document.getElementById('adhocErgolabos').value.trim();
+    const afmErg        = document.getElementById('adhocAfmErg').value.trim();
+    const fasi          = document.getElementById('adhocFasi').value;
 
-    // Validation
-    if (!eponimo || !onoma || !eidikotita || !ergolabos || !fasi) {
-      showToast('⚠ Συμπληρώστε τα υποχρεωτικά πεδία (*)', '#e8600a');
+    // Validation — όλα τα πεδία υποχρεωτικά
+    const missing = [];
+    if (!eponimo)      missing.push('Επώνυμο');
+    if (!onoma)        missing.push('Όνομα');
+    if (!patronimo)    missing.push('Πατρώνυμο');
+    if (!ama)          missing.push('Α.Μ.Α.');
+    if (!amka)         missing.push('Α.Μ.Κ.Α.');
+    if (!afm)          missing.push('Α.Φ.Μ.');
+    if (!arAdErgasias) missing.push('Αρ. Αδείας Εργασίας');
+    if (!eidikotita)   missing.push('Ειδικότητα');
+    if (!ergolabos)    missing.push('Εργολάβος');
+    if (!afmErg)       missing.push('ΑΦΜ Εργολάβου');
+    if (!fasi)         missing.push('Φάση Κατασκευής');
+
+    if (missing.length > 0) {
+      showToast('⚠ Λείπουν: ' + missing.join(', '), '#e8600a');
       return;
     }
 
@@ -1144,44 +1194,44 @@
       const adhocId = await getNextAdhocId();
       const user = Auth.getCurrentUser();
       const now = new Date();
-      const timeIn = now.toTimeString().slice(0, 5);
+      const timeIn  = now.toTimeString().slice(0, 5);
       const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-      // 1. INSERT into adhoc_workers
-      const { data: adhocData, error: adhocErr } = await db
+      // 1. INSERT adhoc_workers
+      const { error: adhocErr } = await db
         .from('adhoc_workers')
         .insert({
           id:             adhocId,
-          eponimo:        eponimo,
-          onoma:          onoma,
-          patronimo:      patronimo || null,
-          eidikotita:     eidikotita,
+          eponimo,
+          onoma,
+          patronimo,
+          ama,
+          amka,
+          afm,
+          ar_ad_ergasias: arAdErgasias,
+          eidikotita,
           default_phase:  fasi,
           is_multi_phase: false,
-          ergolabos:      ergolabos,
-          afm_ergolabou:  afmErg || null,
+          ergolabos,
+          afm_ergolabou:  afmErg,
           site_id:        currentSite.id,
           created_by:     user.id,
           status:         'pending'
-        })
-        .select('id')
-        .single();
+        });
 
       if (adhocErr) {
-        console.error('Adhoc insert error:', adhocErr);
-        showToast('⚠ Σφάλμα δημιουργίας έκτακτου: ' + (adhocErr.message || ''), '#e8600a');
-        btn.disabled = false;
-        btn.textContent = '⚡ Καταχώρηση & Check-in';
+        console.error(adhocErr);
+        showToast('⚠ Σφάλμα καταχώρησης: ' + (adhocErr.message || ''), '#e8600a');
         return;
       }
 
-      // 2. INSERT into attendance_log with adhoc_worker_id
+      // 2. INSERT attendance_log
       const { data: logData, error: logErr } = await db
         .from('attendance_log')
         .insert({
           adhoc_worker_id: adhocId,
           site_id:         currentSite.id,
-          fasi:            fasi,
+          fasi,
           time_in:         timeIn,
           log_date:        dateStr
         })
@@ -1189,39 +1239,29 @@
         .single();
 
       if (logErr) {
-        console.error('Attendance insert error:', logErr);
-        showToast('⚠ Έκτακτος δημιουργήθηκε αλλά αποτυχία check-in', '#e8600a');
+        console.error(logErr);
+        showToast('⚠ Καταχωρήθηκε αλλά αποτυχία check-in', '#e8600a');
       }
 
-      // 3. Add to local log
-      const entry = {
-        id:          adhocId,
-        eponimo:     eponimo,
-        onoma:       onoma,
-        eidikotita:  eidikotita,
-        ergolabos:   ergolabos,
-        fasi:        fasi,
-        timeIn:      timeIn,
-        date:        dateStr,
-        db_id:       logData?.id || null,
-        isAdhoc:     true,
-        adhocStatus: 'pending',
-      };
-      todayLog.push(entry);
+      // 3. Ενημέρωση local log
+      todayLog.push({
+        id: adhocId, eponimo, onoma, eidikotita, ergolabos,
+        fasi, timeIn, date: dateStr,
+        db_id: logData?.id || null,
+        ama, amka, isAdhoc: true, adhocStatus: 'pending',
+      });
       renderLog();
 
-      // 4. Close modal & show success
       document.getElementById('adhocModal').classList.add('hidden');
       showFlash('success', '⚡',
         `${eponimo} ${onoma}`,
         `ΕΚΤΑΚΤΟΣ · ${eidikotita} | ${fasi}`,
         'Παρουσία: ' + timeIn
       );
-      showToast(`✓ Έκτακτος ${eponimo} ${onoma} — check-in ολοκληρώθηκε`, '#23a045');
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 
     } catch (err) {
-      console.error('Adhoc error:', err);
+      console.error(err);
       showToast('⚠ Απρόσμενο σφάλμα', '#e8600a');
     } finally {
       btn.disabled = false;
