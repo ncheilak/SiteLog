@@ -220,16 +220,6 @@
   <div class="form-section">
     <div class="section-header"><div class="section-title">Στοιχεία ΣΕΠΕ / ΕΦΚΑ</div></div>
     <div class="section-body">
-      <div class="field-row">
-        <div class="field">
-          <label>Επωνυμία Εταιρείας</label>
-          <input type="text" id="fCompanyName" placeholder="π.χ. ΤΕΧΝΙΚΗ ΑΕ" maxlength="150">
-        </div>
-        <div class="field">
-          <label>ΑΦΜ Εταιρείας</label>
-          <input type="text" id="fCompanyAfm" placeholder="π.χ. 123456789" maxlength="20">
-        </div>
-      </div>
       <div class="field-row single">
         <div class="field">
           <label>Αριθμός Οικοδομικής Άδειας</label>
@@ -345,8 +335,6 @@
   const fStartDate   = document.getElementById('fStartDate');
   const fEndDate     = document.getElementById('fEndDate');
   const fIsActive    = document.getElementById('fIsActive');
-  const fCompanyName   = document.getElementById('fCompanyName');
-  const fCompanyAfm    = document.getElementById('fCompanyAfm');
   const fPermitNumber  = document.getElementById('fPermitNumber');
   const fAddressStreet = document.getElementById('fAddressStreet');
   const fAddressNumber = document.getElementById('fAddressNumber');
@@ -402,8 +390,6 @@
     if (data.start_date) fpStart.setDate(isoToLocalDate(data.start_date), false);
     if (data.end_date)   fpEnd.setDate(isoToLocalDate(data.end_date),     false);
     fIsActive.checked     = data.is_active;
-    fCompanyName.value    = data.company_name    || '';
-    fCompanyAfm.value     = data.company_afm     || '';
     fPermitNumber.value   = data.permit_number   || '';
     fAddressStreet.value  = data.address_street  || '';
     fAddressNumber.value  = data.address_number  || '';
@@ -436,8 +422,6 @@
       start_date: getISO(fpStart) || null,
       end_date:   getISO(fpEnd)   || null,
       is_active:  fIsActive.checked,
-      company_name:   fCompanyName.value.trim()   || null,
-      company_afm:    fCompanyAfm.value.trim()    || null,
       permit_number:  fPermitNumber.value.trim()  || null,
       address_street: fAddressStreet.value.trim() || null,
       address_number: fAddressNumber.value.trim() || null,
