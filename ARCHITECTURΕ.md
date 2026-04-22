@@ -1,7 +1,7 @@
 # SiteLog v3.0 — Architecture Document (Updated)
 
-> **Κατάσταση:** Φάση 1 ✅ · Φάση 2 ✅ · Φάση 3 ✅ · Φάση 4 ✅ · Φάση 5 ✅ · Φάση 6 ✅
-> **Τελευταία ενημέρωση:** Μετά την ολοκλήρωση Φάσης 6 + Flatpickr date fix
+> **Κατάσταση:** Φάση 1 ✅ · Φάση 2 ✅ · Φάση 3 ✅ · Φάση 4 ✅ · Φάση 5 ✅ · Φάση 6 ✅ · Φάση 7 ✅
+> **Τελευταία ενημέρωση:** Μετά την ολοκλήρωση Φάσης 7 (ΣΕΠΕ Παρουσιολόγιο + Company Settings)
 
 ---
 
@@ -15,6 +15,7 @@
 - Πολλαπλά εργοτάξια με αναθέσεις χρηστών
 - Έκτακτους εργαζόμενους με approval workflow
 - Row-Level Security στη βάση
+- ΣΕΠΕ Ημερήσιο Παρουσιολόγιο (printable/PDF)
 - Hosting: **GitHub Pages** (`https://ncheilak.github.io/SiteLog/`)
 - Backend: **Supabase** (project: `ikmwxsfaopjkgajebyyf`, region: Europe/Frankfurt)
 
@@ -89,6 +90,13 @@ ATTENDANCE                │       │         │         │         │
   Delete (today, own)     │   ✓   │    ✗    │    ✓    │    ✗    │
   Delete (historical)     │   ✓   │    ✗    │    ✗    │    ✗    │
   Export CSV              │   ✓   │    ✓    │    ✓    │    ✓    │
+──────────────────────────┼───────┼─────────┼─────────┼─────────┤
+ΣΕΠΕ ΠΑΡΟΥΣΙΟΛΟΓΙΟ        │       │         │         │         │
+  Προβολή / Εκτύπωση      │   ✓   │    ✓    │    ✓    │    ✗    │
+──────────────────────────┼───────┼─────────┼─────────┼─────────┤
+SETTINGS (εταιρεία)       │       │         │         │         │
+  Read                    │   ✓   │    ✓    │    ✓    │    ✓    │
+  Write                   │   ✓   │    ✗    │    ✗    │    ✗    │
 ──────────────────────────┴───────┴─────────┴─────────┴─────────┘
 
 *  PM βλέπει read-only ΟΛΑ τα sites (για να ξέρει πού είναι assigned ο καθένας)
@@ -118,17 +126,42 @@ workers               ← Εργαζόμενοι εργολάβων
 adhoc_workers         ← Έκτακτοι εργαζόμενοι
 user_site_assignments ← Αναθέσεις χρηστών σε εργοτάξια
 attendance_log        ← Παρουσίες
+settings              ← Ρυθμίσεις συστήματος (key-value)
 ```
 
-### Μελλοντικά πεδία στον πίνακα `sites` (για φινίρισμα)
-Θα προστεθούν για το ΣΕΠΕ παρουσιολόγιο — δεν επηρεάζουν τη λειτουργία:
+### Πίνακας `sites` — Πλήρη πεδία
 ```sql
-permit_number         ← Αριθμός οικοδομικής αδείας
-address_street        ← Οδός
-address_number        ← Αριθμός
-address_city          ← Πόλη
-efka_branch           ← Υποκατάστημα ΕΦΚΑ
-efka_agm              ← Α.Γ.Μ. έργου στον ΕΦΚΑ
+id               serial PRIMARY KEY
+project_code     text UNIQUE NOT NULL
+name             text NOT NULL
+client           text
+address          text          ← legacy ενιαίο πεδίο
+region           text
+start_date       date
+end_date         date
+is_active        boolean DEFAULT true
+created_by       uuid REFERENCES profiles
+-- ΣΕΠΕ πεδία (Φάση 7):
+permit_number    text          ← Αριθμός οικοδομικής άδειας
+address_street   text          ← Οδός
+address_number   text          ← Αριθμός
+address_city     text          ← Πόλη / Δήμος
+efka_branch      text          ← Υποκατάστημα ΕΦΚΑ
+efka_agm         text          ← Α.Γ.Μ. έργου στον ΕΦΚΑ
+```
+
+### Πίνακας `settings` — Key-value ρυθμίσεις
+```sql
+key    text PRIMARY KEY
+value  text
+
+-- Καταχωρημένα keys:
+company_name     ← Επωνυμία εταιρείας
+company_afm      ← ΑΦΜ εταιρείας
+company_address  ← Διεύθυνση εταιρείας
+company_phone    ← Τηλέφωνο
+company_email    ← Email επικοινωνίας
+company_website  ← Ιστοσελίδα
 ```
 
 ### Helper Functions (SECURITY DEFINER)
@@ -136,11 +169,11 @@ efka_agm              ← Α.Γ.Μ. έργου στον ΕΦΚΑ
 is_admin()                        → boolean
 is_project_manager()              → boolean
 get_my_role()                     → text
-get_my_sites()                    → SETOF int  ← rewritten: UNION ALL αντί CASE
+get_my_sites()                    → SETOF int  ← UNION ALL αντί CASE
 get_my_site_ids()                 → SETOF int
-user_in_my_sites(uuid)            → boolean    ← NEW: ο user είναι assigned σε site μου;
-user_is_unassigned(uuid)          → boolean    ← NEW: ο user δεν έχει κανένα assignment;
-enforce_one_site_manager_per_site → trigger fn ← NEW: max 1 SM per site
+user_in_my_sites(uuid)            → boolean
+user_is_unassigned(uuid)          → boolean
+enforce_one_site_manager_per_site → trigger fn
 ```
 
 ### Trigger
@@ -188,6 +221,10 @@ trg_enforce_one_site_manager
 - `adhoc_insert` — admin, SM, scanner + site scope
 - `adhoc_delete_admin` — admin μόνο
 - `adhoc_update_admin` — admin μόνο
+
+**settings:**
+- `settings_select_all` — όλοι οι authenticated users (χρειάζεται για ΣΕΠΕ)
+- `settings_admin_write` — admin μόνο
 
 ### PostgREST FK Hints (σημαντικό!)
 ```javascript
@@ -262,22 +299,22 @@ SiteLog/
 │
 ├── login.html                     ✅ Entry point
 ├── set-password.html              ✅ Invite + password reset landing
-├── index.html                     ✅ Role-aware dashboard
+├── index.html                     ✅ Role-aware dashboard (κάρτες A1–A5)
 │
 ├── admin-sites.html               ✅ Λίστα εργοταξίων (admin only)
-├── admin-site-edit.html           ✅ Create/edit εργοταξίου
+├── admin-site-edit.html           ✅ Create/edit εργοταξίου + ΣΕΠΕ πεδία
 ├── admin-company-workers.html     ✅ Λίστα εταιρικών υπαλλήλων
 ├── admin-company-worker-edit.html ✅ Create/edit υπαλλήλου
 ├── admin-users.html               ✅ Users + invite + assignments (admin + PM)
+├── admin-adhoc-queue.html         ✅ Έγκριση/απόρριψη έκτακτων εργαζομένων
+├── admin-settings.html            ✅ Στοιχεία εταιρείας (Φάση 7)
 │
-├── 0-worker-compiler-gr.html      ✅ Καταχώρηση εργαζομένων (Φάση 3)
-├── 1-qr-generator-gr.html         ✅ QR badges (Φάση 3)
-├── 2-attendance-gr.html           ✅ Παρουσιολόγιο (Φάση 4 — adhoc + Flatpickr)
-├── 3-scanner-app-gr.html          ✅ Σαρωτής QR (Φάση 5 — delete modal, adhoc)
-├── reports.html                   ✅ Αναφορές εργατοημερών (Φάση 6)
-│
-├── admin-adhoc-queue.html         ✅ Φάση 4
-├── admin-site-edit.html           ✅ Flatpickr date fix (Φάση 6)
+├── 0-worker-compiler-gr.html      ✅ Καταχώρηση εργαζομένων
+├── 1-qr-generator-gr.html         ✅ QR badges
+├── 2-attendance-gr.html           ✅ Παρουσιολόγιο + κουμπί ΣΕΠΕ (Φάση 7)
+├── 3-scanner-app-gr.html          ✅ Σαρωτής QR
+├── reports.html                   ✅ Αναφορές εργατοημερών
+├── sepe-report.html               ✅ ΣΕΠΕ Ημερήσιο Παρουσιολόγιο (Φάση 7)
 │
 └── supabase/
     └── functions/
@@ -291,6 +328,7 @@ SiteLog/
 1-qr-generator     → Δημιουργία & εκτύπωση QR badges
 3-scanner-app      → Live check-in με σάρωση QR
 2-attendance       → Προβολή & εξαγωγή παρουσιολογίου
+sepe-report        → ΣΕΠΕ Ημερήσιο Παρουσιολόγιο (εκτύπωση / PDF)
 ```
 
 ### Πρόσβαση ανά εργαλείο
@@ -299,22 +337,25 @@ SiteLog/
 1-qr-generator     → requireRole(['admin', 'site_manager'])
 3-scanner-app      → requireLogin() (admin, SM, scanner)
 2-attendance       → requireLogin() (όλοι οι ρόλοι)
+reports            → requireRole(['admin', 'project_manager', 'site_manager'])
+sepe-report        → requireRole(['admin', 'project_manager', 'site_manager'])
 admin-users        → requireRole(['admin', 'project_manager'])
+admin-settings     → requireRole(['admin'])
 ```
 
 ### shared/auth.js — Public API
 ```javascript
-window.sb                           // Supabase client (window global)
-Auth.initAuth()                     // cache profile + assignments
-Auth.requireLogin()                 // redirect αν δεν είναι logged in
-Auth.requireRole(['admin', ...])    // redirect αν λάθος role
-Auth.getCurrentUser()               // { id, email, full_name }
-Auth.getCurrentRole()               // 'admin'|'project_manager'|...
-Auth.getRoleLabel()                 // 'Διαχειριστής'|...
-Auth.getAssignedSites()             // [{ id, name, project_code }]
-Auth.isAdmin()                      // boolean
+window.sb                                // Supabase client (window global)
+Auth.initAuth()                          // cache profile + assignments
+Auth.requireLogin()                      // redirect αν δεν είναι logged in
+Auth.requireRole(['admin', ...])         // redirect αν λάθος role
+Auth.getCurrentUser()                    // { id, email, full_name }
+Auth.getCurrentRole()                    // 'admin'|'project_manager'|...
+Auth.getRoleLabel()                      // 'Διαχειριστής'|...
+Auth.getAssignedSites()                  // [{ id, name, project_code }]
+Auth.isAdmin()                           // boolean
 Auth.canDeleteAttendance(siteId, logDate) // boolean
-Auth.signOut()                      // clear + redirect login
+Auth.signOut()                           // clear + redirect login
 ```
 
 ---
@@ -433,29 +474,57 @@ Auth.signOut()                      // clear + redirect login
 │   Flatpickr datepicker: DD/MM/YYYY παντού                    │
 │   isoToLocalDate(): αποφυγή UTC offset bug                   │
 │   Νέα κάρτα "📊 Εργατοημέρες" στο index.html                │
+├─────────────────────────────────────────────────────────────┤
+│ ΦΑΣΗ 7 — ΣΕΠΕ Παρουσιολόγιο + Company Settings    ✅ DONE  │
+│                                                              │
+│   DB:                                                        │
+│     ALTER TABLE sites ADD COLUMNS:                           │
+│       permit_number, address_street, address_number,         │
+│       address_city, efka_branch, efka_agm                    │
+│     CREATE TABLE settings (key, value) + RLS                 │
+│       Keys: company_name, company_afm, company_address,      │
+│             company_phone, company_email, company_website     │
+│                                                              │
+│   admin-site-edit.html:                                      │
+│     Νέο section "Στοιχεία ΣΕΠΕ / ΕΦΚΑ"                      │
+│     Πεδία: permit_number, address_street/number/city,        │
+│            efka_branch, efka_agm                             │
+│                                                              │
+│   admin-settings.html (νέο):                                 │
+│     Στοιχεία εταιρείας: Επωνυμία, ΑΦΜ, Διεύθυνση,          │
+│     Τηλέφωνο, Email, Ιστοσελίδα                              │
+│     Upsert στη settings table · Admin-only                   │
+│     Κάρτα A5 στο index.html                                  │
+│                                                              │
+│   sepe-report.html (νέο):                                    │
+│     Φίλτρα: 1 εργοτάξιο + 1 ημερομηνία                      │
+│     Φορτώνει παράλληλα: settings + site + attendance         │
+│     Header κειμένου ακριβώς όπως ΒΗΔΑΠ έντυπο               │
+│     Στήλες: Α/Α, Επώνυμο/Όνομα/Πατρώνυμο, ΑΜΑ, ΑΜΚΑ,      │
+│       ΑΦΜ, Αρ.Αδ.Εργασίας, Ειδικότητα, Φάση,               │
+│       Εργολάβος(ΑΦΜ), Ώρα Έναρξης,                          │
+│       [κενά]: Ώρα Λήξης, Μικτό Ημερομίσθιο,                │
+│       Ημ/νία Πρόσληψης, Ημέρα Αναπαύσεως,                   │
+│       Υπογραφή Εργαζομένου                                   │
+│     Min 15 γραμμές (κενές για χειρόγραφο)                    │
+│     Print: A4 landscape · @media print · χωρίς UI chrome     │
+│     Access: admin, project_manager, site_manager             │
+│                                                              │
+│   2-attendance-gr.html:                                      │
+│     Fix ημερομηνίας: YYYY-MM-DD → DD/MM/YYYY                 │
+│     (table + CSV export)                                     │
+│     Κουμπί "📋 ΣΕΠΕ" → sepe-report.html                     │
+│     (περνά site + date ως URL params)                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 11. Φινίρισμα (μετά την ολοκλήρωση όλων των φάσεων)
+## 11. Φινίρισμα (εκκρεμή)
 
 **Κοινό CSS (`shared/theme.css`)**
 Εξαγωγή κοινών styles σε ένα αρχείο.
 Απαιτεί πλήρη εικόνα όλων των σελίδων.
-
-**ΣΕΠΕ Ημερήσιο Παρουσιολόγιο**
-Printable HTML report από το `2-attendance-gr.html`:
-- Φίλτρο: 1 ημέρα + 1 εργοτάξιο
-- Στήλες: Επώνυμο/Όνομα/Πατρώνυμο, ΑΜΑ, ΑΜΚΑ, ΑΦΜ,
-  Αρ.Αδ.Εργασίας, Ειδικότητα, Φάση, Εργολάβος+ΑΦΜ,
-  Ώρα Έναρξης, Ώρα Λήξης (κενό — χειρόγραφο)
-- Κενές στήλες: Υπογραφή Εργαζομένου, Παρατηρήσεις
-- Μόνο workers (όχι workers_company = μηχανικοί)
-- Απαιτεί τα νέα πεδία στο sites table + επωνυμία εταιρείας
-
-**Νέα πεδία στον πίνακα `sites`**
-permit_number, address, efka_branch, efka_agm (βλ. §4).
 
 **Rename αρχείων**
 ```
@@ -491,6 +560,7 @@ Candidate για αφαίρεση. "Companies" παραμένει.
 | Scanner δεν μπορούσε να διαγράψει καθόλου | RLS attendance_delete δεν περιλάμβανε scanner | Προστέθηκε `scanner` στο `get_my_role() IN (...)` |
 | Date inputs σε MM/DD/YYYY (browser locale) | Native `<input type="date">` χρησιμοποιεί OS locale | Αντικατάσταση με Flatpickr + `locale:'gr'` |
 | Flatpickr έδειχνε λάθος ημερομηνία (+2 μήνες) | `setDate(isoString)` ερμηνεύεται ως UTC → offset +3h | `isoToLocalDate()`: `new Date(y, m-1, d)` για τοπική ώρα |
+| Ημερομηνία παρουσιολογίου σε YYYY-MM-DD | `log_date` έρχεται από Supabase ως ISO | `fmtDate()` helper: `new Date(y,m-1,d)` → DD/MM/YYYY |
 
 ---
 
@@ -510,8 +580,11 @@ Candidate για αφαίρεση. "Companies" παραμένει.
 - **PM two-tier management**: admin = system-level, PM = project-level
 - **Τριπλή κατηγοριοποίηση**: ελεύθερος / δικός μου / απασχολημένος (UI + RLS)
 - **DB trigger** για 1-SM-per-site — reliability πέρα από UI validation
-- **Flatpickr** αντί για native `<input type="date">` — DD/MM/YYYY παντού, ανεξάρτητα από browser/OS locale
+- **Flatpickr** αντί για native `<input type="date">` — DD/MM/YYYY παντού
 - **isoToLocalDate()** — `new Date(y, m-1, d)` αντί για ISO string parsing, αποφυγή UTC offset
+- **settings table (key-value)** — στοιχεία εταιρείας ανεξάρτητα από εργοτάξια, εύκολη επέκταση
+- **Promise.all()** στο sepe-report — παράλληλη φόρτωση settings + site + attendance
+- **@media print A4 landscape** — εκτύπωση/PDF απευθείας από browser, χωρίς server
 
 ---
 
@@ -521,4 +594,3 @@ Candidate για αφαίρεση. "Companies" παραμένει.
 - Notifications για αναθέσεις / adhoc pending
 - **Mobile PWA για scanner** — εικονίδιο στην αρχική οθόνη, full screen, χωρίς browser chrome (manifest.json + service worker)
 - Bulk CSV import για workers_company
-- ΣΕΠΕ Ημερήσιο Παρουσιολόγιο (printable HTML report)

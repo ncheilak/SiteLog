@@ -126,20 +126,23 @@
     height: 20pt;
   }
   .sepe-table td.td-left { text-align: left; }
-  .sepe-table .col-aa     { width: 3%; }
-  .sepe-table .col-name   { width: 14%; }
-  .sepe-table .col-ama    { width: 8%; }
-  .sepe-table .col-amka   { width: 9%; }
+  .sepe-table .col-aa     { width: 2%; }
+  .sepe-table .col-eponimo{ width: 7%; }
+  .sepe-table .col-onoma  { width: 6%; }
+  .sepe-table .col-patron { width: 6%; }
+  .sepe-table .col-ama    { width: 7%; }
+  .sepe-table .col-amka   { width: 8%; }
   .sepe-table .col-afm    { width: 7%; }
-  .sepe-table .col-arad   { width: 7%; }
-  .sepe-table .col-eid    { width: 8%; }
-  .sepe-table .col-fasi   { width: 7%; }
-  .sepe-table .col-erg    { width: 10%; }
-  .sepe-table .col-time   { width: 5%; }
-  .sepe-table .col-misth  { width: 5%; }
-  .sepe-table .col-prosl  { width: 6%; }
+  .sepe-table .col-arad   { width: 6%; }
+  .sepe-table .col-eid    { width: 7%; }
+  .sepe-table .col-fasi   { width: 6%; }
+  .sepe-table .col-erg    { width: 8%; }
+  .sepe-table .col-afgerg { width: 7%; }
+  .sepe-table .col-time   { width: 4%; }
+  .sepe-table .col-misth  { width: 4%; }
+  .sepe-table .col-prosl  { width: 5%; }
   .sepe-table .col-repos  { width: 5%; }
-  .sepe-table .col-sign   { width: 6%; }
+  .sepe-table .col-sign   { width: 5%; }
 
   /* ── PRINT STYLES ── */
   @media print {
@@ -337,14 +340,17 @@
           return `
             <tr>
               <td>${i + 1}</td>
-              <td class="td-left">${[w.eponimo, w.onoma, w.patronimo].filter(Boolean).join(' ')}</td>
+              <td class="td-left">${w.eponimo || ''}</td>
+              <td class="td-left">${w.onoma || ''}</td>
+              <td class="td-left">${w.patronimo || ''}</td>
               <td>${w.ama || ''}</td>
               <td>${w.amka || ''}</td>
               <td>${w.afm || ''}</td>
               <td>${w.ar_ad_ergasias || ''}</td>
               <td class="td-left">${w.eidikotita || ''}</td>
               <td class="td-left">${r.fasi || ''}</td>
-              <td class="td-left">${[w.ergolabos, w.afm_ergolabou ? `(${w.afm_ergolabou})` : ''].filter(Boolean).join(' ')}</td>
+              <td class="td-left">${w.ergolabos || ''}</td>
+              <td>${w.afm_ergolabou || ''}</td>
               <td>${r.time_in ? r.time_in.slice(0,5) : ''}</td>
               <td></td>
               <td></td>
@@ -353,7 +359,7 @@
               <td></td>
             </tr>`;
         }).join('')
-      : `<tr><td colspan="15" style="text-align:center;padding:12pt;color:#888;font-style:italic">
+      : `<tr><td colspan="18" style="text-align:center;padding:12pt;color:#888;font-style:italic">
            Δεν βρέθηκαν παρουσίες για την επιλεγμένη ημερομηνία.
          </td></tr>`;
 
@@ -365,6 +371,7 @@
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td>
         <td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td>
       </tr>`).join('');
 
     document.getElementById('previewSheet').innerHTML = `
@@ -395,14 +402,17 @@
           <thead>
             <tr>
               <th class="col-aa">Α/Α</th>
-              <th class="col-name">Επώνυμο / Όνομα / Πατρώνυμο</th>
+              <th class="col-eponimo">Επώνυμο</th>
+              <th class="col-onoma">Όνομα</th>
+              <th class="col-patron">Πατρώνυμο</th>
               <th class="col-ama">Α.Μ.Α.</th>
               <th class="col-amka">Α.Μ.Κ.Α.</th>
               <th class="col-afm">Α.Φ.Μ.</th>
               <th class="col-arad">Αρ. Αδ. Εργασίας</th>
               <th class="col-eid">Ειδικότητα</th>
               <th class="col-fasi">Φάση</th>
-              <th class="col-erg">Εργολάβος (ΑΦΜ)</th>
+              <th class="col-erg">Εργολάβος</th>
+              <th class="col-afgerg">ΑΦΜ Εργολάβου</th>
               <th class="col-time">Ώρα Έναρξης</th>
               <th class="col-time">Ώρα Λήξης</th>
               <th class="col-misth">Μικτό Ημερο-μίσθιο</th>
