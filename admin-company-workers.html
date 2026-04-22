@@ -176,7 +176,7 @@
       .select(`
         id, eponimo, onoma, patronimo, eidikotita,
         email, phone_work, is_active,
-        profiles(id)
+        profiles!company_worker_id(id)
       `)
       .order('eponimo');
 
