@@ -79,9 +79,9 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .past-miss{background:rgba(217,59,59,0.08);border-bottom:1px solid rgba(217,59,59,0.25);padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.63rem;color:#e87070}
 
 /* ENTRY ROWS */
-.report-entry{padding:12px 18px;border-bottom:1px solid var(--gray3);display:grid;grid-template-columns:46px auto 1fr auto;gap:10px;align-items:start}
-.entry-time{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);font-weight:600;white-space:nowrap;padding-top:3px}
-.entry-badge{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;border-radius:2px;white-space:nowrap;margin-top:1px}
+.report-entry{padding:12px 18px;border-bottom:1px solid var(--gray3);display:flex;gap:10px;align-items:flex-start}
+.entry-time{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);font-weight:600;white-space:nowrap;flex-shrink:0;padding-top:3px;min-width:48px}
+.entry-badge{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0;margin-top:2px}
 .badge-weather{background:rgba(58,123,213,0.15);color:#6fa3e8;border:1px solid rgba(58,123,213,0.3)}
 .badge-inspection{background:rgba(201,162,0,0.12);color:var(--yellow);border:1px solid rgba(201,162,0,0.25)}
 .badge-work_stoppage{background:rgba(217,59,59,0.12);color:#e87070;border:1px solid rgba(217,59,59,0.25)}
