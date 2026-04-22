@@ -53,7 +53,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .day-num{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:1px;color:var(--white);line-height:1}
 .day-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
 .dot{width:6px;height:6px;border-radius:50%}
-.dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#8b5cf6}
+.dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#2ea84f}
 .day-miss{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--red);margin-top:auto}
 .day-ok{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--gray4);margin-top:auto}
 .week-legend{display:flex;gap:12px;justify-content:center;padding:8px 20px 12px;flex-wrap:wrap}
@@ -79,7 +79,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .badge-inspection{background:rgba(201,162,0,0.12);color:var(--yellow);border:1px solid rgba(201,162,0,0.25)}
 .badge-work_stoppage{background:rgba(217,59,59,0.12);color:#e87070;border:1px solid rgba(217,59,59,0.25)}
 .badge-event{background:rgba(90,90,90,0.2);color:#a0a0a0;border:1px solid rgba(90,90,90,0.3)}
-.badge-work_log{background:rgba(139,92,246,0.15);color:#b39dfa;border:1px solid rgba(139,92,246,0.3)}
+.badge-work_log{background:rgba(46,168,79,0.15);color:#4ecf74;border:1px solid rgba(46,168,79,0.3)}
 .entry-body{flex:1;min-width:0}
 .entry-text{font-size:0.84rem;color:var(--white);line-height:1.45}
 .elink-row{margin-top:5px;display:flex;align-items:center;gap:5px}
@@ -222,77 +222,9 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
   <div id="noDayMsg" class="no-msg" style="display:none">Επιλέξτε ημέρα από το εβδομαδιαίο πλέγμα</div>
 
   <div id="dayContent" style="display:none">
-    <div class="day-hdr">
-      <div>
-        <div class="day-title" id="dayTitle"></div>
-        <div class="day-meta" id="dayMeta"></div>
-      </div>
-      <div class="day-hdr-actions">
-        <button class="btn btn-outline btn-sm" onclick="printDay()">⎙ Εκτύπωση</button>
-        <button class="btn btn-outline btn-sm" onclick="emailDay()">✉ Email</button>
-      </div>
-    </div>
 
-    <div id="pastMissBanner" class="past-miss" style="display:none">
-      ⚠ Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα. Μπορείτε να προσθέσετε.
-    </div>
-
-    <div class="entry-list" id="entryList"></div>
-
-    <div class="form-box" id="entryForm" style="display:none">
-      <div class="form-lbl" id="formLbl">Νέα Καταχώρηση</div>
-      <div class="form-row">
-        <select class="fsel" id="fType" onchange="onTypeChange()">
-          <option value="">Τύπος…</option>
-          <option value="weather">Καιρός</option>
-          <option value="inspection">Επίσκεψη / Επιθεώρηση</option>
-          <option value="work_stoppage">Διακοπή εργασίας</option>
-          <option value="work_log">Εργασίες ημέρας</option>
-          <option value="event">Συμβάν</option>
-        </select>
-      </div>
-
-      <div class="weather-widget" id="weatherWidget" style="display:none">
-        <div class="weather-data" id="weatherData">Πατήστε "Λήψη καιρού" για αυτόματη συμπλήρωση</div>
-        <button class="btn-weather" id="fetchWeatherBtn" onclick="fetchWeather()">⟳ Λήψη καιρού</button>
-        <div class="weather-note">Η περιγραφή παρακάτω είναι δική σας — γράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή εργασιών λόγω ισχυρών ανέμων")</div>
-      </div>
-
-      <div class="form-row">
-        <textarea class="ftxt" id="fDesc" placeholder="Περιγραφή…"></textarea>
-      </div>
-
-      <div class="upload-section">
-        <div class="upload-btns">
-          <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            Ανέβασμα στο Dropbox
-          </button>
-          <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Εισαγωγή Συνδέσμου
-          </button>
-        </div>
-        <div class="upload-result" id="uploadResult"></div>
-        <div class="manual-link-area" id="manualLinkArea">
-          <input class="finp wide" type="url" id="fLink" placeholder="https://…  (Dropbox / Drive / OneDrive)">
-          <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου (π.χ. Φωτογραφίες σκαλωσιάς 22/04)">
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-outline btn-sm" onclick="cancelForm()">Άκυρο</button>
-        <div class="spacer"></div>
-        <button class="btn btn-orange btn-sm" id="saveBtn" onclick="saveEntry()">Αποθήκευση</button>
-      </div>
-    </div>
-
-    <div class="add-btn-wrap" id="addBtnWrap" style="display:none">
-      <button class="btn btn-outline" onclick="showNewForm()">+ Νέα Καταχώρηση</button>
-    </div>
-
-    <!-- OFFICIAL REPORT -->
-    <div class="report-box" id="reportBox" style="display:none">
+    <!-- OFFICIAL REPORT — the only UI, contains everything -->
+    <div class="report-box" id="reportBox">
       <div class="report-hdr">
         <div class="report-hdr-top">
           <div>
@@ -307,9 +239,69 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
         </div>
         <div class="report-meta" id="rMeta"></div>
       </div>
+
+      <div id="pastMissBanner" class="past-miss" style="display:none;margin:12px 18px 0;">
+        ⚠ Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα. Μπορείτε να προσθέσετε.
+      </div>
+
+      <!-- Entries rendered inside the report -->
       <div id="reportEntries"></div>
+
+      <!-- Form inside the report -->
+      <div class="form-box" id="entryForm" style="display:none;margin:0 12px 12px;border-color:var(--orange)">
+        <div class="form-lbl" id="formLbl">Νέα Καταχώρηση</div>
+        <div class="form-row">
+          <select class="fsel" id="fType" onchange="onTypeChange()">
+            <option value="">Τύπος…</option>
+            <option value="weather">Καιρός</option>
+            <option value="inspection">Επίσκεψη / Επιθεώρηση</option>
+            <option value="work_stoppage">Διακοπή εργασίας</option>
+            <option value="work_log">Εργασίες ημέρας</option>
+            <option value="event">Συμβάν</option>
+          </select>
+        </div>
+
+        <div class="weather-widget" id="weatherWidget" style="display:none">
+          <div class="weather-data" id="weatherData">Πατήστε "Λήψη καιρού" για αυτόματη συμπλήρωση</div>
+          <button class="btn-weather" id="fetchWeatherBtn" onclick="fetchWeather()">⟳ Λήψη καιρού</button>
+          <div class="weather-note">Η περιγραφή παρακάτω είναι δική σας — γράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή εργασιών λόγω ισχυρών ανέμων")</div>
+        </div>
+
+        <div class="form-row">
+          <textarea class="ftxt" id="fDesc" placeholder="Περιγραφή…"></textarea>
+        </div>
+
+        <div class="upload-section">
+          <div class="upload-btns">
+            <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+              Ανέβασμα στο Dropbox
+            </button>
+            <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Εισαγωγή Συνδέσμου
+            </button>
+          </div>
+          <div class="upload-result" id="uploadResult"></div>
+          <div class="manual-link-area" id="manualLinkArea">
+            <input class="finp wide" type="url" id="fLink" placeholder="https://…  (Dropbox / Drive / OneDrive)">
+            <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου (π.χ. Φωτογραφίες σκαλωσιάς 22/04)">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-outline btn-sm" onclick="cancelForm()">Άκυρο</button>
+          <div class="spacer"></div>
+          <button class="btn btn-orange btn-sm" id="saveBtn" onclick="saveEntry()">Αποθήκευση</button>
+        </div>
+      </div>
+
+      <!-- Add button inside report footer area -->
       <div class="report-footer">
-        <span id="rFooterL"></span>
+        <div class="add-btn-wrap" id="addBtnWrap" style="display:none">
+          <button class="btn btn-outline btn-sm" onclick="showNewForm()">+ Νέα Καταχώρηση</button>
+        </div>
+        <span id="rFooterL" style="margin-left:auto"></span>
         <span>SiteLog v3.0</span>
       </div>
     </div>
@@ -333,7 +325,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <script>
 const db=window.sb;
 let currentUser=null,currentRole=null;
-let sites=[],selectedSiteId=null,selectedSite=null;
+let sites=[],selectedSiteId=null,selectedSite=null,siteSMName='—';
 let weekStart=null,selectedDate=null;
 let weekEntries={},editingId=null,deletingId=null;
 let pendingLink='',pendingLinkDesc='';
@@ -382,16 +374,25 @@ function loadSites(){
   if(sites.length===1){sel.value=sites[0].id;onSiteChange()}
 }
 
-function onSiteChange(){
+async function onSiteChange(){
   const sel=document.getElementById('siteSelect');
   selectedSiteId=sel.value||null;
   selectedSite=sites.find(s=>String(s.id)===String(selectedSiteId))||null;
   document.getElementById('siteCodeLbl').textContent=selectedSite?.project_code||'';
-  weekEntries={};selectedDate=null;
+  weekEntries={};selectedDate=null;siteSMName='—';
   document.getElementById('noSiteMsg').style.display=selectedSiteId?'none':'';
   document.getElementById('noDayMsg').style.display=selectedSiteId?'':'none';
   document.getElementById('dayContent').style.display='none';
-  if(selectedSiteId)loadWeek();else renderWeekGrid();
+  if(selectedSiteId){
+    // Fetch assigned site_manager name
+    const{data}=await db
+      .from('user_site_assignments')
+      .select('profiles!user_id(full_name,role)')
+      .eq('site_id',selectedSiteId);
+    const smRow=data?.find(r=>r.profiles?.role==='site_manager');
+    siteSMName=smRow?.profiles?.full_name||'—';
+    loadWeek();
+  } else renderWeekGrid();
 }
 
 function renderWeekNav(){document.getElementById('weekLabel').textContent=fmtWeekLabel(weekStart)}
@@ -448,56 +449,60 @@ function renderDayPanel(iso){
   const isToday=iso===TODAY,isPast=iso<TODAY,isFut=iso>TODAY;
   const isAdmin=currentRole==='admin',isSM=currentRole==='site_manager';
   const canWrite=isAdmin||isSM;
-  document.getElementById('dayTitle').textContent=fmtDateLong(iso);
-  document.getElementById('dayMeta').textContent=`Εργοτάξιο: ${selectedSite?.name||''}${addr(selectedSite)!=='—'?'  ·  '+addr(selectedSite):''}`;
-  document.getElementById('pastMissBanner').style.display=(isPast&&!entries.length)?'':'none';
-  renderEntryList(entries,isToday,isAdmin,isSM);
-  document.getElementById('addBtnWrap').style.display=(canWrite&&!isFut)?'':'none';
-  cancelForm();
-  renderReport(iso,entries);
-}
 
-function renderEntryList(entries,isToday,isAdmin,isSM){
-  const list=document.getElementById('entryList');
-  if(!entries.length){list.innerHTML='<div class="empty-day">Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα</div>';return}
-  list.innerHTML=entries.map(e=>{
-    const t=timeStr(e);
-    const bc=TYPE_BADGE[e.entry_type]||'badge-event';
-    const lbl=TYPE_LABELS[e.entry_type]||e.entry_type;
-    const author=e.profiles?.full_name||'—';
-    const entryToday=e.entry_date===TODAY;
-    const canEdit=isAdmin||(isSM&&entryToday);
-    const canDel=isAdmin;
-    const lh=e.external_link?`<div class="elink-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a></div>`:'';
-    return`<div class="entry-card" id="ec-${e.id}"><div class="entry-time">${t}</div><div><span class="entry-badge ${bc}">${lbl}</span></div><div class="entry-body"><div class="entry-text">${escH(e.description)}</div>${lh}<div class="entry-author">Υπεύθυνος Εργοταξίου: ${escH(author)}</div></div><div class="ecard-actions"><button class="ebtn" onclick="startEdit(${e.id})" ${canEdit?'':'disabled'}>Επεξεργασία</button>${canDel?`<button class="ebtn del" onclick="openDeleteModal(${e.id})">Διαγραφή</button>`:''}</div></div>`;
-  }).join('');
-}
-
-function renderReport(iso,entries){
-  const box=document.getElementById('reportBox');
-  box.style.display=entries.length?'':'none';
-  if(!entries.length)return;
-  const smName=entries.find(e=>e.profiles?.full_name)?.profiles?.full_name||'—';
+  // Report header
   document.getElementById('rStamp').textContent='Επίσημο Δελτίο Ημερολογίου Έργου';
   document.getElementById('rDate').textContent=fmtDateLong(iso);
   const metaItems=[
     {l:'Κωδικός Έργου',v:selectedSite?.project_code||'—'},
     {l:'Εργοτάξιο',v:selectedSite?.name||'—'},
     {l:'Διεύθυνση',v:addr(selectedSite)},
-    {l:'Υπεύθυνος Εργοταξίου',v:smName},
+    {l:'Υπεύθυνος Εργοταξίου',v:siteSMName},
     {l:'Ημερομηνία',v:fmtDate(iso)},
     {l:'Σύνολο Καταχωρήσεων',v:String(entries.length)},
   ];
   document.getElementById('rMeta').innerHTML=metaItems.map(it=>`<div class="rmeta-item"><div class="rmlbl">${it.l}</div><div class="rmval">${escH(it.v)}</div></div>`).join('');
-  document.getElementById('reportEntries').innerHTML=entries.map(e=>{
-    const bc=TYPE_BADGE[e.entry_type]||'badge-event';
-    const lbl=TYPE_LABELS[e.entry_type]||e.entry_type;
-    const lh=e.external_link?`<div class="elink-row" style="margin-top:4px"><a href="${escH(e.external_link)}" target="_blank" rel="noopener" style="font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--blue)">${escH(e.link_description||e.external_link)}</a></div>`:'';
-    return`<div class="report-entry"><div class="entry-time">${timeStr(e)}</div><div><span class="entry-badge ${bc}">${lbl}</span></div><div class="entry-body"><div class="entry-text">${escH(e.description)}</div>${lh}</div></div>`;
-  }).join('');
+
+  // Past-missing banner
+  document.getElementById('pastMissBanner').style.display=(isPast&&!entries.length)?'':'none';
+
+  // Render entries inside report
+  const re=document.getElementById('reportEntries');
+  if(!entries.length){
+    re.innerHTML=`<div class="empty-day">Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα</div>`;
+  } else {
+    re.innerHTML=entries.map(e=>{
+      const bc=TYPE_BADGE[e.entry_type]||'badge-event';
+      const lbl=TYPE_LABELS[e.entry_type]||e.entry_type;
+      const entryToday=e.entry_date===TODAY;
+      const canEditThis=isAdmin||(isSM&&entryToday);
+      const canDelThis=isAdmin;
+      const lh=e.external_link?`<div class="elink-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a></div>`:'';
+      return`<div class="report-entry" id="ec-${e.id}">
+        <div class="entry-time">${timeStr(e)}</div>
+        <div><span class="entry-badge ${bc}">${lbl}</span></div>
+        <div class="entry-body">
+          <div class="entry-text">${escH(e.description)}</div>
+          ${lh}
+        </div>
+        <div class="ecard-actions">
+          <button class="ebtn" onclick="startEdit(${e.id})" ${canEditThis?'':'disabled'}>Επεξεργασία</button>
+          ${canDelThis?`<button class="ebtn del" onclick="openDeleteModal(${e.id})">Διαγραφή</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Footer timestamp
   const now=new Date().toLocaleString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   document.getElementById('rFooterL').textContent=`Εκτυπώθηκε: ${now}`;
+
+  // Add button — only for writable roles, non-future days
+  document.getElementById('addBtnWrap').style.display=(canWrite&&!isFut)?'':'none';
+
+  cancelForm();
 }
+
 
 function showNewForm(){
   editingId=null;pendingLink='';pendingLinkDesc='';
@@ -653,12 +658,11 @@ function emailDay(){
   if(!selectedDate||!selectedSiteId)return;
   const entries=weekEntries[selectedDate]||[];
   const subj=encodeURIComponent(`Ημερολόγιο Εργοταξίου — ${selectedSite?.name||''} — ${fmtDate(selectedDate)}`);
-  const smName=entries.find(e=>e.profiles?.full_name)?.profiles?.full_name||'—';
   let body=`ΗΜΕΡΟΛΟΓΙΟ ΕΡΓΟΤΑΞΙΟΥ\n${'═'.repeat(42)}\n`;
   body+=`Κωδικός Έργου        : ${selectedSite?.project_code||'—'}\n`;
   body+=`Εργοτάξιο            : ${selectedSite?.name||'—'}\n`;
   body+=`Διεύθυνση            : ${addr(selectedSite)}\n`;
-  body+=`Υπεύθυνος Εργοταξίου : ${smName}\n`;
+  body+=`Υπεύθυνος Εργοταξίου : ${siteSMName}\n`;
   body+=`Ημερομηνία           : ${fmtDateLong(selectedDate)}\n`;
   body+=`${'─'.repeat(42)}\n\n`;
   if(!entries.length){body+='Δεν υπάρχουν καταχωρήσεις.\n'}
