@@ -175,6 +175,14 @@
   let attRecords = [];
   let sites = [];
 
+  // ── DATE FORMAT ──
+  // log_date έρχεται ως YYYY-MM-DD → DD/MM/YYYY
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
   // ── FLATPICKR INIT ──
   const fpConfig = {
     locale: 'gr',
@@ -273,7 +281,7 @@
         <td class="td-mono">${i + 1}</td>
         <td><span class="badge badge-orange">${r.sites?.name || '—'}</span></td>
         <td class="td-time">${r.time_in || '—'}</td>
-        <td class="td-mono">${r.log_date || '—'}</td>
+        <td class="td-mono">${fmtDate(r.log_date)}</td>
         <td class="td-mono">${w.ama || '—'}</td>
         <td class="td-mono">${w.amka || '—'}</td>
         <td class="td-mono">${w.afm || '—'}</td>
@@ -302,7 +310,7 @@
     const rows = attRecords.map((r, i) => {
       const w = r.workers || {};
       return [
-        i+1, r.sites?.name||'', r.time_in||'', r.log_date||'',
+        i+1, r.sites?.name||'', r.time_in||'', fmtDate(r.log_date),
         w.ama||'', w.amka||'', w.afm||'', w.ar_ad_ergasias||'',
         w.eponimo||'', w.onoma||'', w.patronimo||'',
         w.eidikotita||'', r.fasi||'', w.ergolabos||'', w.afm_ergolabou||''
