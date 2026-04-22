@@ -350,7 +350,7 @@ async function init() {
   const ok = await Auth.requireLogin();
   if (!ok) return;
   currentUser = Auth.getCurrentUser();
-  currentRole = currentUser?.role;
+  currentRole = Auth.getCurrentRole();
   if (currentUser) document.getElementById('userPill').textContent = currentUser.full_name || currentUser.email;
   if (currentRole === 'scanner') {
     setStatus('err','⚠ Δεν έχετε πρόσβαση');
