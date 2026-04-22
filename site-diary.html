@@ -86,11 +86,11 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .elink-row a{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--blue);text-decoration:none}
 .elink-row a:hover{text-decoration:underline}
 .entry-author{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--gray4);margin-top:4px}
-.ecard-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
-.ebtn{background:transparent;border:1px solid var(--gray3);color:var(--gray4);padding:3px 8px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.52rem;letter-spacing:0.5px;white-space:nowrap;transition:border-color 0.15s,color 0.15s}
+.ecard-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;opacity:1}
+.ebtn{background:transparent;border:1px solid var(--gray3);color:var(--gray4);padding:3px 8px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.52rem;letter-spacing:0.5px;white-space:nowrap;transition:border-color 0.15s,color 0.15s;opacity:1}
 .ebtn:hover:not(:disabled){border-color:var(--yellow);color:var(--yellow)}
 .ebtn.del:hover:not(:disabled){border-color:var(--red);color:var(--red)}
-.ebtn:disabled{opacity:0.22;cursor:default}
+.ebtn:disabled{opacity:0.2;cursor:default}
 .empty-day{text-align:center;padding:30px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.72rem}
 
 /* FORM */
@@ -136,6 +136,8 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .rmeta-item .rmval{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--white);margin-top:2px;font-weight:500}
 .report-entry{padding:9px 18px;border-bottom:1px solid var(--gray3);display:flex;gap:10px;align-items:flex-start}
 .report-entry:last-of-type{border-bottom:none}
+.report-entry .ecard-actions{opacity:0.45;transition:opacity 0.15s}
+.report-entry:hover .ecard-actions{opacity:1}
 .report-footer{padding:8px 18px;border-top:1px solid var(--gray3);background:var(--gray);display:flex;justify-content:space-between;align-items:center}
 .report-footer span{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--gray4)}
 .report-actions{display:flex;gap:6px}
@@ -474,7 +476,7 @@ function renderDayPanel(iso){
     re.innerHTML=entries.map(e=>{
       const bc=TYPE_BADGE[e.entry_type]||'badge-event';
       const lbl=TYPE_LABELS[e.entry_type]||e.entry_type;
-      const entryToday=e.entry_date===TODAY;
+      const entryToday=iso===TODAY;
       const canEditThis=isAdmin||(isSM&&entryToday);
       const canDelThis=isAdmin;
       const lh=e.external_link?`<div class="elink-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a></div>`:'';
@@ -497,10 +499,11 @@ function renderDayPanel(iso){
   const now=new Date().toLocaleString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
   document.getElementById('rFooterL').textContent=`Εκτυπώθηκε: ${now}`;
 
-  // Add button — only for writable roles, non-future days
-  document.getElementById('addBtnWrap').style.display=(canWrite&&!isFut)?'':'none';
-
+  // Reset form state FIRST
   cancelForm();
+
+  // Add button — only for writable roles, non-future days (set AFTER cancelForm)
+  document.getElementById('addBtnWrap').style.display=(canWrite&&!isFut)?'':'none';
 }
 
 
