@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SiteLog — ΣΕΠΕ Παρουσιολόγιο</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shared/auth.js"></script>
+<style>
+  /* ── SCREEN STYLES ── */
+  :root {
+    --black:#0d0d0d; --yellow:#f5c800; --yellow-dk:#c9a200; --orange:#e8600a;
+    --white:#f4efe6; --gray:#1e1e1e; --gray2:#2a2a2a; --gray3:#3d3d3d;
+    --gray4:#5a5a5a; --green:#2ea84f; --red:#d93b3b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+
+  header{
+    background:var(--yellow);color:var(--black);
+    padding:0 24px;height:54px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:4px solid var(--orange);
+    position:sticky;top:0;z-index:100;
+  }
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
+  .logo em{color:var(--orange);font-style:normal}
+  .logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
+  .back-btn{
+    display:flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;
+    letter-spacing:1px;text-transform:uppercase;
+    background:rgba(0,0,0,0.12);border:none;border-radius:2px;
+    color:var(--black);padding:6px 12px;cursor:pointer;
+    text-decoration:none;transition:background 0.15s;
+  }
+  .back-btn:hover{background:rgba(0,0,0,0.22)}
+
+  .controls-bar{
+    background:var(--gray2);border-bottom:1px solid var(--gray3);
+    padding:12px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;
+  }
+  .controls-bar select,.controls-bar input[type="text"]{
+    background:var(--black);border:1px solid var(--gray3);border-radius:2px;
+    color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.88rem;
+    padding:7px 10px;outline:none;
+  }
+  .controls-bar select:focus,.controls-bar input:focus{border-color:var(--yellow)}
+  .controls-bar .spacer{flex:1}
+
+  /* Flatpickr overrides */
+  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+  .flatpickr-day{color:var(--white)}
+  .flatpickr-day:hover{background:var(--gray3)}
+  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+  .flatpickr-day.today{border-color:var(--orange)}
+  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+  .numInputWrapper:hover{background:var(--gray3)}
+  .numInput{color:var(--white)!important;background:transparent}
+
+  .btn{border:none;border-radius:2px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;transition:opacity 0.15s;white-space:nowrap}
+  .btn-orange{background:var(--orange);color:#fff;padding:8px 18px;font-size:0.9rem}
+  .btn-orange:hover{opacity:0.88}
+  .btn-outline{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:7px 14px;font-size:0.82rem}
+  .btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
+
+  .status-bar{
+    background:var(--gray);border-bottom:1px solid var(--gray3);
+    padding:6px 24px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
+    color:var(--gray4);display:flex;align-items:center;gap:8px;
+  }
+  .status-bar.ok{color:var(--green)}
+  .status-bar.err{color:var(--red)}
+  .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:4px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── PREVIEW AREA (screen) ── */
+  .preview-wrap{flex:1;padding:24px;overflow:auto;background:var(--black)}
+  .preview-sheet{
+    background:#fff;color:#000;
+    max-width:1100px;margin:0 auto;
+    padding:20mm 15mm;
+    border-radius:2px;
+    box-shadow:0 4px 32px rgba(0,0,0,0.5);
+  }
+  .empty-state{
+    text-align:center;padding:80px 20px;
+    color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
+  }
+
+  /* ── SEPE DOCUMENT STYLES ── */
+  .sepe-doc { font-family: Arial, sans-serif; font-size: 9pt; color: #000; }
+
+  .sepe-title-block { margin-bottom: 10pt; }
+  .sepe-no { font-size: 10pt; font-weight: bold; margin-bottom: 4pt; }
+  .sepe-header-text { font-size: 8.5pt; line-height: 1.6; }
+  .sepe-header-text strong { font-weight: bold; }
+
+  .sepe-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10pt;
+    font-size: 7.5pt;
+  }
+  .sepe-table th {
+    background: #e8e8e8;
+    border: 1px solid #555;
+    padding: 4pt 3pt;
+    text-align: center;
+    font-weight: bold;
+    vertical-align: middle;
+    line-height: 1.3;
+  }
+  .sepe-table td {
+    border: 1px solid #555;
+    padding: 3pt 3pt;
+    vertical-align: middle;
+    text-align: center;
+    height: 20pt;
+  }
+  .sepe-table td.td-left { text-align: left; }
+  .sepe-table .col-aa     { width: 3%; }
+  .sepe-table .col-name   { width: 14%; }
+  .sepe-table .col-ama    { width: 8%; }
+  .sepe-table .col-amka   { width: 9%; }
+  .sepe-table .col-afm    { width: 7%; }
+  .sepe-table .col-arad   { width: 7%; }
+  .sepe-table .col-eid    { width: 8%; }
+  .sepe-table .col-fasi   { width: 7%; }
+  .sepe-table .col-erg    { width: 10%; }
+  .sepe-table .col-time   { width: 5%; }
+  .sepe-table .col-misth  { width: 5%; }
+  .sepe-table .col-prosl  { width: 6%; }
+  .sepe-table .col-repos  { width: 5%; }
+  .sepe-table .col-sign   { width: 6%; }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    @page { size: A4 landscape; margin: 10mm 8mm; }
+
+    body { background: #fff !important; }
+    header, .controls-bar, .status-bar { display: none !important; }
+    .preview-wrap { padding: 0 !important; overflow: visible !important; }
+    .preview-sheet {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      max-width: none !important;
+      margin: 0 !important;
+    }
+    .empty-state { display: none !important; }
+
+    .sepe-table { font-size: 7pt; }
+    .sepe-table th, .sepe-table td { padding: 2pt 2pt; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Site<em>Log</em> <sub>ΣΕΠΕ Παρουσιολόγιο</sub></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="userPill" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--black);opacity:0.6;padding:0 4px"></span>
+    <a href="2-attendance-gr.html" class="back-btn">← Παρουσιολόγιο</a>
+    <button class="back-btn" onclick="Auth.signOut()" style="font-size:0.6rem">↪ Έξοδος</button>
+  </div>
+</header>
+
+<div class="controls-bar">
+  <select id="filterSite" onchange="load()">
+    <option value="">— Επιλογή Εργοταξίου —</option>
+  </select>
+  <input type="text" id="filterDate" placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" readonly style="width:140px;cursor:pointer">
+  <button class="btn btn-outline" onclick="setToday()">Σήμερα</button>
+  <div class="spacer"></div>
+  <button class="btn btn-orange" onclick="window.print()">🖨 Εκτύπωση / PDF</button>
+</div>
+
+<div class="status-bar" id="statusBar">
+  <span class="spinner"></span>Φόρτωση…
+</div>
+
+<div class="preview-wrap">
+  <div class="preview-sheet" id="previewSheet">
+    <div class="empty-state">Επιλέξτε εργοτάξιο και ημερομηνία για προεπισκόπηση.</div>
+  </div>
+</div>
+
+<script>
+(async () => {
+
+  // ── AUTH ──
+  const ok = await Auth.requireRole(['admin', 'project_manager', 'site_manager']);
+  if (!ok) return;
+  const user = Auth.getCurrentUser();
+  if (user) document.getElementById('userPill').textContent = user.full_name || user.email;
+
+  const db = window.sb;
+
+  // ── FLATPICKR ──
+  const fp = flatpickr('#filterDate', {
+    locale: 'gr',
+    dateFormat: 'd/m/Y',
+    allowInput: false,
+    disableMobile: true,
+    onChange: () => load(),
+  });
+
+  // ── URL PARAMS (από 2-attendance-gr.html) ──
+  const params = new URLSearchParams(window.location.search);
+  const presetSite = params.get('site');
+  const presetDate = params.get('date'); // YYYY-MM-DD
+
+  // ── SITES ──
+  const sites = Auth.getAssignedSites();
+  const sel = document.getElementById('filterSite');
+  sites.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.project_code ? `${s.project_code} · ${s.name}` : s.name;
+    sel.appendChild(o);
+  });
+
+  // Preset από URL
+  if (presetSite) sel.value = presetSite;
+  else if (!Auth.isAdmin() && sites.length === 1) sel.value = sites[0].id;
+
+  if (presetDate) {
+    const [y, m, d] = presetDate.split('-').map(Number);
+    fp.setDate(new Date(y, m - 1, d), true);
+  } else {
+    setToday();
+  }
+
+  // ── HELPERS ──
+  function setToday() {
+    fp.setDate(new Date(), true);
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+
+  function isoFromFp() {
+    return fp.selectedDates[0]
+      ? fp.formatDate(fp.selectedDates[0], 'Y-m-d')
+      : null;
+  }
+
+  function setStatus(cls, msg) {
+    const el = document.getElementById('statusBar');
+    el.innerHTML = (cls === 'loading' ? '<span class="spinner"></span>' : '') + msg;
+    el.className = 'status-bar ' + (cls === 'ok' ? 'ok' : cls === 'err' ? 'err' : '');
+  }
+
+  // ── LOAD ──
+  async function load() {
+    const siteId  = sel.value;
+    const dateISO = isoFromFp();
+
+    if (!siteId || !dateISO) {
+      setStatus('', 'Επιλέξτε εργοτάξιο και ημερομηνία.');
+      document.getElementById('previewSheet').innerHTML =
+        '<div class="empty-state">Επιλέξτε εργοτάξιο και ημερομηνία για προεπισκόπηση.</div>';
+      return;
+    }
+
+    setStatus('loading', 'Φόρτωση δεδομένων…');
+
+    // Παράλληλα: site info + attendance
+    const [siteRes, attRes] = await Promise.all([
+      db.from('sites').select('*').eq('id', siteId).single(),
+      db.from('attendance_log')
+        .select(`
+          id, worker_id, time_in, log_date, fasi,
+          workers (
+            eponimo, onoma, patronimo,
+            eidikotita, ergolabos, afm_ergolabou,
+            ama, amka, afm, ar_ad_ergasias
+          )
+        `)
+        .eq('site_id', siteId)
+        .eq('log_date', dateISO)
+        .not('worker_id', 'is', null)
+        .order('time_in', { ascending: true })
+    ]);
+
+    if (siteRes.error) {
+      setStatus('err', '⚠ Δεν φορτώθηκαν τα στοιχεία εργοταξίου: ' + siteRes.error.message);
+      return;
+    }
+    if (attRes.error) {
+      setStatus('err', '⚠ Σφάλμα φόρτωσης παρουσιών: ' + attRes.error.message);
+      return;
+    }
+
+    const site    = siteRes.data;
+    const records = attRes.data || [];
+
+    setStatus('ok', `✓ ${records.length} εργαζόμενοι · ${fmtDate(dateISO)} · ${site.name}`);
+    renderDocument(site, records, dateISO);
+  }
+
+  // ── RENDER ──
+  function renderDocument(site, records, dateISO) {
+    // Δόμηση διεύθυνσης
+    const addrParts = [site.address_street, site.address_number].filter(Boolean).join(' ');
+    const cityPart  = site.address_city || '';
+    const fullAddr  = [addrParts, cityPart].filter(Boolean).join(', ') || '_______________';
+
+    // Header text του ΣΕΠΕ εντύπου
+    const companyName  = site.company_name   || '______________________________';
+    const companyAfm   = site.company_afm    || '_______________';
+    const permitNumber = site.permit_number  || '______________________';
+    const efkaBranch   = site.efka_branch    || '_______________________________________';
+    const efkaAgm      = site.efka_agm       || '___________________________________________';
+    const dateDisplay  = fmtDate(dateISO);
+
+    // Γραμμές πίνακα
+    const rows = records.length > 0
+      ? records.map((r, i) => {
+          const w = r.workers || {};
+          return `
+            <tr>
+              <td>${i + 1}</td>
+              <td class="td-left">${[w.eponimo, w.onoma, w.patronimo].filter(Boolean).join(' ')}</td>
+              <td>${w.ama || ''}</td>
+              <td>${w.amka || ''}</td>
+              <td>${w.afm || ''}</td>
+              <td>${w.ar_ad_ergasias || ''}</td>
+              <td class="td-left">${w.eidikotita || ''}</td>
+              <td class="td-left">${r.fasi || ''}</td>
+              <td class="td-left">${[w.ergolabos, w.afm_ergolabou ? `(${w.afm_ergolabou})` : ''].filter(Boolean).join(' ')}</td>
+              <td>${r.time_in ? r.time_in.slice(0,5) : ''}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>`;
+        }).join('')
+      : `<tr><td colspan="15" style="text-align:center;padding:12pt;color:#888;font-style:italic">
+           Δεν βρέθηκαν παρουσίες για την επιλεγμένη ημερομηνία.
+         </td></tr>`;
+
+    // Κενές γραμμές για εκτύπωση (min 15 σειρές)
+    const minRows = 15;
+    const emptyNeeded = Math.max(0, minRows - records.length);
+    const emptyRows = Array(emptyNeeded).fill(`
+      <tr>
+        <td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td>
+        <td></td><td></td><td></td><td></td><td></td>
+      </tr>`).join('');
+
+    document.getElementById('previewSheet').innerHTML = `
+      <div class="sepe-doc">
+
+        <div class="sepe-title-block">
+          <div class="sepe-no">Νο ___________</div>
+          <div class="sepe-header-text">
+            Ημερήσιο Δελτίο της <strong>${companyName}</strong> (ΑΦΜ: <strong>${companyAfm}</strong>),
+            Απασχολούμενου προσωπικού στο με αριθ. αδείας <strong>${permitNumber}</strong> Οικοδομικού Έργου
+          </div>
+          <div class="sepe-header-text" style="margin-top:4pt;">
+            Στην πόλη <strong>${cityPart || '_______________'}</strong>,
+            οδός <strong>${site.address_street || '_______________'}</strong>
+            αριθμός <strong>${site.address_number || '_____'}</strong>
+            για οικοδομικές εργασίες
+          </div>
+          <div class="sepe-header-text" style="margin-top:4pt;">
+            Το οποίο έχει απογραφεί στο Υποκατάστημα ΕΦΚΑ <strong>${efkaBranch}</strong>
+            με Α.Γ.Μ. <strong>${efkaAgm}</strong>
+          </div>
+          <div class="sepe-header-text" style="margin-top:6pt;">
+            <strong>Ημερομηνία: ${dateDisplay}</strong>
+          </div>
+        </div>
+
+        <table class="sepe-table">
+          <thead>
+            <tr>
+              <th class="col-aa">Α/Α</th>
+              <th class="col-name">Επώνυμο / Όνομα / Πατρώνυμο</th>
+              <th class="col-ama">Α.Μ.Α.</th>
+              <th class="col-amka">Α.Μ.Κ.Α.</th>
+              <th class="col-afm">Α.Φ.Μ.</th>
+              <th class="col-arad">Αρ. Αδ. Εργασίας</th>
+              <th class="col-eid">Ειδικότητα</th>
+              <th class="col-fasi">Φάση</th>
+              <th class="col-erg">Εργολάβος (ΑΦΜ)</th>
+              <th class="col-time">Ώρα Έναρξης</th>
+              <th class="col-time">Ώρα Λήξης</th>
+              <th class="col-misth">Μικτό Ημερο-μίσθιο</th>
+              <th class="col-prosl">Ημ/νία Πρόσληψης</th>
+              <th class="col-repos">Ημέρα Αναπαύσεως</th>
+              <th class="col-sign">Υπογραφή Εργαζομένου</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            ${emptyRows}
+          </tbody>
+        </table>
+
+      </div>`;
+  }
+
+  // Expose load για onchange
+  window.load = load;
+
+})();
+</script>
+</body>
+</html>

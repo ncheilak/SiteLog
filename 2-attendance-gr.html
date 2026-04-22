@@ -136,6 +136,7 @@
   <div class="spacer"></div>
   <div class="count" id="attCount"></div>
   <button class="btn btn-orange" onclick="exportCSV()">⬇ Εξαγωγή CSV</button>
+  <button class="btn btn-outline" onclick="openSEPE()" title="ΣΕΠΕ Ημερήσιο Παρουσιολόγιο">📋 ΣΕΠΕ</button>
 </div>
 
 <div class="table-wrap">
@@ -301,6 +302,17 @@
     const now = new Date();
     fpFrom.setDate(now, true);
     fpTo.setDate(now, true);
+  }
+
+  function openSEPE() {
+    const siteId  = document.getElementById('filterSite').value;
+    const dateISO = fpFrom.selectedDates[0]
+      ? fpFrom.formatDate(fpFrom.selectedDates[0], 'Y-m-d')
+      : '';
+    const params  = new URLSearchParams();
+    if (siteId)  params.set('site', siteId);
+    if (dateISO) params.set('date', dateISO);
+    window.open('sepe-report.html?' + params.toString(), '_blank');
   }
 
   function exportCSV() {
