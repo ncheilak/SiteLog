@@ -9,13 +9,14 @@
 <script src="shared/auth.js"></script>
 <style>
 :root{
-  --black:#0d0d0d;--yellow:#f5c800;--yellow-dk:#c9a200;--orange:#e8600a;
+  --black:#0d0d0d;--yellow:#f5c800;--orange:#e8600a;
   --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
-  --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;--blue:#3a7bd5;--purple:#8b5cf6;
+  --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;--blue:#3a7bd5;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
+/* ── HEADER ── */
 header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--orange);position:sticky;top:0;z-index:100}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
 .logo em{color:var(--orange);font-style:normal}
@@ -23,15 +24,17 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .back-btn{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.12);border:none;border-radius:2px;color:var(--black);padding:6px 12px;cursor:pointer;text-decoration:none;transition:background 0.15s}
 .back-btn:hover{background:rgba(0,0,0,0.22)}
 
+/* ── DB BAR ── */
 .db-bar{background:var(--gray);border-bottom:1px solid var(--gray3);padding:6px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:0.65rem}
 .status{flex:1}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:var(--gray4)}
 
+/* ── TOOLBAR ── */
 .toolbar{background:var(--gray2);border-bottom:1px solid var(--gray3);padding:8px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0}
 .toolbar select{background:var(--black);border:1px solid var(--gray3);border-radius:2px;color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.85rem;padding:6px 10px;outline:none;cursor:pointer}
 .toolbar select:focus{border-color:var(--yellow)}
 .site-code-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--gray4)}
-.spacer{flex:1}
 
+/* ── BUTTONS ── */
 .btn{border:none;border-radius:2px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;transition:opacity 0.15s,transform 0.1s;white-space:nowrap}
 .btn:active{transform:scale(0.97)}
 .btn-orange{background:var(--orange);color:#fff;padding:7px 16px;font-size:0.88rem}
@@ -40,7 +43,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
 .btn-sm{padding:5px 11px;font-size:0.76rem}
 
-/* WEEK STRIP */
+/* ── WEEK STRIP ── */
 .week-section{padding:16px 20px 0;background:var(--black)}
 .week-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .wlabel{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--yellow);letter-spacing:1px;text-transform:uppercase;min-width:240px;text-align:center}
@@ -53,27 +56,35 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .day-num{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:1px;color:var(--white);line-height:1}
 .day-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
 .dot{width:6px;height:6px;border-radius:50%}
-.dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#2ea84f}
+.dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}
+.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#2ea84f}
 .day-miss{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--red);margin-top:auto}
 .day-ok{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--gray4);margin-top:auto}
 .week-legend{display:flex;gap:12px;justify-content:center;padding:8px 20px 12px;flex-wrap:wrap}
 .leg{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.3px}
 
-/* DAY SECTION */
-.day-section{padding:20px;max-width:860px;width:100%;margin:0 auto}
+/* ── DAY SECTION ── */
+.day-section{padding:20px;max-width:900px;width:100%;margin:0 auto}
 .no-msg{text-align:center;padding:48px 20px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.75rem}
 
-.day-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
-.day-title{font-family:'Bebas Neue',sans-serif;font-size:1.55rem;letter-spacing:2px;color:var(--yellow)}
-.day-meta{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--gray4);margin-top:2px}
-.day-hdr-actions{display:flex;gap:6px;flex-wrap:wrap}
+/* ── REPORT BOX ── */
+.report-box{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;overflow:hidden}
+.report-hdr{background:var(--gray);border-bottom:2px solid var(--orange);padding:14px 18px}
+.report-hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.report-stamp{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.report-doc-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:var(--white)}
+.report-doc-date{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--yellow);margin-top:2px}
+.report-actions{display:flex;gap:6px;flex-wrap:wrap}
+.report-meta{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;border-top:1px solid var(--gray3);padding-top:12px}
+.rmeta-item .rmlbl{font-family:'IBM Plex Mono',monospace;font-size:0.56rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px}
+.rmeta-item .rmval{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--white);margin-top:2px;font-weight:500}
 
-.past-miss{background:rgba(217,59,59,0.08);border:1px solid rgba(217,59,59,0.3);border-radius:3px;padding:9px 13px;font-family:'IBM Plex Mono',monospace;font-size:0.63rem;color:#e87070;margin-bottom:12px}
+/* ── PAST MISSING ── */
+.past-miss{background:rgba(217,59,59,0.08);border-bottom:1px solid rgba(217,59,59,0.25);padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.63rem;color:#e87070}
 
-/* ENTRY CARDS */
-.entry-list{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
-.entry-card{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;padding:10px 13px;display:flex;gap:10px;align-items:flex-start}
-.entry-time{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);font-weight:600;white-space:nowrap;padding-top:2px;min-width:44px}
+/* ── ENTRY ROWS ── */
+.report-entry{padding:10px 18px;border-bottom:1px solid var(--gray3);display:flex;gap:10px;align-items:center}
+.entry-time{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);font-weight:600;white-space:nowrap;min-width:46px}
 .entry-badge{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0}
 .badge-weather{background:rgba(58,123,213,0.15);color:#6fa3e8;border:1px solid rgba(58,123,213,0.3)}
 .badge-inspection{background:rgba(201,162,0,0.12);color:var(--yellow);border:1px solid rgba(201,162,0,0.25)}
@@ -82,21 +93,27 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .badge-work_log{background:rgba(46,168,79,0.15);color:#4ecf74;border:1px solid rgba(46,168,79,0.3)}
 .entry-body{flex:1;min-width:0}
 .entry-text{font-size:0.84rem;color:var(--white);line-height:1.45}
-.elink-row{margin-top:5px;display:flex;align-items:center;gap:5px}
+.elink-row{margin-top:4px;display:flex;align-items:center;gap:5px}
 .elink-row a{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--blue);text-decoration:none}
 .elink-row a:hover{text-decoration:underline}
-.entry-author{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--gray4);margin-top:4px}
-.ecard-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;opacity:1}
-.ebtn{background:transparent;border:1px solid var(--gray3);color:var(--gray4);padding:3px 8px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.52rem;letter-spacing:0.5px;white-space:nowrap;transition:border-color 0.15s,color 0.15s;opacity:1}
+/* Action buttons — always visible, disabled ones faded */
+.ecard-actions{display:flex;gap:6px;flex-shrink:0}
+.ebtn{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:4px 10px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:0.5px;white-space:nowrap;transition:border-color 0.15s,color 0.15s}
 .ebtn:hover:not(:disabled){border-color:var(--yellow);color:var(--yellow)}
+.ebtn.del{color:var(--gray4)}
 .ebtn.del:hover:not(:disabled){border-color:var(--red);color:var(--red)}
-.ebtn:disabled{opacity:0.2;cursor:default}
-.empty-day{text-align:center;padding:30px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.72rem}
+.ebtn:disabled{opacity:0.2;cursor:default;color:var(--gray4)}
 
-/* FORM */
-.form-box{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;padding:14px;margin-bottom:10px}
-.form-box.edit-mode{border-color:var(--orange)}
-.form-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
+.empty-day{padding:24px 18px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.72rem}
+
+/* ── REPORT FOOTER ── */
+.report-footer{padding:10px 18px;border-top:1px solid var(--gray3);background:var(--gray);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.report-footer-right{display:flex;align-items:center;gap:12px}
+.footer-ts{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--gray4)}
+
+/* ── FORM (inside report, between entries and footer) ── */
+.entry-form-wrap{padding:12px 18px;border-top:1px solid var(--gray3);background:rgba(232,96,10,0.04)}
+.form-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px}
 .form-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;align-items:flex-start}
 .fsel,.finp,.ftxt{background:var(--black);border:1px solid var(--gray3);border-radius:2px;color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.84rem;padding:7px 10px;outline:none;transition:border-color 0.15s}
 .fsel:focus,.finp:focus,.ftxt:focus{border-color:var(--yellow)}
@@ -111,38 +128,18 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .btn-weather:hover{background:rgba(58,123,213,0.25)}
 .btn-weather:disabled{opacity:0.4;cursor:default}
 
-/* upload UI */
-.upload-section{margin-bottom:8px}
+/* upload */
 .upload-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .upload-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gray3);border-radius:2px;color:var(--gray4);padding:6px 12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.5px;text-transform:uppercase;transition:border-color 0.15s,color 0.15s}
 .upload-btn:hover{border-color:var(--white);color:var(--white)}
 .upload-btn.active{border-color:var(--yellow);color:var(--yellow)}
-.manual-link-area{display:none;flex-direction:column;gap:6px;margin-top:2px}
+.manual-link-area{display:none;flex-direction:column;gap:6px;margin-top:4px}
 .manual-link-area.open{display:flex}
-.upload-result{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--green);padding:4px 0;display:none}
-
+.upload-result{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--green);padding:3px 0;display:none}
 .form-actions{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-.add-btn-wrap{margin-top:4px}
+.spacer{flex:1}
 
-/* REPORT */
-.report-box{background:var(--gray2);border:1px dashed var(--gray3);border-radius:3px;margin-top:20px;overflow:hidden}
-.report-hdr{background:var(--gray);border-bottom:2px solid var(--orange);padding:14px 18px}
-.report-hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.report-stamp{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-.report-doc-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:var(--white)}
-.report-doc-date{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--yellow);margin-top:2px}
-.report-meta{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;border-top:1px solid var(--gray3);padding-top:12px}
-.rmeta-item .rmlbl{font-family:'IBM Plex Mono',monospace;font-size:0.56rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px}
-.rmeta-item .rmval{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--white);margin-top:2px;font-weight:500}
-.report-entry{padding:9px 18px;border-bottom:1px solid var(--gray3);display:flex;gap:10px;align-items:flex-start}
-.report-entry:last-of-type{border-bottom:none}
-.report-entry .ecard-actions{opacity:0.45;transition:opacity 0.15s}
-.report-entry:hover .ecard-actions{opacity:1}
-.report-footer{padding:8px 18px;border-top:1px solid var(--gray3);background:var(--gray);display:flex;justify-content:space-between;align-items:center}
-.report-footer span{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--gray4)}
-.report-actions{display:flex;gap:6px}
-
-/* MODAL */
+/* ── MODAL ── */
 .modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center}
 .modal-bd.open{display:flex}
 .modal{background:var(--gray2);border:1px solid var(--gray3);border-radius:4px;padding:22px;width:100%;max-width:440px;margin:16px}
@@ -150,33 +147,26 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .modal-preview{background:var(--black);border:1px solid var(--gray3);border-radius:2px;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray4);margin-bottom:14px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 
+/* ── MISC ── */
 .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.73rem;padding:9px 16px;border-radius:3px;opacity:0;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:999;max-width:calc(100vw - 40px)}
 .toast.show{opacity:1;transform:translateY(0)}
 
+/* ── PRINT ── */
 @media print{
-  header,.db-bar,.toolbar,.week-section,.week-legend,.day-hdr-actions,.form-box,.add-btn-wrap,.ecard-actions,.past-miss,.report-actions{display:none!important}
+  header,.db-bar,.toolbar,.week-section,.week-legend,.report-actions,.ecard-actions,.entry-form-wrap,.report-footer,.past-miss{display:none!important}
   body{background:#fff;color:#000}
   .day-section{padding:0;max-width:100%}
-  .day-title{color:#000;font-size:1.3rem}
-  .day-meta{color:#444}
-  .entry-card{background:#fff;border:1px solid #ccc;break-inside:avoid;margin-bottom:6px}
-  .entry-time{color:#000}.entry-text{color:#000}
-  .entry-author{color:#666}
-  .report-box{border:1px solid #ccc;margin-top:12px}
+  .report-box{border:1px solid #ccc}
   .report-hdr{background:#f0f0f0;border-bottom:2px solid #333}
   .report-doc-title,.rmeta-item .rmval{color:#000}
   .report-stamp,.rmeta-item .rmlbl{color:#555}
   .report-doc-date{color:#333}
   .report-entry{border-bottom:1px solid #ddd}
-  .report-footer{background:#f5f5f5}.report-footer span{color:#555}
+  .entry-time{color:#000}.entry-text{color:#000}
 }
-@media(max-width:600px){
-  .week-section{padding:12px 10px 0}
-  .day-section{padding:14px}
-  .day-grid{grid-template-columns:1fr}
-}
+@media(max-width:600px){.week-section{padding:12px 10px 0}.day-section{padding:14px}}
 </style>
 </head>
 <body>
@@ -222,15 +212,15 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <div class="day-section">
   <div id="noSiteMsg" class="no-msg">Επιλέξτε εργοτάξιο για να δείτε το ημερολόγιο</div>
   <div id="noDayMsg" class="no-msg" style="display:none">Επιλέξτε ημέρα από το εβδομαδιαίο πλέγμα</div>
-
   <div id="dayContent" style="display:none">
 
-    <!-- OFFICIAL REPORT — the only UI, contains everything -->
-    <div class="report-box" id="reportBox">
+    <div class="report-box">
+
+      <!-- HEADER -->
       <div class="report-hdr">
         <div class="report-hdr-top">
           <div>
-            <div class="report-stamp" id="rStamp"></div>
+            <div class="report-stamp">Επίσημο Δελτίο Ημερολογίου Έργου</div>
             <div class="report-doc-title">Ημερολόγιο Εργοταξίου</div>
             <div class="report-doc-date" id="rDate"></div>
           </div>
@@ -242,15 +232,16 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
         <div class="report-meta" id="rMeta"></div>
       </div>
 
-      <div id="pastMissBanner" class="past-miss" style="display:none;margin:12px 18px 0;">
-        ⚠ Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα. Μπορείτε να προσθέσετε.
+      <!-- PAST MISSING BANNER -->
+      <div id="pastMissBanner" class="past-miss" style="display:none">
+        ⚠ Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα. Μπορείτε να προσθέσετε παρακάτω.
       </div>
 
-      <!-- Entries rendered inside the report -->
+      <!-- ENTRIES -->
       <div id="reportEntries"></div>
 
-      <!-- Form inside the report -->
-      <div class="form-box" id="entryForm" style="display:none;margin:0 12px 12px;border-color:var(--orange)">
+      <!-- FORM (shown when adding/editing) -->
+      <div class="entry-form-wrap" id="entryFormWrap" style="display:none">
         <div class="form-lbl" id="formLbl">Νέα Καταχώρηση</div>
         <div class="form-row">
           <select class="fsel" id="fType" onchange="onTypeChange()">
@@ -262,35 +253,29 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
             <option value="event">Συμβάν</option>
           </select>
         </div>
-
         <div class="weather-widget" id="weatherWidget" style="display:none">
           <div class="weather-data" id="weatherData">Πατήστε "Λήψη καιρού" για αυτόματη συμπλήρωση</div>
           <button class="btn-weather" id="fetchWeatherBtn" onclick="fetchWeather()">⟳ Λήψη καιρού</button>
-          <div class="weather-note">Η περιγραφή παρακάτω είναι δική σας — γράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή εργασιών λόγω ισχυρών ανέμων")</div>
+          <div class="weather-note">Στην περιγραφή γράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή λόγω ισχυρών ανέμων")</div>
         </div>
-
         <div class="form-row">
           <textarea class="ftxt" id="fDesc" placeholder="Περιγραφή…"></textarea>
         </div>
-
-        <div class="upload-section">
-          <div class="upload-btns">
-            <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-              Ανέβασμα στο Dropbox
-            </button>
-            <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Εισαγωγή Συνδέσμου
-            </button>
-          </div>
-          <div class="upload-result" id="uploadResult"></div>
-          <div class="manual-link-area" id="manualLinkArea">
-            <input class="finp wide" type="url" id="fLink" placeholder="https://…  (Dropbox / Drive / OneDrive)">
-            <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου (π.χ. Φωτογραφίες σκαλωσιάς 22/04)">
-          </div>
+        <div class="upload-btns">
+          <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            Ανέβασμα στο Dropbox
+          </button>
+          <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Εισαγωγή Συνδέσμου
+          </button>
         </div>
-
+        <div class="upload-result" id="uploadResult"></div>
+        <div class="manual-link-area" id="manualLinkArea">
+          <input class="finp wide" type="url" id="fLink" placeholder="https://… (Dropbox / Drive / OneDrive)">
+          <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου">
+        </div>
         <div class="form-actions">
           <button class="btn btn-outline btn-sm" onclick="cancelForm()">Άκυρο</button>
           <div class="spacer"></div>
@@ -298,14 +283,15 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
         </div>
       </div>
 
-      <!-- Add button inside report footer area -->
+      <!-- FOOTER: add button left, timestamp right -->
       <div class="report-footer">
-        <div class="add-btn-wrap" id="addBtnWrap" style="display:none">
-          <button class="btn btn-outline btn-sm" onclick="showNewForm()">+ Νέα Καταχώρηση</button>
+        <button class="btn btn-outline btn-sm" id="addEntryBtn" onclick="showNewForm()" style="display:none">+ Νέα Καταχώρηση</button>
+        <div class="report-footer-right">
+          <span class="footer-ts" id="rFooterTs"></span>
+          <span class="footer-ts">SiteLog v3.0</span>
         </div>
-        <span id="rFooterL" style="margin-left:auto"></span>
-        <span>SiteLog v3.0</span>
       </div>
+
     </div>
   </div>
 </div>
@@ -325,363 +311,435 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <div class="toast" id="toast"></div>
 
 <script>
-const db=window.sb;
-let currentUser=null,currentRole=null;
-let sites=[],selectedSiteId=null,selectedSite=null,siteSMName='—';
-let weekStart=null,selectedDate=null;
-let weekEntries={},editingId=null,deletingId=null;
-let pendingLink='',pendingLinkDesc='';
-const TODAY=todayLocal();
+const db = window.sb;
+let currentUser = null, currentRole = null;
+let sites = [], selectedSiteId = null, selectedSite = null, siteSMName = '—';
+let weekStart = null, selectedDate = null;
+let weekEntries = {}, editingId = null, deletingId = null;
+let pendingLink = '', pendingLinkDesc = '';
+const TODAY = todayLocal();
 
-const TYPE_LABELS={weather:'Καιρός',inspection:'Επίσκεψη',work_stoppage:'Διακοπή',work_log:'Εργασίες',event:'Συμβάν'};
-const TYPE_BADGE={weather:'badge-weather',inspection:'badge-inspection',work_stoppage:'badge-work_stoppage',work_log:'badge-work_log',event:'badge-event'};
-const DOT_TYPE={weather:'dot-weather',inspection:'dot-inspection',work_stoppage:'dot-work_stoppage',work_log:'dot-work_log',event:'dot-event'};
-const DAY_SHORT=['Δευτ','Τρίτ','Τετ','Πέμπ','Παρ','Σάββ','Κυρ'];
-const DAY_LONG=['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
-const MONTH=['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
+const TYPE_LABELS = {weather:'Καιρός',inspection:'Επίσκεψη',work_stoppage:'Διακοπή',work_log:'Εργασίες',event:'Συμβάν'};
+const TYPE_BADGE  = {weather:'badge-weather',inspection:'badge-inspection',work_stoppage:'badge-work_stoppage',work_log:'badge-work_log',event:'badge-event'};
+const DOT_CLASS   = {weather:'dot-weather',inspection:'dot-inspection',work_stoppage:'dot-work_stoppage',work_log:'dot-work_log',event:'dot-event'};
+const DAY_SHORT   = ['Δευτ','Τρίτ','Τετ','Πέμπ','Παρ','Σάββ','Κυρ'];
+const DAY_LONG    = ['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
+const MONTH       = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
 
-function todayLocal(){const n=new Date();return isoDate(n)}
-function isoDate(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function parseISO(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
-function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`}
-function fmtDateLong(iso){if(!iso)return'—';const dt=parseISO(iso);const dow=dt.getDay();const i=dow===0?6:dow-1;return`${DAY_LONG[i]} ${dt.getDate()} ${MONTH[dt.getMonth()]} ${dt.getFullYear()}`}
-function getMonday(d){const dt=new Date(d);const day=dt.getDay();dt.setDate(dt.getDate()+(day===0?-6:1-day));return dt}
-function addDays(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt}
-function weekDates(mon){return Array.from({length:7},(_,i)=>isoDate(addDays(mon,i)))}
-function fmtWeekLabel(mon){const sun=addDays(mon,6);return`${mon.getDate()} ${MONTH[mon.getMonth()]} – ${sun.getDate()} ${MONTH[sun.getMonth()]} ${sun.getFullYear()}`}
-function timeStr(e){if(!e.created_at)return'—';return new Date(e.created_at).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})}
-function escH(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function addr(s){return[s?.address_street,s?.address_number,s?.address_city].filter(Boolean).join(' ')||'—'}
+// ── DATE HELPERS ──
+function todayLocal() { const n = new Date(); return isoDate(n); }
+function isoDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function parseISO(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmtDate(iso) { if(!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+function fmtDateLong(iso) {
+  if(!iso) return '—';
+  const dt = parseISO(iso);
+  const i = dt.getDay() === 0 ? 6 : dt.getDay()-1;
+  return `${DAY_LONG[i]} ${dt.getDate()} ${MONTH[dt.getMonth()]} ${dt.getFullYear()}`;
+}
+function getMonday(d) { const dt=new Date(d); const day=dt.getDay(); dt.setDate(dt.getDate()+(day===0?-6:1-day)); return dt; }
+function addDays(d,n) { const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt; }
+function weekDates(mon) { return Array.from({length:7},(_,i)=>isoDate(addDays(mon,i))); }
+function fmtWeekLabel(mon) { const sun=addDays(mon,6); return `${mon.getDate()} ${MONTH[mon.getMonth()]} – ${sun.getDate()} ${MONTH[sun.getMonth()]} ${sun.getFullYear()}`; }
+function entryTime(e) { if(!e.created_at) return '—'; return new Date(e.created_at).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'}); }
+function addr(s) { return [s?.address_street,s?.address_number,s?.address_city].filter(Boolean).join(' ') || '—'; }
+function escH(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-async function init(){
-  const ok=await Auth.requireLogin();if(!ok)return;
-  currentUser=Auth.getCurrentUser();currentRole=currentUser?.role;
-  if(currentUser)document.getElementById('userPill').textContent=currentUser.full_name||currentUser.email;
-  if(currentRole==='scanner'){
+// ── INIT ──
+async function init() {
+  const ok = await Auth.requireLogin();
+  if (!ok) return;
+  currentUser = Auth.getCurrentUser();
+  currentRole = currentUser?.role;
+  if (currentUser) document.getElementById('userPill').textContent = currentUser.full_name || currentUser.email;
+  if (currentRole === 'scanner') {
     setStatus('err','⚠ Δεν έχετε πρόσβαση');
-    document.querySelector('.day-section').innerHTML='<div class="no-msg" style="color:var(--red)">Δεν έχετε δικαίωμα πρόσβασης.</div>';
+    document.querySelector('.day-section').innerHTML = '<div class="no-msg" style="color:var(--red)">Δεν έχετε δικαίωμα πρόσβασης.</div>';
     return;
   }
   loadSites();
-  weekStart=getMonday(new Date());
-  renderWeekNav();renderWeekGrid();
+  weekStart = getMonday(new Date());
+  renderWeekNav();
+  renderWeekGrid();
   setStatus('ok','✓ Συνδεδεμένος');
 }
 
-function loadSites(){
-  sites=Auth.getAssignedSites();
-  const sel=document.getElementById('siteSelect');
-  sel.innerHTML='<option value="">— Επιλογή εργοταξίου —</option>';
-  sites.forEach(s=>{const o=document.createElement('option');o.value=s.id;o.textContent=s.project_code?`${s.project_code} · ${s.name}`:s.name;sel.appendChild(o)});
-  if(sites.length===1){sel.value=sites[0].id;onSiteChange()}
+// ── SITES ──
+function loadSites() {
+  sites = Auth.getAssignedSites();
+  const sel = document.getElementById('siteSelect');
+  sel.innerHTML = '<option value="">— Επιλογή εργοταξίου —</option>';
+  sites.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.project_code ? `${s.project_code} · ${s.name}` : s.name;
+    sel.appendChild(o);
+  });
+  if (sites.length === 1) { sel.value = sites[0].id; onSiteChange(); }
 }
 
-async function onSiteChange(){
-  const sel=document.getElementById('siteSelect');
-  selectedSiteId=sel.value||null;
-  selectedSite=sites.find(s=>String(s.id)===String(selectedSiteId))||null;
-  document.getElementById('siteCodeLbl').textContent=selectedSite?.project_code||'';
-  weekEntries={};selectedDate=null;siteSMName='—';
-  document.getElementById('noSiteMsg').style.display=selectedSiteId?'none':'';
-  document.getElementById('noDayMsg').style.display=selectedSiteId?'':'none';
-  document.getElementById('dayContent').style.display='none';
-  if(selectedSiteId){
-    // Fetch assigned site_manager name
-    const{data}=await db
+async function onSiteChange() {
+  const sel = document.getElementById('siteSelect');
+  selectedSiteId = sel.value || null;
+  selectedSite = sites.find(s => String(s.id) === String(selectedSiteId)) || null;
+  document.getElementById('siteCodeLbl').textContent = selectedSite?.project_code || '';
+  weekEntries = {}; selectedDate = null; siteSMName = '—';
+  document.getElementById('noSiteMsg').style.display = selectedSiteId ? 'none' : '';
+  document.getElementById('noDayMsg').style.display = selectedSiteId ? '' : 'none';
+  document.getElementById('dayContent').style.display = 'none';
+  if (selectedSiteId) {
+    const { data } = await db
       .from('user_site_assignments')
       .select('profiles!user_id(full_name,role)')
-      .eq('site_id',selectedSiteId);
-    const smRow=data?.find(r=>r.profiles?.role==='site_manager');
-    siteSMName=smRow?.profiles?.full_name||'—';
+      .eq('site_id', selectedSiteId);
+    const smRow = (data||[]).find(r => r.profiles?.role === 'site_manager');
+    siteSMName = smRow?.profiles?.full_name || '—';
     loadWeek();
-  } else renderWeekGrid();
+  } else {
+    renderWeekGrid();
+  }
 }
 
-function renderWeekNav(){document.getElementById('weekLabel').textContent=fmtWeekLabel(weekStart)}
-function goPrevWeek(){weekStart=addDays(weekStart,-7);_afterNav()}
-function goNextWeek(){weekStart=addDays(weekStart,7);_afterNav()}
-function goCurrentWeek(){weekStart=getMonday(new Date());_afterNav()}
-function _afterNav(){renderWeekNav();weekEntries={};selectedDate=null;document.getElementById('dayContent').style.display='none';if(selectedSiteId)loadWeek();else renderWeekGrid()}
+// ── WEEK NAV ──
+function renderWeekNav() { document.getElementById('weekLabel').textContent = fmtWeekLabel(weekStart); }
+function goPrevWeek()    { weekStart = addDays(weekStart,-7); afterNav(); }
+function goNextWeek()    { weekStart = addDays(weekStart, 7); afterNav(); }
+function goCurrentWeek() { weekStart = getMonday(new Date()); afterNav(); }
+function afterNav() {
+  renderWeekNav();
+  weekEntries = {}; selectedDate = null;
+  document.getElementById('dayContent').style.display = 'none';
+  if (selectedSiteId) loadWeek(); else renderWeekGrid();
+}
 
-async function loadWeek(){
-  if(!selectedSiteId)return;
+// ── LOAD WEEK ──
+async function loadWeek() {
+  if (!selectedSiteId) return;
   setStatus('loading','Φόρτωση…');
-  const dates=weekDates(weekStart);
-  const{data,error}=await db
+  const dates = weekDates(weekStart);
+  const { data, error } = await db
     .from('site_diary')
-    .select('id,site_id,entry_date,entry_type,description,external_link,link_description,created_by,created_at,profiles!created_by(full_name)')
-    .eq('site_id',selectedSiteId)
-    .gte('entry_date',dates[0]).lte('entry_date',dates[6])
-    .order('entry_date',{ascending:true}).order('created_at',{ascending:true});
-  if(error){setStatus('err','⚠ '+error.message);showToast('⚠ Σφάλμα','#e8600a');return}
-  weekEntries={};
-  (data||[]).forEach(e=>{if(!weekEntries[e.entry_date])weekEntries[e.entry_date]=[];weekEntries[e.entry_date].push(e)});
+    .select('id,site_id,entry_date,entry_type,description,external_link,link_description,created_by,created_at')
+    .eq('site_id', selectedSiteId)
+    .gte('entry_date', dates[0])
+    .lte('entry_date', dates[6])
+    .order('entry_date',{ascending:true})
+    .order('created_at',{ascending:true});
+  if (error) { setStatus('err','⚠ '+error.message); showToast('⚠ Σφάλμα','#e8600a'); return; }
+  weekEntries = {};
+  (data||[]).forEach(e => {
+    if (!weekEntries[e.entry_date]) weekEntries[e.entry_date] = [];
+    weekEntries[e.entry_date].push(e);
+  });
   setStatus('ok','✓ Φορτώθηκε');
   renderWeekGrid();
-  if(selectedDate)renderDayPanel(selectedDate);
+  if (selectedDate) renderDayPanel(selectedDate);
 }
 
-async function refreshAll(){weekEntries={};if(selectedSiteId)await loadWeek();if(selectedDate)renderDayPanel(selectedDate)}
+async function refreshAll() { weekEntries = {}; if (selectedSiteId) await loadWeek(); if (selectedDate) renderDayPanel(selectedDate); }
 
-function renderWeekGrid(){
-  const grid=document.getElementById('weekGrid');
-  const dates=weekDates(weekStart);
-  grid.innerHTML='';
-  dates.forEach((iso,i)=>{
-    const d=parseISO(iso);
-    const entries=weekEntries[iso]||[];
-    const isToday=iso===TODAY,isPast=iso<TODAY,isFut=iso>TODAY;
-    const hasSite=!!selectedSiteId;
-    const isMiss=hasSite&&isPast&&!entries.length;
-    const cell=document.createElement('div');
-    cell.className='day-cell'+(isToday?' is-today':'')+(iso===selectedDate?' selected':'');
-    cell.onclick=()=>selectDay(iso);
-    cell.innerHTML=`<div class="day-name">${DAY_SHORT[i]}</div><div class="day-num">${d.getDate()}</div>${entries.length?`<div class="day-dots">${entries.map(e=>`<div class="dot ${DOT_TYPE[e.entry_type]||'dot-event'}"></div>`).join('')}</div>`:''}${isMiss?'<div class="day-miss">Χωρίς καταχώρηση</div>':(!isFut&&hasSite&&!entries.length?'<div class="day-ok">Κανένα</div>':'')}`;
+// ── WEEK GRID ──
+function renderWeekGrid() {
+  const grid = document.getElementById('weekGrid');
+  const dates = weekDates(weekStart);
+  grid.innerHTML = '';
+  dates.forEach((iso, i) => {
+    const d = parseISO(iso);
+    const entries = weekEntries[iso] || [];
+    const isToday = iso === TODAY, isPast = iso < TODAY, isFut = iso > TODAY;
+    const hasSite = !!selectedSiteId;
+    const isMiss = hasSite && isPast && !entries.length;
+    const cell = document.createElement('div');
+    cell.className = 'day-cell' + (isToday?' is-today':'') + (iso===selectedDate?' selected':'');
+    cell.onclick = () => selectDay(iso);
+    cell.innerHTML = `
+      <div class="day-name">${DAY_SHORT[i]}</div>
+      <div class="day-num">${d.getDate()}</div>
+      ${entries.length ? `<div class="day-dots">${entries.map(e=>`<div class="dot ${DOT_CLASS[e.entry_type]||'dot-event'}"></div>`).join('')}</div>` : ''}
+      ${isMiss ? '<div class="day-miss">Χωρίς καταχώρηση</div>' : (!isFut&&hasSite&&!entries.length ? '<div class="day-ok">Κανένα</div>' : '')}
+    `;
     grid.appendChild(cell);
   });
 }
 
-function selectDay(iso){selectedDate=iso;renderWeekGrid();renderDayPanel(iso)}
+function selectDay(iso) { selectedDate = iso; renderWeekGrid(); renderDayPanel(iso); }
 
-function renderDayPanel(iso){
-  if(!selectedSiteId)return;
-  document.getElementById('noDayMsg').style.display='none';
-  document.getElementById('dayContent').style.display='';
-  const entries=weekEntries[iso]||[];
-  const isToday=iso===TODAY,isPast=iso<TODAY,isFut=iso>TODAY;
-  const isAdmin=currentRole==='admin',isSM=currentRole==='site_manager';
-  const canWrite=isAdmin||isSM;
+// ── DAY PANEL ──
+function renderDayPanel(iso) {
+  if (!selectedSiteId) return;
+  const isAdmin = currentRole === 'admin';
+  const isSM    = currentRole === 'site_manager';
+  const canWrite = isAdmin || isSM;
+  const isToday  = iso === TODAY;
+  const isFut    = iso > TODAY;
+  const isPast   = iso < TODAY;
+  const entries  = weekEntries[iso] || [];
+
+  document.getElementById('noDayMsg').style.display = 'none';
+  document.getElementById('dayContent').style.display = '';
 
   // Report header
-  document.getElementById('rStamp').textContent='Επίσημο Δελτίο Ημερολογίου Έργου';
-  document.getElementById('rDate').textContent=fmtDateLong(iso);
-  const metaItems=[
-    {l:'Κωδικός Έργου',v:selectedSite?.project_code||'—'},
-    {l:'Εργοτάξιο',v:selectedSite?.name||'—'},
-    {l:'Διεύθυνση',v:addr(selectedSite)},
-    {l:'Υπεύθυνος Εργοταξίου',v:siteSMName},
-    {l:'Ημερομηνία',v:fmtDate(iso)},
-    {l:'Σύνολο Καταχωρήσεων',v:String(entries.length)},
-  ];
-  document.getElementById('rMeta').innerHTML=metaItems.map(it=>`<div class="rmeta-item"><div class="rmlbl">${it.l}</div><div class="rmval">${escH(it.v)}</div></div>`).join('');
+  document.getElementById('rDate').textContent = fmtDateLong(iso);
+  document.getElementById('rMeta').innerHTML = [
+    {l:'Κωδικός Έργου',     v: selectedSite?.project_code || '—'},
+    {l:'Εργοτάξιο',         v: selectedSite?.name || '—'},
+    {l:'Διεύθυνση',         v: addr(selectedSite)},
+    {l:'Υπεύθυνος Εργοταξίου', v: siteSMName},
+    {l:'Ημερομηνία',        v: fmtDate(iso)},
+    {l:'Καταχωρήσεις',      v: String(entries.length)},
+  ].map(it=>`<div class="rmeta-item"><div class="rmlbl">${it.l}</div><div class="rmval">${escH(it.v)}</div></div>`).join('');
 
-  // Past-missing banner
-  document.getElementById('pastMissBanner').style.display=(isPast&&!entries.length)?'':'none';
+  // Past missing banner
+  document.getElementById('pastMissBanner').style.display = (isPast && !entries.length) ? '' : 'none';
 
-  // Render entries inside report
-  const re=document.getElementById('reportEntries');
-  if(!entries.length){
-    re.innerHTML=`<div class="empty-day">Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα</div>`;
+  // Render entries
+  const re = document.getElementById('reportEntries');
+  if (!entries.length) {
+    re.innerHTML = '<div class="empty-day">Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα</div>';
   } else {
-    re.innerHTML=entries.map(e=>{
-      const bc=TYPE_BADGE[e.entry_type]||'badge-event';
-      const lbl=TYPE_LABELS[e.entry_type]||e.entry_type;
-      const entryToday=iso===TODAY;
-      const canEditThis=isAdmin||(isSM&&entryToday);
-      const canDelThis=isAdmin;
-      const lh=e.external_link?`<div class="elink-row"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a></div>`:'';
-      return`<div class="report-entry" id="ec-${e.id}">
-        <div class="entry-time">${timeStr(e)}</div>
+    re.innerHTML = entries.map(e => {
+      const bc  = TYPE_BADGE[e.entry_type] || 'badge-event';
+      const lbl = TYPE_LABELS[e.entry_type] || e.entry_type;
+      // SM can edit only today's entries; Admin can always edit
+      const canEditThis = isAdmin || (isSM && isToday);
+      const canDelThis  = isAdmin;
+      const linkHtml = e.external_link
+        ? `<div class="elink-row">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a>
+          </div>` : '';
+      return `<div class="report-entry">
+        <div class="entry-time">${entryTime(e)}</div>
         <div><span class="entry-badge ${bc}">${lbl}</span></div>
         <div class="entry-body">
           <div class="entry-text">${escH(e.description)}</div>
-          ${lh}
+          ${linkHtml}
         </div>
         <div class="ecard-actions">
           <button class="ebtn" onclick="startEdit(${e.id})" ${canEditThis?'':'disabled'}>Επεξεργασία</button>
-          ${canDelThis?`<button class="ebtn del" onclick="openDeleteModal(${e.id})">Διαγραφή</button>`:''}
+          ${canDelThis ? `<button class="ebtn del" onclick="openDeleteModal(${e.id})">Διαγραφή</button>` : ''}
         </div>
       </div>`;
     }).join('');
   }
 
   // Footer timestamp
-  const now=new Date().toLocaleString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  document.getElementById('rFooterL').textContent=`Εκτυπώθηκε: ${now}`;
+  const now = new Date().toLocaleString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rFooterTs').textContent = `Εκτυπώθηκε: ${now}`;
 
-  // Reset form state FIRST
-  cancelForm();
+  // Add button: show for canWrite on non-future days, hide when form is open
+  const addBtn = document.getElementById('addEntryBtn');
+  addBtn.style.display = (canWrite && !isFut) ? '' : 'none';
 
-  // Add button — only for writable roles, non-future days (set AFTER cancelForm)
-  document.getElementById('addBtnWrap').style.display=(canWrite&&!isFut)?'':'none';
+  // Hide form
+  document.getElementById('entryFormWrap').style.display = 'none';
 }
 
-
-function showNewForm(){
-  editingId=null;pendingLink='';pendingLinkDesc='';
-  document.getElementById('formLbl').textContent='Νέα Καταχώρηση';
-  document.getElementById('fType').value='';
-  document.getElementById('fDesc').value='';
-  document.getElementById('weatherWidget').style.display='none';
+// ── FORM ──
+function showNewForm() {
+  editingId = null; pendingLink = ''; pendingLinkDesc = '';
+  document.getElementById('formLbl').textContent = 'Νέα Καταχώρηση';
+  document.getElementById('fType').value = '';
+  document.getElementById('fDesc').value = '';
+  document.getElementById('weatherWidget').style.display = 'none';
+  document.getElementById('fDesc').placeholder = 'Περιγραφή…';
   resetUploadUI();
-  document.getElementById('entryForm').style.display='';
-  document.getElementById('entryForm').classList.remove('edit-mode');
-  document.getElementById('addBtnWrap').style.display='none';
+  document.getElementById('entryFormWrap').style.display = '';
+  document.getElementById('addEntryBtn').style.display = 'none';
   document.getElementById('fDesc').focus();
 }
 
-function startEdit(id){
-  const e=(weekEntries[selectedDate]||[]).find(x=>x.id===id);if(!e)return;
-  editingId=id;pendingLink=e.external_link||'';pendingLinkDesc=e.link_description||'';
-  document.getElementById('formLbl').textContent='Επεξεργασία Καταχώρησης';
-  document.getElementById('fType').value=e.entry_type||'';
-  document.getElementById('fDesc').value=e.description||'';
+function startEdit(id) {
+  const e = (weekEntries[selectedDate]||[]).find(x => x.id === id);
+  if (!e) return;
+  editingId = id; pendingLink = e.external_link||''; pendingLinkDesc = e.link_description||'';
+  document.getElementById('formLbl').textContent = 'Επεξεργασία Καταχώρησης';
+  document.getElementById('fType').value = e.entry_type || '';
+  document.getElementById('fDesc').value = e.description || '';
   resetUploadUI();
-  if(e.external_link){
+  if (e.external_link) {
     document.getElementById('manualLinkArea').classList.add('open');
     document.getElementById('manualLinkBtn').classList.add('active');
-    document.getElementById('fLink').value=e.external_link;
-    document.getElementById('fLinkDesc').value=e.link_description||'';
+    document.getElementById('fLink').value = e.external_link;
+    document.getElementById('fLinkDesc').value = e.link_description || '';
   }
-  document.getElementById('entryForm').style.display='';
-  document.getElementById('entryForm').classList.add('edit-mode');
-  document.getElementById('addBtnWrap').style.display='none';
   onTypeChange();
-  document.getElementById('entryForm').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('entryFormWrap').style.display = '';
+  document.getElementById('addEntryBtn').style.display = 'none';
+  document.getElementById('entryFormWrap').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-function cancelForm(){
-  editingId=null;
-  document.getElementById('entryForm').style.display='none';
-  document.getElementById('entryForm').classList.remove('edit-mode');
+function cancelForm() {
+  editingId = null;
+  document.getElementById('entryFormWrap').style.display = 'none';
   resetUploadUI();
-  if(selectedDate&&selectedDate<=TODAY&&selectedSiteId&&(currentRole==='admin'||currentRole==='site_manager')){
-    document.getElementById('addBtnWrap').style.display='';
+  // Restore add button if still allowed
+  const isAdmin  = currentRole === 'admin';
+  const isSM     = currentRole === 'site_manager';
+  const canWrite  = isAdmin || isSM;
+  const isFut    = selectedDate > TODAY;
+  if (canWrite && selectedDate && !isFut) {
+    document.getElementById('addEntryBtn').style.display = '';
   }
 }
 
-function onTypeChange(){
-  const t=document.getElementById('fType').value;
-  document.getElementById('weatherWidget').style.display=(t==='weather')?'':'none';
-  const hints={weather:'Περιγράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή εργασιών λόγω ισχυρών ανέμων Bf 7")',inspection:'Όνομα επιθεωρητή, φορέας, αντικείμενο ελέγχου',work_stoppage:'Αιτία διακοπής και εκτιμώμενη διάρκεια',work_log:'Εργασίες που εκτελέστηκαν κατά τη διάρκεια της ημέρας',event:'Περιγραφή συμβάντος'};
-  document.getElementById('fDesc').placeholder=hints[t]||'Περιγραφή…';
+function onTypeChange() {
+  const t = document.getElementById('fType').value;
+  document.getElementById('weatherWidget').style.display = t === 'weather' ? '' : 'none';
+  const hints = {
+    weather:      'Περιγράψτε τον λόγο της αναφοράς (π.χ. "Αναστολή εργασιών λόγω ισχυρών ανέμων Bf 7")',
+    inspection:   'Όνομα επιθεωρητή, φορέας, αντικείμενο ελέγχου',
+    work_stoppage:'Αιτία διακοπής και εκτιμώμενη διάρκεια',
+    work_log:     'Εργασίες που εκτελέστηκαν κατά τη διάρκεια της ημέρας',
+    event:        'Περιγραφή συμβάντος',
+  };
+  document.getElementById('fDesc').placeholder = hints[t] || 'Περιγραφή…';
 }
 
-async function fetchWeather(){
-  const btn=document.getElementById('fetchWeatherBtn');
-  const dataEl=document.getElementById('weatherData');
-  btn.disabled=true;btn.textContent='…';
-  if(!navigator.geolocation){showToast('Η γεωτοποθεσία δεν υποστηρίζεται','#e8600a');btn.disabled=false;btn.textContent='⟳ Λήψη καιρού';return}
-  navigator.geolocation.getCurrentPosition(async pos=>{
-    const{latitude:lat,longitude:lon}=pos.coords;
-    try{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=Europe%2FAthens`;
-      const res=await fetch(url);const d=await res.json();const c=d.current;
-      const wdesc=wCode(c.weather_code);
-      const summary=`${wdesc} · ${c.temperature_2m}°C · Άνεμος ${c.wind_speed_10m} m/s (ριπές ${c.wind_gusts_10m} m/s) · Υγρασία ${c.relative_humidity_2m}% · Κατακρ. ${c.precipitation} mm`;
-      dataEl.textContent=summary;
-      if(!document.getElementById('fDesc').value.trim())document.getElementById('fDesc').value=summary;
+// ── WEATHER API ──
+async function fetchWeather() {
+  const btn    = document.getElementById('fetchWeatherBtn');
+  const dataEl = document.getElementById('weatherData');
+  btn.disabled = true; btn.textContent = '…';
+  if (!navigator.geolocation) { showToast('Η γεωτοποθεσία δεν υποστηρίζεται','#e8600a'); btn.disabled=false; btn.textContent='⟳ Λήψη καιρού'; return; }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude:lat, longitude:lon } = pos.coords;
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=Europe%2FAthens`;
+      const res = await fetch(url);
+      const d = await res.json(); const c = d.current;
+      const summary = `${wCode(c.weather_code)} · ${c.temperature_2m}°C · Άνεμος ${c.wind_speed_10m} m/s (ριπές ${c.wind_gusts_10m} m/s) · Υγρ. ${c.relative_humidity_2m}% · Κατακρ. ${c.precipitation} mm`;
+      dataEl.textContent = summary;
+      if (!document.getElementById('fDesc').value.trim()) document.getElementById('fDesc').value = summary;
       showToast('✓ Καιρός φορτώθηκε');
-    }catch(err){showToast('⚠ Σφάλμα API καιρού','#e8600a')}
-    btn.disabled=false;btn.textContent='⟳ Ανανέωση';
-  },()=>{showToast('⚠ Δεν επιτράπηκε η τοποθεσία','#e8600a');btn.disabled=false;btn.textContent='⟳ Λήψη καιρού'},{timeout:8000});
+    } catch(err) { showToast('⚠ Σφάλμα API καιρού','#e8600a'); }
+    btn.disabled = false; btn.textContent = '⟳ Ανανέωση';
+  }, () => { showToast('⚠ Δεν επιτράπηκε η τοποθεσία','#e8600a'); btn.disabled=false; btn.textContent='⟳ Λήψη καιρού'; }, {timeout:8000});
 }
 
-function wCode(c){
-  if(c===0)return'Αίθριος';if(c<=2)return'Αραιά συννεφιά';if(c===3)return'Συννεφιά';
-  if(c<=49)return'Ομίχλη';if(c<=59)return'Ψιχάλα';if(c<=69)return'Βροχή';
-  if(c<=79)return'Χιόνι';if(c<=82)return'Ισχυρή βροχή';if(c<=86)return'Χιονόπτωση';
-  if(c<=99)return'Καταιγίδα';return'—';
+function wCode(c) {
+  if(c===0)  return 'Αίθριος';   if(c<=2)  return 'Αραιά συννεφιά'; if(c===3) return 'Συννεφιά';
+  if(c<=49)  return 'Ομίχλη';    if(c<=59)  return 'Ψιχάλα';         if(c<=69) return 'Βροχή';
+  if(c<=79)  return 'Χιόνι';     if(c<=82)  return 'Ισχυρή βροχή';   if(c<=86) return 'Χιονόπτωση';
+  if(c<=99)  return 'Καταιγίδα'; return '—';
 }
 
-function resetUploadUI(){
+// ── UPLOAD UI ──
+function resetUploadUI() {
   document.getElementById('dropboxBtn').classList.remove('active');
   document.getElementById('manualLinkBtn').classList.remove('active');
   document.getElementById('manualLinkArea').classList.remove('open');
-  document.getElementById('fLink').value='';
-  document.getElementById('fLinkDesc').value='';
-  const ur=document.getElementById('uploadResult');ur.style.display='none';ur.textContent='';
-  pendingLink='';pendingLinkDesc='';
+  document.getElementById('fLink').value = '';
+  document.getElementById('fLinkDesc').value = '';
+  const ur = document.getElementById('uploadResult'); ur.style.display='none'; ur.textContent='';
+  pendingLink=''; pendingLinkDesc='';
 }
 
-function handleDropboxChooser(){
-  // Dropbox Chooser SDK — ενεργοποιείται με App Key όταν είναι έτοιμο
-  // Dropbox.choose({ success: files => { setPendingLink(files[0].link, files[0].name); }, multiselect: false, linkType: 'preview' });
+function handleDropboxChooser() {
+  // Dropbox.choose({ success: files => setPendingLink(files[0].link,files[0].name), multiselect:false, linkType:'preview' });
   showToast('Dropbox Chooser: θα ενεργοποιηθεί σύντομα','#3a7bd5');
   document.getElementById('dropboxBtn').classList.add('active');
-  // fallback: άνοιξε το manual
   document.getElementById('manualLinkArea').classList.add('open');
   document.getElementById('manualLinkBtn').classList.add('active');
   document.getElementById('fLink').focus();
 }
 
-function setPendingLink(url,desc){
-  pendingLink=url;pendingLinkDesc=desc||'';
-  const ur=document.getElementById('uploadResult');
-  ur.textContent=`✓ ${desc||url}`;ur.style.display='';
+function setPendingLink(url, desc) {
+  pendingLink = url; pendingLinkDesc = desc||'';
+  const ur = document.getElementById('uploadResult');
+  ur.textContent = `✓ ${desc||url}`; ur.style.display='';
   document.getElementById('dropboxBtn').classList.add('active');
 }
 
-function toggleManualLink(){
-  const area=document.getElementById('manualLinkArea');
-  const btn=document.getElementById('manualLinkBtn');
-  const isOpen=area.classList.contains('open');
-  area.classList.toggle('open',!isOpen);
-  btn.classList.toggle('active',!isOpen);
-  if(!isOpen)document.getElementById('fLink').focus();
+function toggleManualLink() {
+  const area = document.getElementById('manualLinkArea');
+  const btn  = document.getElementById('manualLinkBtn');
+  const open = area.classList.contains('open');
+  area.classList.toggle('open', !open);
+  btn.classList.toggle('active', !open);
+  if (!open) document.getElementById('fLink').focus();
 }
 
-async function saveEntry(){
-  const type=document.getElementById('fType').value;
-  const desc=document.getElementById('fDesc').value.trim();
-  const link=document.getElementById('fLink').value.trim()||pendingLink||'';
-  const linkDesc=document.getElementById('fLinkDesc').value.trim()||pendingLinkDesc||'';
-  if(!type){showToast('Επιλέξτε τύπο','#e8600a');return}
-  if(!desc){showToast('Συμπληρώστε περιγραφή','#e8600a');return}
-  const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='…';
-  const payload={site_id:selectedSiteId,entry_date:selectedDate,entry_type:type,description:desc,external_link:link||null,link_description:linkDesc||null};
+// ── SAVE ──
+async function saveEntry() {
+  const type     = document.getElementById('fType').value;
+  const desc     = document.getElementById('fDesc').value.trim();
+  const link     = document.getElementById('fLink').value.trim() || pendingLink || '';
+  const linkDesc = document.getElementById('fLinkDesc').value.trim() || pendingLinkDesc || '';
+  if (!type) { showToast('Επιλέξτε τύπο','#e8600a'); return; }
+  if (!desc) { showToast('Συμπληρώστε περιγραφή','#e8600a'); return; }
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true; btn.textContent = '…';
+  const payload = { site_id:selectedSiteId, entry_date:selectedDate, entry_type:type, description:desc, external_link:link||null, link_description:linkDesc||null };
   let error;
-  if(editingId){({error}=await db.from('site_diary').update(payload).eq('id',editingId))}
-  else{({error}=await db.from('site_diary').insert({...payload,created_by:currentUser.id}))}
-  btn.disabled=false;btn.textContent='Αποθήκευση';
-  if(error){showToast('⚠ '+error.message,'#e8600a');return}
-  showToast(editingId?'✓ Αποθηκεύτηκε':'✓ Καταχωρήθηκε');
-  cancelForm();await loadWeek();renderDayPanel(selectedDate);
+  if (editingId) {
+    ({ error } = await db.from('site_diary').update(payload).eq('id',editingId));
+  } else {
+    ({ error } = await db.from('site_diary').insert({...payload, created_by:currentUser.id}));
+  }
+  btn.disabled = false; btn.textContent = 'Αποθήκευση';
+  if (error) { showToast('⚠ '+error.message,'#e8600a'); return; }
+  showToast(editingId ? '✓ Αποθηκεύτηκε' : '✓ Καταχωρήθηκε');
+  cancelForm();
+  await loadWeek();
+  renderDayPanel(selectedDate);
 }
 
-function openDeleteModal(id){
-  deletingId=id;
-  const e=(weekEntries[selectedDate]||[]).find(x=>x.id===id);
-  document.getElementById('deletePreview').textContent=e?`${TYPE_LABELS[e.entry_type]||e.entry_type} · ${(e.description||'').substring(0,80)}${(e.description||'').length>80?'…':''}`:'';
+// ── DELETE ──
+function openDeleteModal(id) {
+  deletingId = id;
+  const e = (weekEntries[selectedDate]||[]).find(x=>x.id===id);
+  document.getElementById('deletePreview').textContent = e ? `${TYPE_LABELS[e.entry_type]||e.entry_type} · ${(e.description||'').substring(0,80)}${(e.description||'').length>80?'…':''}` : '';
   document.getElementById('deleteModal').classList.add('open');
 }
-function closeDeleteModal(){deletingId=null;document.getElementById('deleteModal').classList.remove('open')}
-async function confirmDelete(){
-  if(!deletingId)return;
-  const{error}=await db.from('site_diary').delete().eq('id',deletingId);
+function closeDeleteModal() { deletingId=null; document.getElementById('deleteModal').classList.remove('open'); }
+async function confirmDelete() {
+  if (!deletingId) return;
+  const { error } = await db.from('site_diary').delete().eq('id',deletingId);
   closeDeleteModal();
-  if(error){showToast('⚠ '+error.message,'#e8600a');return}
+  if (error) { showToast('⚠ '+error.message,'#e8600a'); return; }
   showToast('✓ Διαγράφηκε','#d93b3b');
-  await loadWeek();renderDayPanel(selectedDate);
+  await loadWeek(); renderDayPanel(selectedDate);
 }
 
-function printDay(){window.print()}
+// ── PRINT / EMAIL ──
+function printDay() { window.print(); }
 
-function emailDay(){
-  if(!selectedDate||!selectedSiteId)return;
-  const entries=weekEntries[selectedDate]||[];
-  const subj=encodeURIComponent(`Ημερολόγιο Εργοταξίου — ${selectedSite?.name||''} — ${fmtDate(selectedDate)}`);
-  let body=`ΗΜΕΡΟΛΟΓΙΟ ΕΡΓΟΤΑΞΙΟΥ\n${'═'.repeat(42)}\n`;
-  body+=`Κωδικός Έργου        : ${selectedSite?.project_code||'—'}\n`;
-  body+=`Εργοτάξιο            : ${selectedSite?.name||'—'}\n`;
-  body+=`Διεύθυνση            : ${addr(selectedSite)}\n`;
-  body+=`Υπεύθυνος Εργοταξίου : ${siteSMName}\n`;
-  body+=`Ημερομηνία           : ${fmtDateLong(selectedDate)}\n`;
-  body+=`${'─'.repeat(42)}\n\n`;
-  if(!entries.length){body+='Δεν υπάρχουν καταχωρήσεις.\n'}
-  else{entries.forEach(e=>{
-    body+=`[${TYPE_LABELS[e.entry_type]||e.entry_type}]  ${timeStr(e)}\n${e.description}\n`;
-    if(e.external_link)body+=`Αρχείο: ${e.external_link}${e.link_description?' ('+e.link_description+')':''}\n`;
-    body+='\n';
-  })}
-  body+=`${'─'.repeat(42)}\nSiteLog v3.0`;
-  window.location.href=`mailto:?subject=${subj}&body=${encodeURIComponent(body)}`;
+function emailDay() {
+  if (!selectedDate || !selectedSiteId) return;
+  const entries = weekEntries[selectedDate] || [];
+  const subj = encodeURIComponent(`Ημερολόγιο Εργοταξίου — ${selectedSite?.name||''} — ${fmtDate(selectedDate)}`);
+  let body = `ΗΜΕΡΟΛΟΓΙΟ ΕΡΓΟΤΑΞΙΟΥ\n${'═'.repeat(42)}\n`;
+  body += `Κωδικός Έργου        : ${selectedSite?.project_code||'—'}\n`;
+  body += `Εργοτάξιο            : ${selectedSite?.name||'—'}\n`;
+  body += `Διεύθυνση            : ${addr(selectedSite)}\n`;
+  body += `Υπεύθυνος Εργοταξίου : ${siteSMName}\n`;
+  body += `Ημερομηνία           : ${fmtDateLong(selectedDate)}\n`;
+  body += `${'─'.repeat(42)}\n\n`;
+  if (!entries.length) { body += 'Δεν υπάρχουν καταχωρήσεις.\n'; }
+  else { entries.forEach(e => {
+    body += `[${TYPE_LABELS[e.entry_type]||e.entry_type}]  ${entryTime(e)}\n${e.description}\n`;
+    if (e.external_link) body += `Αρχείο: ${e.external_link}${e.link_description?' ('+e.link_description+')':''}\n`;
+    body += '\n';
+  }); }
+  body += `${'─'.repeat(42)}\nSiteLog v3.0`;
+  window.location.href = `mailto:?subject=${subj}&body=${encodeURIComponent(body)}`;
 }
 
-function setStatus(s,msg){const el=document.getElementById('dbStatus');el.innerHTML=(s==='loading'?'<span class="spinner"></span>':'')+msg;el.className='status '+s}
-function showToast(msg,color){const t=document.getElementById('toast');t.textContent=msg;t.style.background=color||'#2ea84f';t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3200)}
+// ── UTILS ──
+function setStatus(s, msg) {
+  const el = document.getElementById('dbStatus');
+  el.innerHTML = (s==='loading'?'<span class="spinner"></span>':'') + msg;
+  el.className = 'status ' + s;
+}
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = color||'#2ea84f';
+  t.classList.add('show'); clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
+}
 
-document.getElementById('deleteModal').addEventListener('click',function(e){if(e.target===this)closeDeleteModal()});
+document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
 init();
 </script>
 </body>
