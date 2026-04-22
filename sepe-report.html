@@ -276,8 +276,9 @@
 
     setStatus('loading', 'Φόρτωση δεδομένων…');
 
-    // Παράλληλα: site info + attendance
-    const [siteRes, attRes] = await Promise.all([
+    // Παράλληλα: settings + site info + attendance
+    const [settingsRes, siteRes, attRes] = await Promise.all([
+      db.from('settings').select('key, value').in('key', ['company_name', 'company_afm']),
       db.from('sites').select('*').eq('id', siteId).single(),
       db.from('attendance_log')
         .select(`
@@ -303,23 +304,27 @@
       return;
     }
 
+    // Εξαγωγή company settings
+    const settingsMap = {};
+    (settingsRes.data || []).forEach(({ key, value }) => { settingsMap[key] = value; });
+
     const site    = siteRes.data;
     const records = attRes.data || [];
 
     setStatus('ok', `✓ ${records.length} εργαζόμενοι · ${fmtDate(dateISO)} · ${site.name}`);
-    renderDocument(site, records, dateISO);
+    renderDocument(site, records, dateISO, settingsMap);
   }
 
   // ── RENDER ──
-  function renderDocument(site, records, dateISO) {
+  function renderDocument(site, records, dateISO, settings = {}) {
     // Δόμηση διεύθυνσης
     const addrParts = [site.address_street, site.address_number].filter(Boolean).join(' ');
     const cityPart  = site.address_city || '';
     const fullAddr  = [addrParts, cityPart].filter(Boolean).join(', ') || '_______________';
 
-    // Header text του ΣΕΠΕ εντύπου
-    const companyName  = site.company_name   || '______________________________';
-    const companyAfm   = site.company_afm    || '_______________';
+    // Στοιχεία εταιρείας από settings
+    const companyName  = settings.company_name || '______________________________';
+    const companyAfm   = settings.company_afm  || '_______________';
     const permitNumber = site.permit_number  || '______________________';
     const efkaBranch   = site.efka_branch    || '_______________________________________';
     const efkaAgm      = site.efka_agm       || '___________________________________________';
