@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>SiteLog — Σαρωτής QR</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/theme.css">
 <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
@@ -20,8 +19,8 @@
     --gray2: #252525;
     --gray3: #333;
     --gray4: #555;
-    --green: #22c55e;
-    --green-lt: #22c55e;
+    --green: #23a045;
+    --green-lt: #2ec25a;
     --red: #d93b3b;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,7 +43,7 @@
     border-bottom: 3px solid var(--orange);
     flex-shrink: 0;
   }
-  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing:-0.02em; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; }
   .logo em { color: var(--orange); font-style: normal; }
   .header-right { display: flex; gap: 8px; align-items: center; }
   .date-pill {
@@ -628,7 +627,7 @@
   </div>
 </div>
 
-<div id="toast" class="toast" aria-live="polite"></div>
+<div class="toast" id="toast"></div>
 
 <script>
   // ── AUTH INIT ──
@@ -876,7 +875,7 @@
   function showToast(msg, color) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.style.background = color || '#22c55e';
+    t.style.background = color || '#23a045';
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
   }
@@ -1141,7 +1140,7 @@
     }
     todayLog = todayLog.filter(e => e.db_id !== dbId);
     renderLog();
-    showToast('✓ Η εγγραφή διαγράφηκε', '#22c55e');
+    showToast('✓ Η εγγραφή διαγράφηκε', '#23a045');
   }
 
   // ── START ──

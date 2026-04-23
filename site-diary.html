@@ -5,21 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Ημερολόγιο Εργοταξίου</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/theme.css">
 <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="shared/auth.js"></script>
 <style>
-:root { /* via shared/theme.css */ }
+:root{
+  --black:#0d0d0d;--yellow:#f5c800;--orange:#e8600a;
+  --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
+  --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;--blue:#3a7bd5;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
 header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--orange);position:sticky;top:0;z-index:100}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:-0.02em}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
 .logo em{color:var(--orange);font-style:normal}
 .logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
-/* .back-btn → use .btn-back from theme.css */
+.back-btn{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.12);border:none;border-radius:2px;color:var(--black);padding:6px 12px;cursor:pointer;text-decoration:none;transition:background 0.15s}
+.back-btn:hover{background:rgba(0,0,0,0.22)}
 
 .db-bar{background:var(--gray);border-bottom:1px solid var(--gray3);padding:6px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:0.65rem}
 .status{flex:1}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:var(--gray4)}
@@ -51,7 +55,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .day-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
 .dot{width:6px;height:6px;border-radius:50%}
 .dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}
-.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#22c55e}
+.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#2ea84f}
 .day-miss{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--red);margin-top:auto}
 .day-ok{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--gray4);margin-top:auto}
 .week-legend{display:flex;gap:12px;justify-content:center;padding:8px 20px 12px;flex-wrap:wrap}
@@ -162,8 +166,10 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 .modal-preview{background:var(--black);border:1px solid var(--gray3);border-radius:2px;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray4);margin-bottom:14px}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end}
 
-/* .spinner, @keyframes spin → theme.css */}
-/* .toast → theme.css */
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.73rem;padding:9px 16px;border-radius:3px;opacity:0;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:999;max-width:calc(100vw - 40px)}
+.toast.show{opacity:1;transform:translateY(0)}
 
 @media print{
   header,.db-bar,.toolbar,.week-section,.week-legend,.report-actions,.ecard-actions,.entry-form-wrap,.report-footer,.past-miss,.ql-toolbar{display:none!important}
@@ -185,14 +191,11 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <body>
 
 <header>
-  <div class="logo">Site<em>Log</em><sub>Ημερολόγιο</sub></div>
-  <div class="user-menu">
-    <div class="user-info">
-      <div class="user-name" id="userName"></div>
-      <div class="user-role" id="userRoleLabel"></div>
-    </div>
-    <a href="index.html" class="btn-back">← Αρχική</a>
-    <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
+  <div class="logo">Site<em>Log</em> <sub>Ημερολόγιο Εργοταξίου</sub></div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="userPill" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--black);opacity:0.6;padding:0 4px"></span>
+    <a href="index.html" class="back-btn">← Αρχική</a>
+    <button class="back-btn" onclick="Auth.signOut()" style="font-size:0.6rem">↪ Έξοδος</button>
   </div>
 </header>
 
@@ -328,7 +331,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
   </div>
 </div>
 
-<div id="toast" class="toast" aria-live="polite"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 const db = window.sb;
@@ -385,12 +388,7 @@ async function init() {
   if (!ok) return;
   currentUser = Auth.getCurrentUser();
   currentRole = Auth.getCurrentRole();
-  if (currentUser) {
-    const nameEl = document.getElementById('userName');
-    const roleEl = document.getElementById('userRoleLabel');
-    if (nameEl) nameEl.textContent = currentUser.full_name || currentUser.email;
-    if (roleEl) roleEl.textContent = Auth.getRoleLabel();
-  }
+  if (currentUser) document.getElementById('userPill').textContent = currentUser.full_name || currentUser.email;
   if (currentRole === 'scanner') {
     setStatus('err','⚠ Δεν έχετε πρόσβαση');
     document.querySelector('.day-section').innerHTML = '<div class="no-msg" style="color:var(--red)">Δεν έχετε δικαίωμα πρόσβασης.</div>';
@@ -794,17 +792,11 @@ function setStatus(s, msg) {
   el.innerHTML = (s==='loading'?'<span class="spinner"></span>':'') + msg;
   el.className = 'status ' + s;
 }
-function showToast(msg, type) {
+function showToast(msg, color) {
   const t = document.getElementById('toast');
-  if (!type || type.startsWith('#')) {
-    if (type === '#e8600a' || type === '#d93b3b') type = 'error';
-    else if (type === '#3a7bd5') type = 'info';
-    else type = 'success';
-  }
-  t.textContent = msg;
-  t.className = 'toast toast-' + type + ' show';
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 3000);
+  t.textContent = msg; t.style.background = color||'#2ea84f';
+  t.classList.add('show'); clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
 document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
