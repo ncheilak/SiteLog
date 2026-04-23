@@ -863,61 +863,92 @@ async function onDropboxFileSelected(input) {
 
   const btn = document.getElementById('dropboxBtn');
   btn.disabled = true;
-  showToast('⟳ Ανέβασμα αρχείου…','#3a7bd5');
+  showToast('⟳ Ανέβασμα αρχείου...', '#3a7bd5');
 
- let folder = document.getElementById('dropboxFolderPath').value.trim();
-if (!folder || folder === '') folder = '/SiteLog';
-let basePath = folder.replace(/\/$/, '');
-const path = basePath + '/' + isoDate(new Date()) + '_' + file.name.replace(/[^a-zA-Z0-9._\-()\s]/g, '_');
+  // Λήψη φακέλου από το πεδίο (που συμπληρώθηκε από το modal)
+  let folder = document.getElementById('dropboxFolderPath').value.trim();
+  if (!folder || folder === '') folder = '/SiteLog';
+  let basePath = folder.replace(/\/$/, '');
+  const filename = file.name.replace(/[^a-zA-Z0-9._\-()\s]/g, '_');
+  const path = basePath + '/' + isoDate(new Date()) + '_' + filename;
 
+  // 1. Upload
   const uploadResp = await fetch('https://content.dropboxapi.com/2/files/upload', {
     method: 'POST',
     headers: {
-      'Authorization':   'Bearer ' + dropboxToken,
-      'Dropbox-API-Arg': JSON.stringify({ path, mode:'add', autorename:true }),
-      'Content-Type':    'application/octet-stream',
+      'Authorization': 'Bearer ' + dropboxToken,
+      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'add', autorename: true }),
+      'Content-Type': 'application/octet-stream',
     },
     body: file,
   });
   const uploaded = await uploadResp.json();
-if (uploaded.error_summary) {
-  showToast('⚠ Dropbox error: ' + uploaded.error_summary, '#e8600a');
-  btn.disabled = false; return;
-}
-if (!uploaded.path_display) {
-  showToast('⚠ Άγνωστο σφάλμα upload', '#e8600a');
-  btn.disabled = false; return;
-}
+  if (uploaded.error_summary) {
+    showToast('⚠ Upload error: ' + uploaded.error_summary, '#e8600a');
+    btn.disabled = false;
+    return;
+  }
+  if (!uploaded.path_display) {
+    showToast('⚠ Upload failed – no path returned', '#e8600a');
+    btn.disabled = false;
+    return;
+  }
+  showToast('✓ Αρχείο ανέβηκε, δημιουργία link...', '#2ea84f');
 
-  const linkResp = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + dropboxToken,
-      'Content-Type':  'application/json',
-    },
-    body: JSON.stringify({ path: uploaded.path_display, settings:{ requested_visibility:'team_only' } }),
-  });
-  const linkData = await linkResp.json();
-  const url = linkData.url || linkData.shared_link_already_exists?.metadata?.url;
+  // 2. Δημιουργία shared link – ΔΟΚΙΜΑΣΜΕΝΟΣ ΤΡΟΠΟΣ
+  let sharedUrl = null;
+  try {
+    const linkResp = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + dropboxToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        path: uploaded.path_display,
+        settings: { requested_visibility: 'public' }  // 'public' ή 'team_only'
+      }),
+    });
+    const linkData = await linkResp.json();
+    if (linkData.url) {
+      sharedUrl = linkData.url;
+    } else if (linkData.error_summary) {
+      // Αν υπάρχει ήδη link, προσπάθησε να το πάρεις
+      console.warn('Create link error:', linkData.error_summary);
+      const existingResp = await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + dropboxToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: uploaded.path_display }),
+      });
+      const existing = await existingResp.json();
+      if (existing.links && existing.links.length > 0) {
+        sharedUrl = existing.links[0].url;
+      }
+    }
+  } catch (err) {
+    console.error('Link creation exception:', err);
+  }
 
-  if (url) {
-    setPendingLink(url, file.name);
-    showToast('✓ Ανέβηκε στο Dropbox','#2ea84f');
+  if (sharedUrl) {
+    setPendingLink(sharedUrl, file.name);
+    showToast('✓ Link δημιουργήθηκε και προστέθηκε στη φόρμα', '#2ea84f');
   } else {
-    showToast('⚠ Δεν δημιουργήθηκε link','#e8600a');
+    showToast('⚠ Δεν δημιουργήθηκε link. Δοκιμάστε ξανά.', '#e8600a');
   }
   btn.disabled = false;
 }
 
 function setPendingLink(url, desc) {
-  pendingLink = url; pendingLinkDesc = desc || '';
+  pendingLink = url;
+  pendingLinkDesc = desc || '';
   const ur = document.getElementById('uploadResult');
-  ur.textContent = `✓ ${desc || url}`; ur.style.display = '';
+  ur.textContent = `✓ ${desc || url}`;
+  ur.style.display = '';
   document.getElementById('dropboxBtn').classList.add('active');
-  
-  // Ανοίγουμε αυτόματα την περιοχή "Εισαγωγή Συνδέσμου" και γεμίζουμε τα πεδία
+
+  // Αυτόματο άνοιγμα της περιοχής εισαγωγής link
   const area = document.getElementById('manualLinkArea');
-  const btn  = document.getElementById('manualLinkBtn');
+  const btn = document.getElementById('manualLinkBtn');
   if (!area.classList.contains('open')) {
     area.classList.add('open');
     btn.classList.add('active');
