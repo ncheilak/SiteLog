@@ -1,4 +1,4 @@
-# SiteLog v3.0 — Εγχειρίδιο Χρήσης
+# SiteLog  — Εγχειρίδιο Χρήσης
 
 > Σύστημα καταγραφής παρουσίας εργοταξίου  
 > 🌐 [https://ncheilak.github.io/SiteLog/](https://ncheilak.github.io/SiteLog/)
