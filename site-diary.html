@@ -10,6 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="shared/auth.js"></script>
+<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="szydo67fl9prnzz"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
@@ -680,11 +681,21 @@ function resetUploadUI() {
 }
 
 function handleDropboxChooser() {
-  showToast('Dropbox Chooser: θα ενεργοποιηθεί σύντομα','#3a7bd5');
-  document.getElementById('dropboxBtn').classList.add('active');
-  document.getElementById('manualLinkArea').classList.add('open');
-  document.getElementById('manualLinkBtn').classList.add('active');
-  document.getElementById('fLink').focus();
+  if (typeof Dropbox === 'undefined') {
+    showToast('⚠ Το Dropbox SDK δεν φορτώθηκε', '#e8600a');
+    return;
+  }
+  Dropbox.choose({
+    success: function(files) {
+      const file = files[0];
+      setPendingLink(file.link, file.name);
+      showToast('✓ Αρχείο επιλέχθηκε από Dropbox', '#3a7bd5');
+    },
+    cancel: function() {},
+    linkType: 'preview',
+    multiselect: false,
+    extensions: ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.xls', '.xlsx', '.dwg', '.zip'],
+  });
 }
 
 function setPendingLink(url, desc) {
