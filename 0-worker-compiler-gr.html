@@ -110,8 +110,6 @@
 <header>
   <div class="logo">Site<em>Log</em><sub>Εργαζόμενοι</sub></div>
   <div class="user-menu">
-    <button class="btn btn-outline btn-sm" onclick="loadFromSupabase()">☁ Φόρτωση</button>
-    <button class="btn btn-outline btn-sm" onclick="openModal()">? Μορφή CSV</button>
     <div class="user-info">
       <div class="user-name" id="userName"></div>
       <div class="user-role" id="userRoleLabel"></div>
@@ -125,6 +123,7 @@
 <div class="db-bar">
   <span id="dbStatusTxt" class="db-status-txt">Συνδέεται στο Supabase…</span>
   <button class="btn btn-outline btn-sm" onclick="loadFromSupabase()" id="refreshBtn">↻ Ανανέωση</button>
+  <button class="btn btn-outline btn-sm" onclick="openModal()">? Μορφή CSV</button>
 </div>
 
 <div class="shell">
@@ -582,9 +581,9 @@ ergolabos,afmErgolabou</code>
     if (!ok) return;
     const user = Auth.getCurrentUser();
     if (user) {
-      document.getElementById('userName').textContent = user.full_name || user.email;
-      document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
-    }
+    document.getElementById('userName').textContent = user.full_name || user.email;
+    document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
+  }
     await loadFromSupabase();
     renderTable();
   }

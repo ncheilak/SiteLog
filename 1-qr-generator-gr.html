@@ -259,9 +259,9 @@
     if (!ok) return;
     const user = Auth.getCurrentUser();
     if (user) {
-      document.getElementById('userName').textContent = user.full_name || user.email;
-      document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
-    }
+    document.getElementById('userName').textContent = user.full_name || user.email;
+    document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
+  }
 
     const sel = document.getElementById('searchErgolabos');
     sel.innerHTML = '<option value="">— Φόρτωση… —</option>';
