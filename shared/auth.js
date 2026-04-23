@@ -78,26 +78,40 @@
     return { profile: _profile, sites: _sites };
   }
 
+  // ── _showAuthFallback ─────────────────────────────────────────────────────────
+  // Εμφανίζει fallback μήνυμα αντί για κενή σελίδα κατά τη διάρκεια redirect.
+  function _showAuthFallback(msg, linkHref, linkLabel) {
+    document.body.style.cssText = 'margin:0;background:#0c0c0c;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:IBM Plex Sans,sans-serif;';
+    document.body.innerHTML = `
+      <div style="text-align:center;color:#666;padding:40px;">
+        <div style="font-family:\'Bebas Neue\',sans-serif;font-size:2rem;color:#f5c800;letter-spacing:2px;margin-bottom:12px;">Site<em style="font-style:normal;">Log</em></div>
+        <div style="font-size:0.85rem;margin-bottom:20px;">${msg}</div>
+        <a href="${linkHref}" style="color:#f5c800;font-size:0.8rem;text-decoration:none;border-bottom:1px solid #f5c800;padding-bottom:2px;">${linkLabel}</a>
+      </div>`;
+  }
+
   // ── requireLogin ─────────────────────────────────────────────────────────────
-  // Αν δεν υπάρχει session → redirect στο login.html
+  // Αν δεν υπάρχει session → fallback + redirect στο login.html
   // Χρησιμοποιείται στην αρχή κάθε protected σελίδας.
   async function requireLogin() {
     const result = await initAuth();
     if (!result) {
-      _redirectTo('login.html');
+      _showAuthFallback('Απαιτείται σύνδεση.', 'login.html', '→ Σύνδεση');
+      setTimeout(() => _redirectTo('login.html'), 1500);
       return false;
     }
     return true;
   }
 
   // ── requireRole ──────────────────────────────────────────────────────────────
-  // Αν ο ρόλος δεν είναι στη λίστα → redirect στο index.html
+  // Αν ο ρόλος δεν είναι στη λίστα → fallback + redirect στο index.html
   // π.χ. requireRole(['admin', 'site_manager'])
   async function requireRole(allowedRoles) {
     const ok = await requireLogin();
     if (!ok) return false;
     if (!allowedRoles.includes(_profile.role)) {
-      _redirectTo('index.html');
+      _showAuthFallback('Δεν έχετε πρόσβαση σε αυτή τη σελίδα.', 'index.html', '← Αρχική');
+      setTimeout(() => _redirectTo('index.html'), 1500);
       return false;
     }
     return true;

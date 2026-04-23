@@ -329,6 +329,14 @@ textarea:focus {
   border-color: var(--yellow);
   box-shadow:   0 0 0 3px var(--yellow-glow);   /* ← soft glow upgrade */
 }
+.form-group input:hover:not(:focus):not(:disabled):not([readonly]),
+.form-group select:hover:not(:focus):not(:disabled),
+.form-group textarea:hover:not(:focus):not(:disabled):not([readonly]),
+input:hover:not(:focus):not(:disabled):not([readonly]):not([type="checkbox"]),
+select:hover:not(:focus):not(:disabled),
+textarea:hover:not(:focus):not(:disabled):not([readonly]) {
+  border-color: var(--yellow-dk);
+}
 
 /* ΑΦΜ / ΑΜΚΑ / κωδικοί — mono font */
 input.mono,
