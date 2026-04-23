@@ -175,7 +175,7 @@
       <div class="user-name" id="userName"></div>
       <div class="user-role" id="userRoleLabel"></div>
     </div>
-    <a href="2-attendance-gr.html" class="btn-back">← Αρχική</a>
+    <a href="attendance.html" class="btn-back">← Αρχική</a>
     <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
   </div>
 </header>
@@ -223,7 +223,7 @@
     onChange: () => load(),
   });
 
-  // ── URL PARAMS (από 2-attendance-gr.html) ──
+  // ── URL PARAMS (από attendance.html) ──
   const params = new URLSearchParams(window.location.search);
   const presetSite = params.get('site');
   const presetDate = params.get('date'); // YYYY-MM-DD
