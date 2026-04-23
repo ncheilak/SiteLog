@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Παρουσιολόγιο</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
@@ -14,7 +15,7 @@
   :root{
     --black:#0d0d0d;--yellow:#f5c800;--yellow-dk:#c9a200;--orange:#e8600a;
     --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
-    --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;
+    --gray4:#5a5a5a;--green:#22c55e;--red:#d93b3b;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
@@ -26,7 +27,7 @@
     border-bottom:4px solid var(--orange);
     position:sticky;top:0;z-index:100;
   }
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:-0.02em}
   .logo em{color:var(--orange);font-style:normal}
   .logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
   .back-btn{
@@ -166,7 +167,7 @@
   </table>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast" aria-live="polite"></div>
 
 <script>
   // ── AUTH INIT ──
@@ -350,7 +351,7 @@
 
   function showToast(msg, color) {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = color || '#2ea84f';
+    t.textContent = msg; t.style.background = color || '#22c55e';
     t.classList.add('show'); clearTimeout(t._t);
     t._t = setTimeout(() => t.classList.remove('show'), 3000);
   }

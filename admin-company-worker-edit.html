@@ -5,17 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Υπάλληλος Εταιρείας</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <style>
-  :root {
-    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
-    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
-    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
-  }
+  :root { /* via shared/theme.css */ }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
   header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
-  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:-0.02em; flex-shrink:0; }
   .logo em { color:var(--orange); font-style:normal; }
   .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
   .header-right { display:flex; align-items:center; gap:12px; }
@@ -31,7 +28,7 @@
   .breadcrumb span { color:var(--gray4); }
 
   .page-header { margin-bottom:32px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:4px; line-height:1; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:-0.02em; line-height:1; }
   .page-title span { color:var(--yellow); }
   .worker-id-badge { display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; background:var(--gray2); border:1px solid var(--gray3); color:var(--gray5); padding:5px 10px; border-radius:2px; margin-top:8px; }
 
@@ -86,7 +83,7 @@
 
   /* ACTIONS */
   .actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
-  .btn-save { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:12px 22px; cursor:pointer; transition:background .18s; }
+  .btn-save { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:-0.02em; padding:12px 22px; cursor:pointer; transition:background .18s; }
   .btn-save:hover:not(:disabled) { background:var(--yellow-dk); }
   .btn-save:disabled { opacity:.5; cursor:not-allowed; }
   .btn-cancel { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:12px 18px; cursor:pointer; text-decoration:none; transition:border-color .15s,color .15s; display:inline-flex; align-items:center; }
@@ -111,11 +108,11 @@
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:500; display:none; align-items:center; justify-content:center; }
   .overlay.show { display:flex; }
   .dialog { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; padding:28px; max-width:380px; width:90%; }
-  .dialog-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; margin-bottom:10px; color:var(--red); }
+  .dialog-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:-0.02em; margin-bottom:10px; color:var(--red); }
   .dialog-body { font-size:0.85rem; color:var(--gray5); line-height:1.6; margin-bottom:22px; }
   .dialog-actions { display:flex; gap:10px; }
   .btn-dialog-cancel  { flex:1; background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:11px; cursor:pointer; }
-  .btn-dialog-confirm { flex:1; background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px; cursor:pointer; }
+  .btn-dialog-confirm { flex:1; background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:-0.02em; padding:11px; cursor:pointer; }
 
   @media(max-width:640px) {
     .field-row, .field-row.cols3 { grid-template-columns:1fr; }
@@ -123,7 +120,7 @@
   }
 
   footer { border-top:1px solid var(--gray3); padding:16px 28px; }
-  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:-0.02em; color:var(--gray4); }
   .footer-logo em { color:var(--orange); font-style:normal; }
 </style>
 </head>

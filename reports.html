@@ -5,21 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Αναφορές Εργατοημερών</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <style>
-  :root {
-    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
-    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
-    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
-  }
+  :root { /* via shared/theme.css */ }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
   /* HEADER */
   header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
-  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:-0.02em; flex-shrink:0; }
   .logo em { color:var(--orange); font-style:normal; }
   .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
   .header-right { display:flex; align-items:center; gap:12px; }
@@ -38,7 +35,7 @@
 
   /* PAGE HEADER */
   .page-header { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:28px; flex-wrap:wrap; }
-  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:4px; color:var(--white); line-height:1; }
+  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2.2rem; letter-spacing:-0.02em; color:var(--white); line-height:1; }
   .page-title span { color:var(--yellow); }
 
   /* FILTERS */
@@ -50,7 +47,7 @@
   .filter-group select:focus,
   .filter-group input:focus { border-color:var(--yellow); }
   .filter-group select option { background:var(--black); }
-  .btn-run { background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:9px 22px; cursor:pointer; white-space:nowrap; transition:background .18s; height:40px; align-self:end; }
+  .btn-run { background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:-0.02em; padding:9px 22px; cursor:pointer; white-space:nowrap; transition:background .18s; height:40px; align-self:end; }
   .btn-run:hover { background:var(--yellow-dk); }
   .btn-run:disabled { opacity:0.4; cursor:not-allowed; }
 
@@ -69,7 +66,7 @@
 
   /* SITE INFO BAR */
   .site-info { display:flex; align-items:center; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
-  .site-info-code { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; color:var(--yellow); }
+  .site-info-code { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:-0.02em; color:var(--yellow); }
   .site-info-name { font-family:'IBM Plex Sans',sans-serif; font-size:1rem; font-weight:600; color:var(--white); }
   .site-info-meta { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; color:var(--gray5); }
   .site-info-sep { width:1px; height:32px; background:var(--gray3); }
@@ -83,7 +80,7 @@
   /* ERGOLABOS CARD */
   .erg-card { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; margin-bottom:16px; overflow:hidden; }
   .erg-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--gray3); gap:12px; flex-wrap:wrap; }
-  .erg-name { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:2px; color:var(--white); }
+  .erg-name { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:-0.02em; color:var(--white); }
   .erg-total { font-family:'IBM Plex Mono',monospace; font-size:0.72rem; font-weight:600; color:var(--yellow); background:var(--yellow-dim); border:1px solid rgba(245,200,0,0.2); padding:4px 12px; border-radius:2px; white-space:nowrap; }
 
   /* MONTHS ROW */
@@ -99,7 +96,7 @@
 
   /* EMPTY / LOADING */
   .empty-state { text-align:center; padding:60px 20px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.78rem; letter-spacing:1px; }
-  .empty-state .big { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:4px; color:var(--gray3); display:block; margin-bottom:12px; }
+  .empty-state .big { font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:-0.02em; color:var(--gray3); display:block; margin-bottom:12px; }
 
   /* SPINNER */
   .spinner { display:inline-block; width:16px; height:16px; border:2px solid var(--gray3); border-top-color:var(--yellow); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:8px; }
@@ -111,7 +108,7 @@
   .toast.error { border-left-color:var(--red); }
 
   footer { border-top:1px solid var(--gray3); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; }
-  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:-0.02em; color:var(--gray4); }
   .footer-logo em { color:var(--orange); font-style:normal; }
 
   @media (max-width:700px) {
@@ -182,7 +179,7 @@
   <div class="footer-logo">Site<em>Log</em></div>
 </footer>
 
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
@@ -512,8 +509,9 @@
   function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
-    t.className = 'toast show' + (isError ? ' error' : '');
-    setTimeout(() => { t.className = 'toast'; }, 3500);
+    t.className = 'toast toast-' + (isError ? 'error' : 'success') + ' show';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 3000);
   }
 
 })();
