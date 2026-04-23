@@ -13,6 +13,11 @@
 <script src="shared/auth.js"></script>
 <style>
   /* ── SCREEN STYLES ── */
+  :root {
+    --black:#0d0d0d; --yellow:#f5c800; --yellow-dk:#c9a200; --orange:#e8600a;
+    --white:#f4efe6; --gray:#1e1e1e; --gray2:#2a2a2a; --gray3:#3d3d3d;
+    --gray4:#5a5a5a; --green:#2ea84f; --red:#d93b3b;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
@@ -101,6 +106,7 @@
 
   .sepe-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     margin-top: 10pt;
     font-size: 7.5pt;
@@ -108,18 +114,22 @@
   .sepe-table th {
     background: #e8e8e8;
     border: 1px solid #555;
-    padding: 4pt 3pt;
+    padding: 4pt 2pt;
     text-align: center;
     font-weight: bold;
     vertical-align: middle;
-    line-height: 1.3;
+    line-height: 1.2;
+    word-break: break-word;
+    overflow: hidden;
   }
   .sepe-table td {
     border: 1px solid #555;
-    padding: 3pt 3pt;
+    padding: 3pt 2pt;
     vertical-align: middle;
     text-align: center;
     height: 20pt;
+    word-break: break-word;
+    overflow: hidden;
   }
   .sepe-table td.td-left { text-align: left; }
   .sepe-table .col-aa     { width: 2%; }
@@ -142,7 +152,7 @@
 
   /* ── PRINT STYLES ── */
   @media print {
-    @page { size: A4 landscape; margin: 10mm 8mm; }
+    @page { size: A4 landscape; margin: 6mm 5mm; }
 
     body { background: #fff !important; }
     header, .controls-bar, .status-bar { display: none !important; }
@@ -152,12 +162,14 @@
       border-radius: 0 !important;
       padding: 0 !important;
       max-width: none !important;
+      width: 100% !important;
       margin: 0 !important;
     }
+    .sepe-doc { width: 100% !important; }
     .empty-state { display: none !important; }
 
-    .sepe-table { font-size: 7pt; }
-    .sepe-table th, .sepe-table td { padding: 2pt 2pt; }
+    .sepe-table { font-size: 6.5pt; }
+    .sepe-table th, .sepe-table td { padding: 2pt 1pt; }
   }
 </style>
 </head>
