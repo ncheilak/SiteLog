@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Καταχώρηση Εργαζομένων</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
@@ -107,13 +108,16 @@
 </head>
 <body>
 <header>
-  <div class="logo">Site<em>Log</em> <sub>Καταχώρηση Εργαζομένων</sub></div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button class="btn btn-outline btn-sm" onclick="loadFromSupabase()">☁ Φόρτωση από Supabase</button>
+  <div class="logo">Site<em>Log</em><sub>Εργαζόμενοι</sub></div>
+  <div class="user-menu">
+    <button class="btn btn-outline btn-sm" onclick="loadFromSupabase()">☁ Φόρτωση</button>
     <button class="btn btn-outline btn-sm" onclick="openModal()">? Μορφή CSV</button>
-    <span id="userPill" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--black);opacity:0.6;padding:0 4px"></span>
-    <a href="index.html" style="display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.12);border-radius:2px;color:var(--black);padding:6px 12px;text-decoration:none;transition:background 0.15s" onmouseover="this.style.background='rgba(0,0,0,0.22)'" onmouseout="this.style.background='rgba(0,0,0,0.12)'">← Αρχική</a>
-    <button class="btn btn-sm" onclick="Auth.signOut()" style="background:rgba(0,0,0,0.15);color:var(--black);font-family:'IBM Plex Mono',monospace;font-size:0.6rem;font-weight:600;letter-spacing:0.5px">↪ Έξοδος</button>
+    <div class="user-info">
+      <div class="user-name" id="userName"></div>
+      <div class="user-role" id="userRoleLabel"></div>
+    </div>
+    <a href="index.html" class="btn-back">← Αρχική</a>
+    <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
   </div>
 </header>
 
@@ -230,7 +234,6 @@
       <div class="validation-msg" id="valMsg"></div>
       <div class="spacer"></div>
       <button class="btn btn-outline btn-sm" onclick="clearAll()">✕ Καθαρισμός Λίστας</button>
-      <button class="btn btn-orange btn-sm" onclick="exportJSON()" style="padding:9px 14px;font-size:0.85rem">⬇ JSON</button>
       <button class="btn btn-green" style="padding:9px 20px;font-size:1rem" onclick="saveToSupabase()" id="saveBtn">☁ Αποθήκευση στο Supabase</button>
     </div>
   </div>
@@ -578,7 +581,10 @@ ergolabos,afmErgolabou</code>
     const ok = await Auth.requireRole(['admin', 'site_manager']);
     if (!ok) return;
     const user = Auth.getCurrentUser();
-    if (user) document.getElementById('userPill').textContent = user.full_name || user.email;
+    if (user) {
+      document.getElementById('userName').textContent = user.full_name || user.email;
+      document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
+    }
     await loadFromSupabase();
     renderTable();
   }

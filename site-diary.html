@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Ημερολόγιο Εργοταξίου</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
@@ -191,11 +192,14 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <body>
 
 <header>
-  <div class="logo">Site<em>Log</em> <sub>Ημερολόγιο Εργοταξίου</sub></div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <span id="userPill" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--black);opacity:0.6;padding:0 4px"></span>
-    <a href="index.html" class="back-btn">← Αρχική</a>
-    <button class="back-btn" onclick="Auth.signOut()" style="font-size:0.6rem">↪ Έξοδος</button>
+  <div class="logo">Site<em>Log</em><sub>Ημερολόγιο</sub></div>
+  <div class="user-menu">
+    <div class="user-info">
+      <div class="user-name" id="userName"></div>
+      <div class="user-role" id="userRoleLabel"></div>
+    </div>
+    <a href="index.html" class="btn-back">← Αρχική</a>
+    <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
   </div>
 </header>
 
@@ -388,7 +392,10 @@ async function init() {
   if (!ok) return;
   currentUser = Auth.getCurrentUser();
   currentRole = Auth.getCurrentRole();
-  if (currentUser) document.getElementById('userPill').textContent = currentUser.full_name || currentUser.email;
+  if (currentUser) {
+    document.getElementById('userName').textContent = currentUser.full_name || currentUser.email;
+    document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
+  }
   if (currentRole === 'scanner') {
     setStatus('err','⚠ Δεν έχετε πρόσβαση');
     document.querySelector('.day-section').innerHTML = '<div class="no-msg" style="color:var(--red)">Δεν έχετε δικαίωμα πρόσβασης.</div>';

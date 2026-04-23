@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SiteLog — Παρουσιολόγιο</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
@@ -113,11 +114,14 @@
 <body>
 
 <header>
-  <div class="logo">Site<em>Log</em> <sub>Παρουσιολόγιο</sub></div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <span id="userPill" style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--black);opacity:0.6;padding:0 4px"></span>
-    <a href="index.html" class="back-btn">← Αρχική</a>
-    <button class="back-btn" onclick="Auth.signOut()" style="font-size:0.6rem">↪ Έξοδος</button>
+  <div class="logo">Site<em>Log</em><sub>Παρουσιολόγιο</sub></div>
+  <div class="user-menu">
+    <div class="user-info">
+      <div class="user-name" id="userName"></div>
+      <div class="user-role" id="userRoleLabel"></div>
+    </div>
+    <a href="index.html" class="btn-back">← Αρχική</a>
+    <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
   </div>
 </header>
 
@@ -200,7 +204,10 @@
     const ok = await Auth.requireLogin();
     if (!ok) return;
     const user = Auth.getCurrentUser();
-    if (user) document.getElementById('userPill').textContent = user.full_name || user.email;
+    if (user) {
+      document.getElementById('userName').textContent = user.full_name || user.email;
+      document.getElementById('userRoleLabel').textContent = Auth.getRoleLabel();
+    }
     await loadSites();
     setToday();
   }
