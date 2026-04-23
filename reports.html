@@ -197,7 +197,6 @@
 
   document.getElementById('userName').textContent = user.full_name;
   const _rl = document.getElementById('userRoleLabel'); if (_rl) _rl.textContent = Auth.getRoleLabel();
-  document.getElementById('signOutBtn').addEventListener('click', () => Auth.signOut());
 
   // ── SITES DROPDOWN ──
   const siteSelect = document.getElementById('filterSite');

@@ -163,7 +163,6 @@
 
   document.getElementById('userName').textContent = Auth.getCurrentUser().full_name;
   const _rl = document.getElementById('userRoleLabel'); if (_rl) _rl.textContent = Auth.getRoleLabel();
-  document.getElementById('signOutBtn').addEventListener('click', () => Auth.signOut());
 
   let allWorkers = [];
   let filterStatus = 'all';
