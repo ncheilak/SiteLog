@@ -10,11 +10,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
-  :root {
-    --black:#0d0d0d;--yellow:#f5c800;--yellow-dk:#c9a200;--orange:#e8600a;
-    --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
-    --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;
-  }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
 
@@ -159,8 +154,6 @@
   .spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:9px 16px;border-radius:3px;opacity:0;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:999}
-  .toast.show{opacity:1;transform:translateY(0)}
 
   @media(max-width:560px){
     .search-fields{grid-template-columns:1fr}
@@ -184,6 +177,7 @@
   .pb-qr{margin:8px auto;display:flex;justify-content:center}
   .pb-bar{background:#000;color:#fff;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:0.85rem;padding:3px 0;margin-top:6px}
 </style>
+  <script src="shared/toast.js"></script>
 </head>
 <body>
 
@@ -547,13 +541,6 @@
       window.print();
       setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 1000);
     }, 300);
-  }
-
-  function showToast(msg, color) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = color || '#2ea84f';
-    t.classList.add('show'); clearTimeout(t._t);
-    t._t = setTimeout(() => t.classList.remove('show'), 2800);
   }
 
   init();

@@ -10,20 +10,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
-  :root {
-    --black: #0a0a0a;
-    --yellow: #f5c800;
-    --yellow-dk: #c9a200;
-    --orange: #e8600a;
-    --white: #f4efe6;
-    --gray: #1a1a1a;
-    --gray2: #252525;
-    --gray3: #333;
-    --gray4: #555;
-    --green: #23a045;
-    --green-lt: #2ec25a;
-    --red: #d93b3b;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background: var(--black);
@@ -422,6 +408,7 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+  <script src="shared/toast.js"></script>
 </head>
 <body>
 
@@ -886,13 +873,6 @@
   }
 
   // ── TOAST ──
-  function showToast(msg, color) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.background = color || '#23a045';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
-  }
 
   // ── CAMERA ──
   async function toggleCamera() {

@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
-  :root { --black:#0c0c0c;--yellow:#f5c800;--yellow-dk:#c9a000;--orange:#e8600a;--white:#f0ebe0;--gray:#181818;--gray2:#222;--gray3:#2e2e2e;--gray4:#444;--gray5:#666;--green:#1fa644;--red:#cc3333; }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh}
   header{background:var(--yellow);color:var(--black);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--orange);position:sticky;top:0;z-index:200}
@@ -87,8 +86,6 @@
   .export-bar .spacer{flex:1}
   .validation-msg{font-family:'IBM Plex Mono',monospace;font-size:0.68rem}
   .validation-msg.ok{color:var(--green)}.validation-msg.err{color:var(--red)}
-  .toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.75rem;padding:9px 16px;border-radius:3px;opacity:0;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:999;max-width:calc(100vw - 40px)}
-  .toast.show{opacity:1;transform:translateY(0)}
   .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center}
   .modal-bg.open{display:flex}
   .modal{background:var(--gray);border:1px solid var(--gray3);border-top:3px solid var(--orange);border-radius:4px;padding:24px;width:90%;max-width:520px;font-size:0.88rem}
@@ -105,6 +102,7 @@
   .db-bar .db-status-txt.err{color:var(--red)}
   .multi-badge{display:inline-block;background:rgba(31,166,68,0.15);border:1px solid rgba(31,166,68,0.4);color:#5de07a;font-family:'IBM Plex Mono',monospace;font-size:0.5rem;font-weight:600;letter-spacing:0.5px;padding:1px 5px;border-radius:2px;text-transform:uppercase;vertical-align:middle;margin-left:4px}
 </style>
+  <script src="shared/toast.js"></script>
 </head>
 <body>
 <header>
@@ -372,13 +370,6 @@ ergolabos,afmErgolabou</code>
   function nextId() {
     const used = new Set(workers.map(w => w.id).filter(Boolean));
     let n = 1001; while (used.has('W-' + n)) n++; return 'W-' + n;
-  }
-
-  function showToast(msg, color) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.style.background = color || '#1fa644';
-    t.classList.add('show'); clearTimeout(t._t);
-    t._t = setTimeout(() => t.classList.remove('show'), 2800);
   }
 
   function addWorker() {

@@ -11,11 +11,6 @@
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="shared/auth.js"></script>
 <style>
-:root{
-  --black:#0d0d0d;--yellow:#f5c800;--orange:#e8600a;
-  --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
-  --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;--blue:#3a7bd5;
-}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
@@ -188,6 +183,7 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 }
 @media(max-width:600px){.week-section{padding:12px 10px 0}.day-section{padding:14px}}
 </style>
+  <script src="shared/toast.js"></script>
 </head>
 <body>
 
@@ -798,12 +794,6 @@ function setStatus(s, msg) {
   const el = document.getElementById('dbStatus');
   el.innerHTML = (s==='loading'?'<span class="spinner"></span>':'') + msg;
   el.className = 'status ' + s;
-}
-function showToast(msg, color) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.style.background = color||'#2ea84f';
-  t.classList.add('show'); clearTimeout(t._t);
-  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
 document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
