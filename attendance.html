@@ -312,7 +312,7 @@
     const params  = new URLSearchParams();
     if (siteId)  params.set('site', siteId);
     if (dateISO) params.set('date', dateISO);
-    window.open('sepe-report.html?' + params.toString(), '_blank');
+    window.open('sepe-report.html?' + params.toString(), '_self');
   }
 
   function exportCSV() {
