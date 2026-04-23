@@ -16,7 +16,7 @@
   .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
   .logo em{color:var(--orange);font-style:normal}
   .logo sub{font-size:0.65rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
-  .shell{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 54px - 37px)}
+  .shell{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 54px)}
   @media(max-width:750px){.shell{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
   .sidebar{background:var(--gray);border-right:1px solid var(--gray3);display:flex;flex-direction:column;overflow-y:auto}
   .sidebar-section{border-bottom:1px solid var(--gray3);padding:12px 14px}
@@ -174,22 +174,6 @@
     <div class="add-btn-wrap">
       <button class="btn btn-yellow btn-lg" onclick="addWorker()">+ Προσθήκη στη Λίστα</button>
     </div>
-
-    <!-- CSV Import -->
-    <div class="sidebar-section" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
-      <div class="sec-label">📂 Μαζική Εισαγωγή CSV</div>
-      <div class="csv-area">
-        <div class="csv-drop" id="csvDrop" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropCSV(event)" onclick="document.getElementById('csvFile').click()">
-          <div class="drop-icon">📄</div>
-          <p>Σύρετε ένα <strong>.csv</strong> εδώ<br>ή κάντε κλικ για αναζήτηση</p>
-        </div>
-        <div class="csv-actions">
-          <button class="btn btn-outline btn-sm" style="width:100%" onclick="downloadTemplate()">⬇ Λήψη Πρότυπου CSV</button>
-          <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVFile(event)">
-        </div>
-      </div>
-      <div class="template-note"><strong>Στήλες:</strong> ama · amka · afm · arAdErgasias · eponimo · onoma · patronimo · eidikotita · defaultPhase · isMultiPhase · ergolabos · afmErgolabou</div>
-    </div>
   </div>
 
   <!-- MAIN TABLE -->
@@ -233,12 +217,13 @@
       <div class="validation-msg" id="valMsg"></div>
       <div class="spacer"></div>
       <button class="btn btn-outline btn-sm" onclick="clearAll()">✕ Καθαρισμός Λίστας</button>
+      <button class="btn btn-outline btn-sm" onclick="openCsvModal()">📂 Μαζική Εισαγωγή CSV</button>
       <button class="btn btn-green" style="padding:9px 20px;font-size:1rem" onclick="saveToSupabase()" id="saveBtn">☁ Αποθήκευση στο Supabase</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL: Μορφή CSV -->
 <div class="modal-bg" id="modalBg" onclick="closeModal(event)">
   <div class="modal">
     <h2>Μορφή Αρχείου CSV</h2>
@@ -256,6 +241,23 @@ ergolabos,afmErgolabou</code>
 06: Εργασίες Εγκαταστάσεων</code></p>
     <p>Τιμές για IS_MULTI_PHASE: <strong style="color:var(--yellow)">true / false</strong></p>
     <div class="modal-actions"><button class="btn btn-yellow btn-sm" onclick="closeModalDirect()">Εντάξει</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Μαζική Εισαγωγή CSV -->
+<div class="modal-bg" id="csvModalBg" onclick="closeCsvModal(event)">
+  <div class="modal">
+    <h2>📂 Μαζική Εισαγωγή CSV</h2>
+    <div class="csv-drop" id="csvDrop" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropCSV(event)" onclick="document.getElementById('csvFile').click()" style="margin:0 0 12px;min-height:120px">
+      <div class="drop-icon">📄</div>
+      <p>Σύρετε ένα <strong>.csv</strong> εδώ<br>ή κάντε κλικ για αναζήτηση</p>
+    </div>
+    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSVFile(event)">
+    <div class="template-note" style="padding:8px 0 12px;border:none"><strong>Στήλες:</strong> ama · amka · afm · arAdErgasias · eponimo · onoma · patronimo · eidikotita · defaultPhase · isMultiPhase · ergolabos · afmErgolabou</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeCsvModalDirect()">Κλείσιμο</button>
+      <button class="btn btn-yellow btn-sm" onclick="downloadTemplate()">⬇ Λήψη Πρότυπου</button>
+    </div>
   </div>
 </div>
 
@@ -513,7 +515,7 @@ ergolabos,afmErgolabou</code>
   function dragOver(e){ e.preventDefault(); document.getElementById('csvDrop').classList.add('dragover'); }
   function dragLeave(){ document.getElementById('csvDrop').classList.remove('dragover'); }
   function dropCSV(e){ e.preventDefault(); dragLeave(); const f=e.dataTransfer.files[0]; if(f) parseCSV(f); }
-  function handleCSVFile(e){ const f=e.target.files[0]; if(f) parseCSV(f); e.target.value=''; }
+  function handleCSVFile(e){ const f=e.target.files[0]; if(f) parseCSV(f); e.target.value=''; closeCsvModalDirect(); }
 
   function parseCSV(file){
     const reader=new FileReader();
@@ -574,6 +576,10 @@ ergolabos,afmErgolabou</code>
   function openModal(){ document.getElementById('modalBg').classList.add('open'); }
   function closeModalDirect(){ document.getElementById('modalBg').classList.remove('open'); }
   function closeModal(e){ if(e.target===document.getElementById('modalBg')) closeModalDirect(); }
+
+  function openCsvModal(){ document.getElementById('csvModalBg').classList.add('open'); }
+  function closeCsvModalDirect(){ document.getElementById('csvModalBg').classList.remove('open'); }
+  function closeCsvModal(e){ if(e.target===document.getElementById('csvModalBg')) closeCsvModalDirect(); }
 
   // ── INIT ──
   async function init() {
