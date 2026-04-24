@@ -2,7 +2,7 @@
   "name": "SiteLog",
   "short_name": "SiteLog",
   "description": "Καταγραφή παρουσιών, QR σάρωση και ημερολόγιο εργοταξίου.",
-  "start_url": "/SiteLog/index.html",
+  "start_url": "https://ncheilak.github.io/SiteLog/index.html",
   "display": "standalone",
   "background_color": "#0d0d0d",
   "theme_color": "#f5c800",
@@ -18,5 +18,6 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "lang": "el"
 }
