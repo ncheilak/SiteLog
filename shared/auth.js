@@ -1,5 +1,5 @@
 // =============================================================================
-// SiteLog v3.0 — shared/auth.js
+// SiteLog — shared/auth.js
 // Κοινή βιβλιοθήκη authentication για όλες τις σελίδες.
 // Φορτώνεται μετά το Supabase CDN script.
 // Εκθέτει: window.sb (client) + window.Auth (utilities)
@@ -191,4 +191,25 @@
     signOut,
   };
 
+// ── SERVICE WORKER REGISTRATION (PWA) ──────────────────────────────────────────
+// Εγγράφει το sw.js αυτόματα όταν φορτώνεται το auth.js
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+
+  // Υπολογισμός του base path δυναμικά (δουλεύει και σε υποφακέλους)
+  const pathParts = window.location.pathname.split('/');
+  pathParts.pop(); // αφαιρούμε το όνομα του τρέχοντος αρχείου
+  const basePath = pathParts.join('/') + '/';
+  const swUrl = basePath + 'sw.js';
+
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register(swUrl, { scope: basePath })
+      .then(function(reg) {
+        console.log('[SiteLog] Service Worker εγκαταστάθηκε, scope:', reg.scope);
+      })
+      .catch(function(err) {
+        console.error('[SiteLog] Σφάλμα εγκατάστασης SW:', err);
+      });
+  });
+})();
 })();
