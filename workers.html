@@ -496,6 +496,13 @@ ergolabos,afmErgolabou</code>
     else{ el.textContent=`⚠ ${errs} γραμμές με ελλιπή υποχρεωτικά πεδία`; el.className='validation-msg err'; }
   }
 
+  function exportJSON(){
+    if(!workers.length){ showToast('Δεν υπάρχουν εργαζόμενοι','#e8600a'); return; }
+    const blob=new Blob([JSON.stringify(workers,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='workers.json'; a.click(); URL.revokeObjectURL(a.href);
+    showToast(`✓ Εξαγωγή ${workers.length} εργαζομένων`);
+  }
+
   function dragOver(e){ e.preventDefault(); document.getElementById('csvDrop').classList.add('dragover'); }
   function dragLeave(){ document.getElementById('csvDrop').classList.remove('dragover'); }
   function dropCSV(e){ e.preventDefault(); dragLeave(); const f=e.dataTransfer.files[0]; if(f) parseCSV(f); }
