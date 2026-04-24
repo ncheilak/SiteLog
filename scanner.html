@@ -1134,6 +1134,151 @@
     showToast('✓ Η εγγραφή διαγράφηκε', '#23a045');
   }
 
+ // ── ADHOC WORKER ──
+  function showAdhocModal() {
+    if (!currentSite) { showToast('⚠ Επιλέξτε εργοτάξιο πρώτα', '#e8600a'); return; }
+    ['adhocEponimo','adhocOnoma','adhocPatronimo','adhocAma','adhocAmka',
+     'adhocAfm','adhocArAdErgasias','adhocEidikotita','adhocErgolabos','adhocAfmErg'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('adhocFasi').value = '';
+    document.getElementById('adhocSubmitBtn').disabled = false;
+    document.getElementById('adhocModal').classList.remove('hidden');
+    document.getElementById('adhocEponimo').focus();
+  }
+
+  function cancelAdhoc() {
+    document.getElementById('adhocModal').classList.add('hidden');
+  }
+
+  async function getNextAdhocId() {
+    const { data } = await db
+      .from('adhoc_workers')
+      .select('id')
+      .like('id', 'AH-%')
+      .order('id', { ascending: false })
+      .limit(1);
+    if (!data || data.length === 0) return 'AH-1001';
+    const lastNum = parseInt(data[0].id.replace('AH-', ''), 10);
+    return 'AH-' + (isNaN(lastNum) ? 1001 : lastNum + 1);
+  }
+
+  async function submitAdhocWorker() {
+    const eponimo       = document.getElementById('adhocEponimo').value.trim();
+    const onoma         = document.getElementById('adhocOnoma').value.trim();
+    const patronimo     = document.getElementById('adhocPatronimo').value.trim();
+    const ama           = document.getElementById('adhocAma').value.trim();
+    const amka          = document.getElementById('adhocAmka').value.trim();
+    const afm           = document.getElementById('adhocAfm').value.trim();
+    const arAdErgasias  = document.getElementById('adhocArAdErgasias').value.trim();
+    const eidikotita    = document.getElementById('adhocEidikotita').value.trim();
+    const ergolabos     = document.getElementById('adhocErgolabos').value.trim();
+    const afmErg        = document.getElementById('adhocAfmErg').value.trim();
+    const fasi          = document.getElementById('adhocFasi').value;
+
+    // Validation — όλα τα πεδία υποχρεωτικά
+    const missing = [];
+    if (!eponimo)      missing.push('Επώνυμο');
+    if (!onoma)        missing.push('Όνομα');
+    if (!patronimo)    missing.push('Πατρώνυμο');
+    if (!ama)          missing.push('Α.Μ.Α.');
+    if (!amka)         missing.push('Α.Μ.Κ.Α.');
+    if (!afm)          missing.push('Α.Φ.Μ.');
+    if (!arAdErgasias) missing.push('Αρ. Αδείας Εργασίας');
+    if (!eidikotita)   missing.push('Ειδικότητα');
+    if (!ergolabos)    missing.push('Εργολάβος');
+    if (!afmErg)       missing.push('ΑΦΜ Εργολάβου');
+    if (!fasi)         missing.push('Φάση Κατασκευής');
+
+    if (missing.length > 0) {
+      showToast('⚠ Λείπουν: ' + missing.join(', '), '#e8600a');
+      return;
+    }
+
+    const btn = document.getElementById('adhocSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Αποθήκευση…';
+
+    try {
+      const adhocId = await getNextAdhocId();
+      const user = Auth.getCurrentUser();
+      const now = new Date();
+      const timeIn  = now.toTimeString().slice(0, 5);
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+      // 1. INSERT adhoc_workers
+      const { error: adhocErr } = await db
+        .from('adhoc_workers')
+        .insert({
+          id:             adhocId,
+          eponimo,
+          onoma,
+          patronimo,
+          ama,
+          amka,
+          afm,
+          ar_ad_ergasias: arAdErgasias,
+          eidikotita,
+          default_phase:  fasi,
+          is_multi_phase: false,
+          ergolabos,
+          afm_ergolabou:  afmErg,
+          site_id:        currentSite.id,
+          created_by:     user.id,
+          status:         'pending'
+        });
+
+      if (adhocErr) {
+        console.error(adhocErr);
+        showToast('⚠ Σφάλμα καταχώρησης: ' + (adhocErr.message || ''), '#e8600a');
+        return;
+      }
+
+      // 2. INSERT attendance_log
+      const { data: logData, error: logErr } = await db
+        .from('attendance_log')
+        .insert({
+          adhoc_worker_id: adhocId,
+          site_id:         currentSite.id,
+          fasi,
+          time_in:         timeIn,
+          log_date:        dateStr
+        })
+        .select('id')
+        .single();
+
+      if (logErr) {
+        console.error(logErr);
+        showToast('⚠ Καταχωρήθηκε αλλά αποτυχία check-in', '#e8600a');
+      }
+
+      // 3. Ενημέρωση local log
+      todayLog.push({
+        id: adhocId, eponimo, onoma, eidikotita, ergolabos,
+        fasi, timeIn, date: dateStr,
+        db_id: logData?.id || null,
+        ama, amka, isAdhoc: true, adhocStatus: 'pending',
+      });
+      renderLog();
+
+      document.getElementById('adhocModal').classList.add('hidden');
+      showFlash('success', '⚡',
+        `${eponimo} ${onoma}`,
+        `ΕΚΤΑΚΤΟΣ · ${eidikotita} | ${fasi}`,
+        'Παρουσία: ' + timeIn
+      );
+      if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+    } catch (err) {
+      console.error(err);
+      showToast('⚠ Απρόσμενο σφάλμα', '#e8600a');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚡ Καταχώρηση & Check-in';
+    }
+  }
+
+
   // ── START ──
   init();
 </script>
