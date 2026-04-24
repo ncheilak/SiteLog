@@ -407,6 +407,85 @@
     vertical-align: middle; margin-right: 6px;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  
+    /* ── ADHOC MODAL ── */
+  #adhocModal .modal-box {
+    border-top-color: var(--orange);
+    max-width: 420px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .adhoc-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .adhoc-form-grid .full { grid-column: 1 / -1; }
+  .adhoc-field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--gray4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .adhoc-field label em { color: var(--orange); font-style: normal; }
+  .adhoc-field input,
+  .adhoc-field select {
+    width: 100%;
+    background: var(--black);
+    border: 1px solid var(--gray3);
+    border-radius: 2px;
+    color: var(--white);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.82rem;
+    padding: 8px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .adhoc-field input:focus,
+  .adhoc-field select:focus { border-color: var(--orange); }
+  .adhoc-field select option { background: var(--black); }
+  .adhoc-section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin: 12px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(232,96,10,0.2);
+  }
+  .adhoc-hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--gray4);
+    margin-bottom: 12px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    background: rgba(232,96,10,0.06);
+    border: 1px solid rgba(232,96,10,0.15);
+    border-radius: 2px;
+  }
+  .adhoc-badge-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: rgba(232,96,10,0.15);
+    color: var(--orange);
+    border: 1px solid rgba(232,96,10,0.3);
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
 </style>
   <script src="shared/toast.js"></script>
 </head>
