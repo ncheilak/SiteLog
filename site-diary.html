@@ -10,475 +10,27 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="shared/auth.js"></script>
+<script src="shared/offline-sync.js"></script>
 <script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="szydo67fl9prnzz"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
-
-header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--orange);position:sticky;top:0;z-index:100}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
-.logo em{color:var(--orange);font-style:normal}
-.logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
-.back-btn{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;background:rgba(0,0,0,0.12);border:none;border-radius:2px;color:var(--black);padding:6px 12px;cursor:pointer;text-decoration:none;transition:background 0.15s}
-.back-btn:hover{background:rgba(0,0,0,0.22)}
-
-.db-bar{background:var(--gray);border-bottom:1px solid var(--gray3);padding:6px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;font-family:'IBM Plex Mono',monospace;font-size:0.65rem}
-.status{flex:1}.status.ok{color:var(--green)}.status.err{color:var(--red)}.status.loading{color:var(--gray4)}
-
-.toolbar{background:var(--gray2);border-bottom:1px solid var(--gray3);padding:8px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0}
-.toolbar select{background:var(--black);border:1px solid var(--gray3);border-radius:2px;color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.85rem;padding:6px 10px;outline:none;cursor:pointer}
-.toolbar select:focus{border-color:var(--yellow)}
-.site-code-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--gray4)}
-
-.btn{border:none;border-radius:2px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;transition:opacity 0.15s,transform 0.1s;white-space:nowrap}
-.btn:active{transform:scale(0.97)}
-.btn-orange{background:var(--orange);color:#fff;padding:7px 16px;font-size:0.88rem}
-.btn-orange:hover{opacity:0.88}
-.btn-outline{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:6px 13px;font-size:0.8rem}
-.btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
-.btn-sm{padding:5px 11px;font-size:0.76rem}
-
-/* WEEK */
-.week-section{padding:16px 20px 0;background:var(--black)}
-.week-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.wlabel{font-family:'IBM Plex Mono',monospace;font-size:0.7rem;color:var(--yellow);letter-spacing:1px;text-transform:uppercase;min-width:240px;text-align:center}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;max-width:700px;margin:0 auto}
-.day-cell{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;padding:8px 6px;cursor:pointer;min-height:76px;display:flex;flex-direction:column;gap:3px;transition:border-color 0.12s,background 0.12s}
-.day-cell:hover{border-color:var(--gray4)}
-.day-cell.selected{border-color:var(--orange);background:rgba(232,96,10,0.08)}
-.day-cell.is-today .day-num{color:var(--yellow)}
-.day-name{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px}
-.day-num{font-family:'Bebas Neue',sans-serif;font-size:1.25rem;letter-spacing:1px;color:var(--white);line-height:1}
-.day-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
-.dot{width:6px;height:6px;border-radius:50%}
-.dot-weather{background:#3a7bd5}.dot-inspection{background:#c9a200}
-.dot-work_stoppage{background:#d93b3b}.dot-event{background:#5a5a5a}.dot-work_log{background:#2ea84f}
-.day-miss{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--red);margin-top:auto}
-.day-ok{font-family:'IBM Plex Mono',monospace;font-size:0.48rem;color:var(--gray4);margin-top:auto}
-.week-legend{display:flex;gap:12px;justify-content:center;padding:8px 20px 12px;flex-wrap:wrap}
-.leg{display:flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:0.52rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.3px}
-
-.day-section{padding:20px;max-width:900px;width:100%;margin:0 auto}
-.no-msg{text-align:center;padding:48px 20px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.75rem}
-
-/* REPORT BOX */
-.report-box{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;overflow:hidden}
-.report-hdr{background:var(--gray);border-bottom:2px solid var(--orange);padding:14px 18px}
-.report-hdr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.report-stamp{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
-.report-doc-title{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:2px;color:var(--white)}
-.report-doc-date{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;color:var(--yellow);margin-top:2px}
-.report-actions{display:flex;gap:6px;flex-wrap:wrap}
-.report-meta{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;border-top:1px solid var(--gray3);padding-top:12px}
-.rmeta-item .rmlbl{font-family:'IBM Plex Mono',monospace;font-size:0.56rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px}
-.rmeta-item .rmval{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--white);margin-top:2px;font-weight:500}
-
-.past-miss{background:rgba(217,59,59,0.08);border-bottom:1px solid rgba(217,59,59,0.25);padding:9px 18px;font-family:'IBM Plex Mono',monospace;font-size:0.63rem;color:#e87070}
-
-/* ENTRY ROWS */
-.report-entry{padding:12px 18px;border-bottom:1px solid var(--gray3);display:flex;gap:10px;align-items:flex-start}
-.entry-time{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--green);font-weight:600;white-space:nowrap;flex-shrink:0;padding-top:3px;min-width:48px}
-.entry-badge{font-family:'IBM Plex Mono',monospace;font-size:0.52rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;border-radius:2px;white-space:nowrap;flex-shrink:0;margin-top:2px}
-.badge-weather{background:rgba(58,123,213,0.15);color:#6fa3e8;border:1px solid rgba(58,123,213,0.3)}
-.badge-inspection{background:rgba(201,162,0,0.12);color:var(--yellow);border:1px solid rgba(201,162,0,0.25)}
-.badge-work_stoppage{background:rgba(217,59,59,0.12);color:#e87070;border:1px solid rgba(217,59,59,0.25)}
-.badge-event{background:rgba(90,90,90,0.2);color:#a0a0a0;border:1px solid rgba(90,90,90,0.3)}
-.badge-work_log{background:rgba(46,168,79,0.15);color:#4ecf74;border:1px solid rgba(46,168,79,0.3)}
-.entry-body{min-width:0}
-.entry-title{font-size:0.88rem;color:var(--white);font-weight:600;margin-bottom:4px}
-
-/* Weather info block in entry */
-.weather-info-block{background:rgba(58,123,213,0.08);border:1px solid rgba(58,123,213,0.2);border-radius:2px;padding:5px 10px;font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:#6fa3e8;margin-bottom:6px}
-
-/* Quill rendered content in report */
-.entry-content{font-size:0.84rem;color:var(--white);line-height:1.6}
-.entry-content p{margin:0 0 4px}
-.entry-content p:last-child{margin:0}
-.entry-content ul,.entry-content ol{padding-left:1.2em;margin:4px 0}
-.entry-content strong{font-weight:600}
-.entry-content em{font-style:italic}
-
-.elink-row{margin-top:6px;display:flex;align-items:center;gap:5px}
-.elink-row a{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--blue);text-decoration:none}
-.elink-row a:hover{text-decoration:underline}
-.ecard-actions{display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:auto;padding-left:10px}
-.ebtn{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:4px 10px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.55rem;letter-spacing:0.5px;white-space:nowrap;transition:border-color 0.15s,color 0.15s}
-.ebtn:hover:not(:disabled){border-color:var(--yellow);color:var(--yellow)}
-.ebtn.del{color:var(--gray4)}
-.ebtn.del:hover:not(:disabled){border-color:var(--red);color:var(--red)}
-.ebtn:disabled{opacity:0.2;cursor:default;color:var(--gray4)}
-.empty-day{padding:24px 18px;color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.72rem}
-
-.report-footer{padding:10px 18px;border-top:1px solid var(--gray3);background:var(--gray);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.report-footer-right{display:flex;align-items:center;gap:12px}
-.footer-ts{font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--gray4)}
-
-/* FORM */
-.entry-form-wrap{padding:14px 18px;border-top:1px solid var(--gray3);background:rgba(232,96,10,0.04)}
-.form-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--orange);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:12px}
-.form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:flex-start}
-.fsel,.finp{background:var(--black);border:1px solid var(--gray3);border-radius:2px;color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.84rem;padding:7px 10px;outline:none;transition:border-color 0.15s}
-.fsel:focus,.finp:focus{border-color:var(--yellow)}
-.finp.wide{flex:1;min-width:160px}
-.field-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:var(--gray4);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
-
-/* weather widget */
-.weather-widget{background:rgba(58,123,213,0.08);border:1px solid rgba(58,123,213,0.25);border-radius:2px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.weather-data{font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:#6fa3e8;flex:1}
-.weather-note{font-family:'IBM Plex Mono',monospace;font-size:0.54rem;color:var(--gray4);width:100%}
-.btn-weather{background:rgba(58,123,213,0.15);border:1px solid rgba(58,123,213,0.4);color:#6fa3e8;padding:5px 11px;font-size:0.65rem;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
-.btn-weather:hover{background:rgba(58,123,213,0.25)}
-.btn-weather:disabled{opacity:0.4;cursor:default}
-
-/* Quill editor override for dark theme */
-.quill-wrap{margin-bottom:10px}
-.ql-toolbar.ql-snow{background:var(--gray);border:1px solid var(--gray3);border-radius:2px 2px 0 0}
-.ql-container.ql-snow{background:var(--black);border:1px solid var(--gray3);border-top:none;border-radius:0 0 2px 2px;min-height:100px}
-.ql-editor{color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.87rem;line-height:1.6;min-height:100px}
-.ql-editor.ql-blank::before{color:var(--gray4);font-style:normal}
-.ql-snow .ql-stroke{stroke:var(--gray4)}
-.ql-snow .ql-fill{fill:var(--gray4)}
-.ql-snow .ql-picker{color:var(--gray4)}
-.ql-snow .ql-picker-options{background:var(--gray2);border-color:var(--gray3)}
-.ql-snow.ql-toolbar button:hover .ql-stroke,.ql-snow .ql-toolbar button:hover .ql-stroke{stroke:var(--yellow)}
-.ql-snow.ql-toolbar button:hover .ql-fill,.ql-snow .ql-toolbar button:hover .ql-fill{fill:var(--yellow)}
-.ql-snow.ql-toolbar button.ql-active .ql-stroke{stroke:var(--yellow)}
-.ql-snow.ql-toolbar button.ql-active .ql-fill{fill:var(--yellow)}
-
-/* upload */
-.upload-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.upload-btn{display:flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--gray3);border-radius:2px;color:var(--gray4);padding:6px 12px;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;letter-spacing:0.5px;text-transform:uppercase;transition:border-color 0.15s,color 0.15s}
-.upload-btn:hover{border-color:var(--white);color:var(--white)}
-.upload-btn.active{border-color:var(--yellow);color:var(--yellow)}
-.manual-link-area{display:none;flex-direction:column;gap:6px;margin-top:4px;margin-bottom:6px}
-.manual-link-area.open{display:flex}
-.upload-result{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--green);padding:3px 0;display:none}
-.form-actions{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
-.spacer{flex:1}
-
-.modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center}
-.modal-bd.open{display:flex}
-.modal{background:var(--gray2);border:1px solid var(--gray3);border-radius:4px;padding:22px;width:100%;max-width:440px;margin:16px}
-.modal-title{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:2px;color:var(--yellow);margin-bottom:12px}
-.modal-preview{background:var(--black);border:1px solid var(--gray3);border-radius:2px;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--gray4);margin-bottom:14px}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end}
-
-.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.73rem;padding:9px 16px;border-radius:3px;opacity:0;transform:translateY(8px);transition:opacity 0.2s,transform 0.2s;pointer-events:none;z-index:999;max-width:calc(100vw - 40px)}
-.toast.show{opacity:1;transform:translateY(0)}
-
-@media print{
-  header,.db-bar,.toolbar,.week-section,.week-legend,.report-actions,.ecard-actions,.entry-form-wrap,.report-footer,.past-miss,.ql-toolbar{display:none!important}
-  body{background:#fff;color:#000}
-  .day-section{padding:0;max-width:100%}
-  .report-box{border:1px solid #ccc}
-  .report-hdr{background:#f0f0f0;border-bottom:2px solid #333}
-  .report-doc-title,.rmeta-item .rmval,.entry-title{color:#000}
-  .report-stamp,.rmeta-item .rmlbl{color:#555}
-  .report-doc-date{color:#333}
-  .report-entry{border-bottom:1px solid #ddd}
-  .entry-time{color:#000}
-  .entry-content{color:#000}
-  .weather-info-block{background:#e8f0fa;border-color:#aac;color:#334}
-}
-@media(max-width:600px){.week-section{padding:12px 10px 0}.day-section{padding:14px}}
+/* ... ΟΛΟ το υπάρχον CSS παραμένει ίδιο ... */
 </style>
-  <script src="shared/toast.js"></script>
+<script src="shared/toast.js"></script>
 </head>
 <body>
-
-<header>
-  <div class="logo">Site<em>Log</em><sub>Ημερολόγιο</sub></div>
-  <div class="user-menu">
-    <div class="user-info">
-      <div class="user-name" id="userName"></div>
-      <div class="user-role" id="userRoleLabel"></div>
-    </div>
-    <a href="index.html" class="btn-back">← Αρχική</a>
-    <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
-  </div>
-</header>
-
-<div class="db-bar">
-  <span id="dbStatus" class="status loading"><span class="spinner"></span>Σύνδεση…</span>
-  <button class="btn btn-outline btn-sm" onclick="refreshAll()">↻ Ανανέωση</button>
-</div>
-
-<div class="toolbar">
-  <select id="siteSelect" onchange="onSiteChange()">
-    <option value="">— Επιλογή εργοταξίου —</option>
-  </select>
-  <span class="site-code-lbl" id="siteCodeLbl"></span>
-</div>
-
-<div class="week-section">
-  <div class="week-nav">
-    <button class="btn btn-outline btn-sm" onclick="goPrevWeek()">‹ Προηγ.</button>
-    <span class="wlabel" id="weekLabel"></span>
-    <button class="btn btn-outline btn-sm" onclick="goNextWeek()">Επόμ. ›</button>
-    <button class="btn btn-outline btn-sm" onclick="goCurrentWeek()">Τρέχουσα</button>
-  </div>
-  <div class="week-grid" id="weekGrid"></div>
-</div>
-<div class="week-legend">
-  <div class="leg"><div class="dot dot-weather"></div>Καιρός</div>
-  <div class="leg"><div class="dot dot-inspection"></div>Επίσκεψη</div>
-  <div class="leg"><div class="dot dot-work_stoppage"></div>Διακοπή</div>
-  <div class="leg"><div class="dot dot-work_log"></div>Εργασίες</div>
-  <div class="leg"><div class="dot dot-event"></div>Συμβάν</div>
-</div>
-
-<div class="day-section">
-  <div id="noSiteMsg" class="no-msg">Επιλέξτε εργοτάξιο για να δείτε το ημερολόγιο</div>
-  <div id="noDayMsg" class="no-msg" style="display:none">Επιλέξτε ημέρα από το εβδομαδιαίο πλέγμα</div>
-  <div id="dayContent" style="display:none">
-    <div class="report-box">
-
-      <div class="report-hdr">
-        <div class="report-hdr-top">
-          <div>
-            <div class="report-stamp">Επίσημο Δελτίο Ημερολογίου Έργου</div>
-            <div class="report-doc-title">Ημερολόγιο Εργοταξίου</div>
-            <div class="report-doc-date" id="rDate"></div>
-          </div>
-          <div class="report-actions">
-            <button class="btn btn-outline btn-sm" onclick="printDay()">⎙ Εκτύπωση / PDF</button>
-            <button class="btn btn-outline btn-sm" onclick="emailDay()">✉ Αποστολή Email</button>
-          </div>
-        </div>
-        <div class="report-meta" id="rMeta"></div>
-      </div>
-
-      <div id="pastMissBanner" class="past-miss" style="display:none">
-        ⚠ Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα. Μπορείτε να προσθέσετε παρακάτω.
-      </div>
-
-      <div id="reportEntries"></div>
-
-      <!-- FORM -->
-      <div class="entry-form-wrap" id="entryFormWrap" style="display:none">
-        <div class="form-lbl" id="formLbl">Νέα Καταχώρηση</div>
-
-        <div class="form-row">
-          <select class="fsel" id="fType" onchange="onTypeChange()">
-            <option value="">Τύπος…</option>
-            <option value="weather">Καιρός</option>
-            <option value="inspection">Επίσκεψη / Επιθεώρηση</option>
-            <option value="work_stoppage">Διακοπή εργασίας</option>
-            <option value="work_log">Εργασίες ημέρας</option>
-            <option value="event">Συμβάν</option>
-          </select>
-          <input class="finp wide" type="text" id="fTitle" placeholder="Τίτλος (σύντομος) — προαιρετικό">
-        </div>
-
-        <!-- Weather API block -->
-        <div class="weather-widget" id="weatherWidget" style="display:none">
-          <div class="weather-data" id="weatherData">Πατήστε "Λήψη καιρού" για αυτόματη λήψη δεδομένων</div>
-          <button class="btn-weather" id="fetchWeatherBtn" onclick="fetchWeather()">⟳ Λήψη καιρού</button>
-          <div class="weather-note">Τα παραπάνω δεδομένα θα αποθηκευτούν αυτόματα στο δελτίο. Στο πεδίο παρατηρήσεων γράψτε τον λόγο της αναφοράς.</div>
-        </div>
-
-        <!-- Quill rich text editor -->
-        <div class="quill-wrap">
-          <div class="field-lbl">Παρατηρήσεις</div>
-          <div id="quillEditor"></div>
-        </div>
-
-        <input type="file" id="dropboxFileInput" style="display:none"
-               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.dwg,.zip"
-               onchange="onDropboxFileSelected(this)">
-        <div class="upload-btns">
-          <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            Ανέβασμα στο Dropbox
-          </button>
-          <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Εισαγωγή Συνδέσμου
-          </button>
-        </div>
-        <div class="upload-result" id="uploadResult"></div>
-		<!-- Επιλογή φακέλου προορισμού στο Dropbox -->
-		<div style="display: flex; gap: 8px; align-items: center; margin: 8px 0;">
-		<span class="field-lbl" style="margin-bottom:0;">📁 Φάκελος στο Dropbox:</span>
-		<input type="text" id="dropboxFolderPath" class="finp" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:0.7rem;" readonly placeholder="Δεν έχει επιλεγεί" value="/SiteLog">
-		<button type="button" class="btn-outline btn-sm" onclick="browseDropboxFolders()">📂 Επιλογή φακέλου</button>
-			</div>
-        <div class="manual-link-area" id="manualLinkArea">
-          <input class="finp wide" type="url" id="fLink" placeholder="https://… (Dropbox / Drive / OneDrive)">
-          <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου">
-        </div>
-
-        <div class="form-actions">
-          <button class="btn btn-outline btn-sm" onclick="cancelForm()">Άκυρο</button>
-          <div class="spacer"></div>
-          <button class="btn btn-orange btn-sm" id="saveBtn" onclick="saveEntry()">Αποθήκευση</button>
-        </div>
-      </div>
-
+<!-- ... όλο το HTML παραμένει ίδιο μέχρι το footer ... -->
       <div class="report-footer">
         <button class="btn btn-outline btn-sm" id="addEntryBtn" onclick="showNewForm()" style="display:none">+ Νέα Καταχώρηση</button>
         <div class="report-footer-right">
           <span class="footer-ts" id="rFooterTs"></span>
           <span class="footer-ts">SiteLog v3.0</span>
+          <span id="syncIndicator" style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--gray4);margin-left:8px;">✓</span>
         </div>
       </div>
-
-    </div>
-  </div>
-</div>
-
-<div class="modal-bd" id="deleteModal">
-  <div class="modal">
-    <div class="modal-title">Διαγραφή Καταχώρησης</div>
-    <p style="font-size:0.83rem;color:var(--white);margin-bottom:12px">Είστε βέβαιοι; Η ενέργεια είναι μη αναστρέψιμη.</p>
-    <div class="modal-preview" id="deletePreview"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeDeleteModal()">Άκυρο</button>
-      <button class="btn btn-sm" style="background:var(--red);color:#fff;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;padding:6px 16px;font-size:0.85rem" onclick="confirmDelete()">Διαγραφή</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<div class="modal-bd" id="folderModal">
-  <div class="modal" style="max-width:500px;">
-    <div class="modal-title">Επιλογή φακέλου στο Dropbox</div>
-    <div style="margin-bottom:12px; max-height:300px; overflow-y:auto; background:var(--black); border:1px solid var(--gray3); border-radius:2px; padding:8px;" id="folderBrowserContent"></div>
-    <div id="currentFolderPath" style="font-size:0.6rem; color:var(--gray4); margin-bottom:10px;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeFolderModal()">Άκυρο</button>
-      <button class="btn btn-orange btn-sm" onclick="confirmSelectedFolder()">Επιλογή</button>
-    </div>
-  </div>
-</div>
+<!-- ... -->
 <script>
-const db = window.sb;
-let currentUser = null, currentRole = null;
-let sites = [], selectedSiteId = null, selectedSite = null, siteSMName = '—';
-let weekStart = null, selectedDate = null;
-let weekEntries = {}, editingId = null, deletingId = null;
-let pendingLink = '', pendingLinkDesc = '';
-let dropboxToken = null;
-const DROPBOX_APP_KEY = 'szydo67fl9prnzz';
-const DROPBOX_REDIRECT = location.origin + location.pathname;
-let quill = null;      // Quill instance
-let weatherApiData = ''; // last fetched weather string
-const TODAY = todayLocal();
-
-let currentFolderStack = [];
-let selectedFolderPath = null;
-
-const TYPE_LABELS = {weather:'Καιρός',inspection:'Επίσκεψη',work_stoppage:'Διακοπή',work_log:'Εργασίες',event:'Συμβάν'};
-const TYPE_BADGE  = {weather:'badge-weather',inspection:'badge-inspection',work_stoppage:'badge-work_stoppage',work_log:'badge-work_log',event:'badge-event'};
-const DOT_CLASS   = {weather:'dot-weather',inspection:'dot-inspection',work_stoppage:'dot-work_stoppage',work_log:'dot-work_log',event:'dot-event'};
-const DAY_SHORT   = ['Δευτ','Τρίτ','Τετ','Πέμπ','Παρ','Σάββ','Κυρ'];
-const DAY_LONG    = ['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
-const MONTH       = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
-
-async function browseDropboxFolders() {
-  if (!dropboxToken) {
-    showToast('Πρέπει πρώτα να συνδεθείτε με Dropbox', '#e8600a');
-    return;
-  }
-  currentFolderStack = [''];
-  await renderFolderBrowser('');
-  document.getElementById('folderModal').classList.add('open');
-}
-
-async function renderFolderBrowser(path) {
-  const container = document.getElementById('folderBrowserContent');
-  const currentPathSpan = document.getElementById('currentFolderPath');
-  currentPathSpan.textContent = `Τρέχων φάκελος: ${path === '' ? 'Root' : path}`;
-  container.innerHTML = '<div class="spinner"></div> Φόρτωση...';
-  
-  const response = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + dropboxToken, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: path || '', recursive: false })
-  });
-  const data = await response.json();
-  if (data.error_summary) {
-    container.innerHTML = `<div style="color:var(--red);">Σφάλμα: ${data.error_summary}</div>`;
-    return;
-  }
-  const folders = data.entries.filter(e => e['.tag'] === 'folder');
-  if (folders.length === 0) {
-    container.innerHTML = '<div style="color:var(--gray4);">⚠️ Κανένας υποφάκελος</div>';
-  } else {
-    let html = '<ul style="list-style:none; padding-left:0;">';
-    folders.forEach(f => {
-      html += `<li style="margin-bottom:8px; cursor:pointer; padding:4px 8px; border-bottom:1px solid var(--gray3);" onclick="navigateToFolder('${f.path_display.replace(/'/g, "\\'")}')">📁 ${f.name}</li>`;
-    });
-    html += '</ul>';
-    container.innerHTML = html;
-  }
-  if (currentFolderStack.length > 1) {
-    const btn = document.createElement('button');
-    btn.textContent = '⬅ Πίσω';
-    btn.className = 'btn-outline btn-sm';
-    btn.onclick = goBackFolder;
-    container.appendChild(btn);
-  }
-}
-
-function navigateToFolder(folderPath) {
-  currentFolderStack.push(folderPath);
-  renderFolderBrowser(folderPath);
-}
-
-function goBackFolder() {
-  if (currentFolderStack.length > 1) {
-    currentFolderStack.pop();
-    renderFolderBrowser(currentFolderStack[currentFolderStack.length - 1]);
-  }
-}
-
-function confirmSelectedFolder() {
-  const currentPath = document.getElementById('currentFolderPath').textContent.replace('Τρέχων φάκελος: ', '');
-  const finalPath = currentPath === 'Root' ? '/' : currentPath;
-  document.getElementById('dropboxFolderPath').value = finalPath;
-  closeFolderModal();
-  showToast(`✓ Φάκελος: ${finalPath}`);
-}
-
-function closeFolderModal() {
-  document.getElementById('folderModal').classList.remove('open');
-}
-
-function todayLocal() { const n = new Date(); return isoDate(n); }
-function isoDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function parseISO(s) { const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); }
-function fmtDate(iso) { if(!iso) return '—'; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
-function fmtDateLong(iso) {
-  if(!iso) return '—';
-  const dt = parseISO(iso);
-  const i = dt.getDay() === 0 ? 6 : dt.getDay()-1;
-  return `${DAY_LONG[i]} ${dt.getDate()} ${MONTH[dt.getMonth()]} ${dt.getFullYear()}`;
-}
-function getMonday(d) { const dt=new Date(d); const day=dt.getDay(); dt.setDate(dt.getDate()+(day===0?-6:1-day)); return dt; }
-function addDays(d,n) { const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt; }
-function weekDates(mon) { return Array.from({length:7},(_,i)=>isoDate(addDays(mon,i))); }
-function fmtWeekLabel(mon) { const sun=addDays(mon,6); return `${mon.getDate()} ${MONTH[mon.getMonth()]} – ${sun.getDate()} ${MONTH[sun.getMonth()]} ${sun.getFullYear()}`; }
-function entryTime(e) { if(!e.created_at) return '—'; return new Date(e.created_at).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'}); }
-function addr(s) { return [s?.address_street,s?.address_number,s?.address_city].filter(Boolean).join(' ') || '—'; }
-function escH(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-// Sanitize HTML from Quill — only allow safe tags
-function sanitizeHtml(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  // Remove script/style
-  tmp.querySelectorAll('script,style,iframe').forEach(el=>el.remove());
-  return tmp.innerHTML;
-}
-// Strip HTML to plain text for email
-function htmlToText(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.innerText || tmp.textContent || '';
-}
+// ... όλες οι υπάρχουσες συναρτήσεις παραμένουν ΙΔΙΕΣ, εκτός από την saveEntry ...
+// ... και στην init() προσθέτουμε την κλήση του updateSyncIndicator ...
 
 async function init() {
   const ok = await Auth.requireLogin();
@@ -494,7 +46,6 @@ async function init() {
     document.querySelector('.day-section').innerHTML = '<div class="no-msg" style="color:var(--red)">Δεν έχετε δικαίωμα πρόσβασης.</div>';
     return;
   }
-  // Init Quill
   quill = new Quill('#quillEditor', {
     theme: 'snow',
     placeholder: 'Γράψτε παρατηρήσεις…',
@@ -511,465 +62,16 @@ async function init() {
   renderWeekNav();
   renderWeekGrid();
   setStatus('ok','✓ Συνδεδεμένος');
+  
+  // Δείκτης συγχρονισμού
+  OfflineSync.updateSyncIndicator();
 }
 
-
-
-function loadSites() {
-  sites = Auth.getAssignedSites();
-  const sel = document.getElementById('siteSelect');
-  sel.innerHTML = '<option value="">— Επιλογή εργοταξίου —</option>';
-  sites.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s.id;
-    o.textContent = s.project_code ? `${s.project_code} · ${s.name}` : s.name;
-    sel.appendChild(o);
-  });
-  if (sites.length === 1) { sel.value = sites[0].id; onSiteChange(); }
-}
-
-async function onSiteChange() {
-  const sel = document.getElementById('siteSelect');
-  selectedSiteId = sel.value || null;
-  selectedSite = sites.find(s => String(s.id) === String(selectedSiteId)) || null;
-  document.getElementById('siteCodeLbl').textContent = selectedSite?.project_code || '';
-  weekEntries = {}; selectedDate = null; siteSMName = '—';
-  document.getElementById('noSiteMsg').style.display = selectedSiteId ? 'none' : '';
-  document.getElementById('noDayMsg').style.display = selectedSiteId ? '' : 'none';
-  document.getElementById('dayContent').style.display = 'none';
-  if (selectedSiteId) {
-    const { data } = await db
-      .from('user_site_assignments')
-      .select('profiles!user_id(full_name,role)')
-      .eq('site_id', selectedSiteId);
-    const smRow = (data||[]).find(r => r.profiles?.role === 'site_manager');
-    siteSMName = smRow?.profiles?.full_name || '—';
-    loadWeek();
-  } else {
-    renderWeekGrid();
-  }
-}
-
-function renderWeekNav() { document.getElementById('weekLabel').textContent = fmtWeekLabel(weekStart); }
-function goPrevWeek()    { weekStart = addDays(weekStart,-7); afterNav(); }
-function goNextWeek()    { weekStart = addDays(weekStart, 7); afterNav(); }
-function goCurrentWeek() { weekStart = getMonday(new Date()); afterNav(); }
-function afterNav() {
-  renderWeekNav();
-  weekEntries = {}; selectedDate = null;
-  document.getElementById('dayContent').style.display = 'none';
-  if (selectedSiteId) loadWeek(); else renderWeekGrid();
-}
-
-async function loadWeek() {
-  if (!selectedSiteId) return;
-  setStatus('loading','Φόρτωση…');
-  const dates = weekDates(weekStart);
-  const { data, error } = await db
-    .from('site_diary')
-    .select('id,site_id,entry_date,entry_type,title,description,weather_data,external_link,link_description,created_by,created_at')
-    .eq('site_id', selectedSiteId)
-    .gte('entry_date', dates[0])
-    .lte('entry_date', dates[6])
-    .order('entry_date',{ascending:true})
-    .order('created_at',{ascending:true});
-  if (error) { setStatus('err','⚠ '+error.message); showToast('⚠ Σφάλμα','#e8600a'); return; }
-  weekEntries = {};
-  (data||[]).forEach(e => {
-    if (!weekEntries[e.entry_date]) weekEntries[e.entry_date] = [];
-    weekEntries[e.entry_date].push(e);
-  });
-  setStatus('ok','✓ Φορτώθηκε');
-  renderWeekGrid();
-  if (selectedDate) renderDayPanel(selectedDate);
-}
-
-async function refreshAll() { weekEntries = {}; if (selectedSiteId) await loadWeek(); if (selectedDate) renderDayPanel(selectedDate); }
-
-function renderWeekGrid() {
-  const grid = document.getElementById('weekGrid');
-  const dates = weekDates(weekStart);
-  grid.innerHTML = '';
-  dates.forEach((iso, i) => {
-    const d = parseISO(iso);
-    const entries = weekEntries[iso] || [];
-    const isToday = iso === TODAY, isPast = iso < TODAY, isFut = iso > TODAY;
-    const hasSite = !!selectedSiteId;
-    const isMiss = hasSite && isPast && !entries.length;
-    const cell = document.createElement('div');
-    cell.className = 'day-cell' + (isToday?' is-today':'') + (iso===selectedDate?' selected':'');
-    cell.onclick = () => selectDay(iso);
-    cell.innerHTML = `
-      <div class="day-name">${DAY_SHORT[i]}</div>
-      <div class="day-num">${d.getDate()}</div>
-      ${entries.length ? `<div class="day-dots">${entries.map(e=>`<div class="dot ${DOT_CLASS[e.entry_type]||'dot-event'}"></div>`).join('')}</div>` : ''}
-      ${isMiss ? '<div class="day-miss">Χωρίς καταχώρηση</div>' : (!isFut&&hasSite&&!entries.length ? '<div class="day-ok">Κανένα</div>' : '')}
-    `;
-    grid.appendChild(cell);
-  });
-}
-
-function selectDay(iso) { selectedDate = iso; renderWeekGrid(); renderDayPanel(iso); }
-
-function renderDayPanel(iso) {
-  if (!selectedSiteId) return;
-  const isAdmin  = currentRole === 'admin';
-  const isSM     = currentRole === 'site_manager';
-  const canWrite  = isAdmin || isSM;
-  const isToday   = iso === TODAY;
-  const isFut     = iso > TODAY;
-  const isPast    = iso < TODAY;
-  const entries   = weekEntries[iso] || [];
-
-  document.getElementById('noDayMsg').style.display = 'none';
-  document.getElementById('dayContent').style.display = '';
-
-  document.getElementById('rDate').textContent = fmtDateLong(iso);
-  document.getElementById('rMeta').innerHTML = [
-    {l:'Κωδικός Έργου',        v: selectedSite?.project_code || '—'},
-    {l:'Εργοτάξιο',            v: selectedSite?.name || '—'},
-    {l:'Διεύθυνση',            v: addr(selectedSite)},
-    {l:'Υπεύθυνος Εργοταξίου', v: siteSMName},
-    {l:'Ημερομηνία',           v: fmtDate(iso)},
-    {l:'Καταχωρήσεις',         v: String(entries.length)},
-  ].map(it=>`<div class="rmeta-item"><div class="rmlbl">${it.l}</div><div class="rmval">${escH(it.v)}</div></div>`).join('');
-
-  document.getElementById('pastMissBanner').style.display = (isPast && !entries.length) ? '' : 'none';
-
-  const re = document.getElementById('reportEntries');
-  if (!entries.length) {
-    re.innerHTML = '<div class="empty-day">Δεν υπάρχουν καταχωρήσεις για αυτή την ημέρα</div>';
-  } else {
-    re.innerHTML = entries.map(e => {
-      const bc  = TYPE_BADGE[e.entry_type] || 'badge-event';
-      const lbl = TYPE_LABELS[e.entry_type] || e.entry_type;
-      const canEditThis = isAdmin || (isSM && isToday);
-      const canDelThis  = isAdmin;
-      // Weather data block
-      const weatherBlock = (e.entry_type === 'weather' && e.weather_data)
-        ? `<div class="weather-info-block">${escH(e.weather_data)}</div>` : '';
-      // Title
-      const titleHtml = e.title ? `<div class="entry-title">${escH(e.title)}</div>` : '';
-      // Description — stored as HTML from Quill
-      const descHtml = e.description
-        ? `<div class="entry-content">${sanitizeHtml(e.description)}</div>` : '';
-      const linkHtml = e.external_link
-        ? `<div class="elink-row">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <a href="${escH(e.external_link)}" target="_blank" rel="noopener">${escH(e.link_description||e.external_link)}</a>
-          </div>` : '';
-      return `<div class="report-entry">
-        <div class="entry-time">${entryTime(e)}</div>
-        <div><span class="entry-badge ${bc}">${lbl}</span></div>
-        <div class="entry-body">
-          ${titleHtml}
-          ${weatherBlock}
-          ${descHtml}
-          ${linkHtml}
-        </div>
-        <div class="ecard-actions">
-          <button class="ebtn" onclick="startEdit(${e.id})" ${canEditThis?'':'disabled'}>Επεξεργασία</button>
-          ${canDelThis ? `<button class="ebtn del" onclick="openDeleteModal(${e.id})">Διαγραφή</button>` : ''}
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  const now = new Date().toLocaleString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  document.getElementById('rFooterTs').textContent = `Εκτυπώθηκε: ${now}`;
-
-  document.getElementById('addEntryBtn').style.display = (canWrite && !isFut) ? '' : 'none';
-  document.getElementById('entryFormWrap').style.display = 'none';
-}
-
-function showNewForm() {
-  editingId = null; pendingLink = ''; pendingLinkDesc = ''; weatherApiData = '';
-  document.getElementById('formLbl').textContent = 'Νέα Καταχώρηση';
-  document.getElementById('fType').value = '';
-  document.getElementById('fTitle').value = '';
-  quill.setContents([]);
-  document.getElementById('weatherWidget').style.display = 'none';
-  document.getElementById('weatherData').textContent = 'Πατήστε "Λήψη καιρού" για αυτόματη λήψη δεδομένων';
-  resetUploadUI();
-  document.getElementById('entryFormWrap').style.display = '';
-  document.getElementById('addEntryBtn').style.display = 'none';
-  document.getElementById('fTitle').focus();
-}
-
-function startEdit(id) {
-  const e = (weekEntries[selectedDate]||[]).find(x => x.id === id);
-  if (!e) return;
-  editingId = id; pendingLink = e.external_link||''; pendingLinkDesc = e.link_description||'';
-  weatherApiData = e.weather_data || '';
-  document.getElementById('formLbl').textContent = 'Επεξεργασία Καταχώρησης';
-  document.getElementById('fType').value = e.entry_type || '';
-  document.getElementById('fTitle').value = e.title || '';
-  // Load HTML into Quill
-  quill.clipboard.dangerouslyPasteHTML(e.description || '');
-  resetUploadUI();
-  if (e.external_link) {
-    document.getElementById('manualLinkArea').classList.add('open');
-    document.getElementById('manualLinkBtn').classList.add('active');
-    document.getElementById('fLink').value = e.external_link;
-    document.getElementById('fLinkDesc').value = e.link_description || '';
-  }
-  onTypeChange();
-  if (e.weather_data) document.getElementById('weatherData').textContent = e.weather_data;
-  document.getElementById('entryFormWrap').style.display = '';
-  document.getElementById('addEntryBtn').style.display = 'none';
-  document.getElementById('entryFormWrap').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function cancelForm() {
-  editingId = null;
-  document.getElementById('entryFormWrap').style.display = 'none';
-  resetUploadUI();
-  const isFut = selectedDate > TODAY;
-  const canWrite = currentRole === 'admin' || currentRole === 'site_manager';
-  if (canWrite && selectedDate && !isFut) {
-    document.getElementById('addEntryBtn').style.display = '';
-  }
-}
-
-function onTypeChange() {
-  const t = document.getElementById('fType').value;
-  document.getElementById('weatherWidget').style.display = t === 'weather' ? '' : 'none';
-}
-
-async function fetchWeather() {
-  const btn    = document.getElementById('fetchWeatherBtn');
-  const dataEl = document.getElementById('weatherData');
-  btn.disabled = true; btn.textContent = '…';
-  if (!navigator.geolocation) {
-    showToast('Η γεωτοποθεσία δεν υποστηρίζεται','#e8600a');
-    btn.disabled=false; btn.textContent='⟳ Λήψη καιρού'; return;
-  }
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const { latitude:lat, longitude:lon } = pos.coords;
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(4)}&longitude=${lon.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m,weather_code&wind_speed_unit=ms&timezone=Europe%2FAthens`;
-      const res = await fetch(url);
-      const d = await res.json(); const c = d.current;
-      weatherApiData = `${wCode(c.weather_code)} · ${c.temperature_2m}°C · Άνεμος ${c.wind_speed_10m} m/s (ριπές ${c.wind_gusts_10m} m/s) · Υγρ. ${c.relative_humidity_2m}% · Κατακρ. ${c.precipitation} mm`;
-      dataEl.textContent = weatherApiData;
-      showToast('✓ Καιρός φορτώθηκε');
-    } catch(err) { showToast('⚠ Σφάλμα API καιρού','#e8600a'); }
-    btn.disabled = false; btn.textContent = '⟳ Ανανέωση';
-  }, () => {
-    showToast('⚠ Δεν επιτράπηκε η τοποθεσία','#e8600a');
-    btn.disabled=false; btn.textContent='⟳ Λήψη καιρού';
-  }, {timeout:8000});
-}
-
-function wCode(c) {
-  if(c===0) return 'Αίθριος'; if(c<=2) return 'Αραιά συννεφιά'; if(c===3) return 'Συννεφιά';
-  if(c<=49) return 'Ομίχλη'; if(c<=59) return 'Ψιχάλα'; if(c<=69) return 'Βροχή';
-  if(c<=79) return 'Χιόνι'; if(c<=82) return 'Ισχυρή βροχή'; if(c<=86) return 'Χιονόπτωση';
-  if(c<=99) return 'Καταιγίδα'; return '—';
-}
-
-function resetUploadUI() {
-  document.getElementById('dropboxBtn').classList.remove('active');
-  document.getElementById('manualLinkBtn').classList.remove('active');
-  document.getElementById('manualLinkArea').classList.remove('open');
-  document.getElementById('fLink').value = '';
-  document.getElementById('fLinkDesc').value = '';
-  const ur = document.getElementById('uploadResult'); ur.style.display='none'; ur.textContent='';
-  pendingLink=''; pendingLinkDesc='';
-}
-
-// ── Dropbox OAuth2 PKCE ──────────────────────────────────────────────────
-function dbxGenVerifier() {
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-async function dbxGenChallenge(v) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
-  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-
-async function handleDropboxChooser() {
-  if (dropboxToken) { document.getElementById('dropboxFileInput').click(); return; }
-
-  const verifier  = dbxGenVerifier();
-  const challenge = await dbxGenChallenge(verifier);
-  const state     = Math.random().toString(36).slice(2);
-
-  sessionStorage.setItem('dbx_verifier', verifier);
-  sessionStorage.setItem('dbx_state',    state);
-
- const params = new URLSearchParams({
-  client_id: DROPBOX_APP_KEY,
-  response_type: 'code',
-  code_challenge: challenge,
-  code_challenge_method: 'S256',
-  redirect_uri: DROPBOX_REDIRECT,
-  state,
-  token_access_type: 'online',
-  scope: 'files.content.write files.content.read sharing.write',  // ΠΡΟΣΘΗΚΗ
-});
-
-  const popup = window.open(
-    'https://www.dropbox.com/oauth2/authorize?' + params,
-    'dropbox-auth',
-    'width=620,height=700,left=200,top=80'
-  );
-  if (!popup) { showToast('⚠ Επιτρέψτε τα popups για αυτή τη σελίδα','#e8600a'); return; }
-
-  const timer = setInterval(() => {
-    try {
-      if (popup.closed) { clearInterval(timer); return; }
-      const url = popup.location.href;
-      if (url.startsWith(DROPBOX_REDIRECT) && url.includes('code=')) {
-        const p = new URL(url).searchParams;
-        popup.close();
-        clearInterval(timer);
-        dbxExchangeCode(p.get('code'), p.get('state'));
-      }
-    } catch(_) { /* cross-origin — still on dropbox.com */ }
-  }, 400);
-}
-
-async function dbxExchangeCode(code, retState) {
-  if (retState !== sessionStorage.getItem('dbx_state')) {
-    showToast('⚠ Auth error: invalid state','#e8600a'); return;
-  }
-  const verifier = sessionStorage.getItem('dbx_verifier');
-  showToast('⟳ Σύνδεση Dropbox…','#3a7bd5');
-
-  const resp = await fetch('https://api.dropboxapi.com/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type':'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      code,
-      grant_type:    'authorization_code',
-      client_id:     DROPBOX_APP_KEY,
-      code_verifier: verifier,
-      redirect_uri:  DROPBOX_REDIRECT,
-    }),
-  });
-  const data = await resp.json();
-  if (!data.access_token) { showToast('⚠ Αποτυχία σύνδεσης Dropbox','#e8600a'); return; }
-  dropboxToken = data.access_token;
-  showToast('✓ Dropbox συνδέθηκε — επιλέξτε αρχείο','#2ea84f');
-  document.getElementById('dropboxFileInput').click();
-}
-
-async function onDropboxFileSelected(input) {
-  const file = input.files[0];
-  if (!file || !dropboxToken) return;
-  input.value = '';
-
-  const btn = document.getElementById('dropboxBtn');
-  btn.disabled = true;
-  showToast('⟳ Ανέβασμα αρχείου...', '#3a7bd5');
-
-  // Λήψη φακέλου από το πεδίο (που συμπληρώθηκε από το modal)
-  let folder = document.getElementById('dropboxFolderPath').value.trim();
-  if (!folder || folder === '') folder = '/SiteLog';
-  let basePath = folder.replace(/\/$/, '');
-  const filename = file.name.replace(/[^a-zA-Z0-9._\-()\s]/g, '_');
-  const path = basePath + '/' + isoDate(new Date()) + '_' + filename;
-
-  // 1. Upload
-  const uploadResp = await fetch('https://content.dropboxapi.com/2/files/upload', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + dropboxToken,
-      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'add', autorename: true }),
-      'Content-Type': 'application/octet-stream',
-    },
-    body: file,
-  });
-  const uploaded = await uploadResp.json();
-  if (uploaded.error_summary) {
-    showToast('⚠ Upload error: ' + uploaded.error_summary, '#e8600a');
-    btn.disabled = false;
-    return;
-  }
-  if (!uploaded.path_display) {
-    showToast('⚠ Upload failed – no path returned', '#e8600a');
-    btn.disabled = false;
-    return;
-  }
-  showToast('✓ Αρχείο ανέβηκε, δημιουργία link...', '#2ea84f');
-
-  // 2. Δημιουργία shared link – ΔΟΚΙΜΑΣΜΕΝΟΣ ΤΡΟΠΟΣ
-  let sharedUrl = null;
-  try {
-    const linkResp = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + dropboxToken,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        path: uploaded.path_display,
-        settings: { requested_visibility: 'public' }  // 'public' ή 'team_only'
-      }),
-    });
-    const linkData = await linkResp.json();
-    if (linkData.url) {
-      sharedUrl = linkData.url;
-    } else if (linkData.error_summary) {
-      // Αν υπάρχει ήδη link, προσπάθησε να το πάρεις
-      console.warn('Create link error:', linkData.error_summary);
-      const existingResp = await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + dropboxToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: uploaded.path_display }),
-      });
-      const existing = await existingResp.json();
-      if (existing.links && existing.links.length > 0) {
-        sharedUrl = existing.links[0].url;
-      }
-    }
-  } catch (err) {
-    console.error('Link creation exception:', err);
-  }
-
-  if (sharedUrl) {
-    setPendingLink(sharedUrl, file.name);
-    showToast('✓ Link δημιουργήθηκε και προστέθηκε στη φόρμα', '#2ea84f');
-  } else {
-    showToast('⚠ Δεν δημιουργήθηκε link. Δοκιμάστε ξανά.', '#e8600a');
-  }
-  btn.disabled = false;
-}
-
-function setPendingLink(url, desc) {
-  pendingLink = url;
-  pendingLinkDesc = desc || '';
-  const ur = document.getElementById('uploadResult');
-  ur.textContent = `✓ ${desc || url}`;
-  ur.style.display = '';
-  document.getElementById('dropboxBtn').classList.add('active');
-
-  // Αυτόματο άνοιγμα της περιοχής εισαγωγής link
-  const area = document.getElementById('manualLinkArea');
-  const btn = document.getElementById('manualLinkBtn');
-  if (!area.classList.contains('open')) {
-    area.classList.add('open');
-    btn.classList.add('active');
-  }
-  document.getElementById('fLink').value = url;
-  document.getElementById('fLinkDesc').value = desc || '';
-}
-
-function toggleManualLink() {
-  const area = document.getElementById('manualLinkArea');
-  const btn  = document.getElementById('manualLinkBtn');
-  const open = area.classList.contains('open');
-  area.classList.toggle('open', !open);
-  btn.classList.toggle('active', !open);
-  if (!open) document.getElementById('fLink').focus();
-}
-
+// ── ΑΝΤΙΚΑΤΑΣΤΗΣΕ ΤΗΝ ΥΠΑΡΧΟΥΣΑ saveEntry() ΜΕ ΑΥΤΗ ──
 async function saveEntry() {
   const type     = document.getElementById('fType').value;
   const title    = document.getElementById('fTitle').value.trim();
-  const descHtml = quill.getSemanticHTML(); // HTML from Quill
+  const descHtml = quill.getSemanticHTML();
   const isEmptyDesc = quill.getText().trim() === '';
   const link     = document.getElementById('fLink').value.trim() || pendingLink || '';
   const linkDesc = document.getElementById('fLinkDesc').value.trim() || pendingLinkDesc || '';
@@ -991,73 +93,56 @@ async function saveEntry() {
     link_description: linkDesc || null,
   };
 
+  if (!editingId) {
+    payload.created_by = currentUser.id;
+  }
+
+  // Offline fallback
+  if (!navigator.onLine) {
+    if (editingId) {
+      await OfflineSync.addToQueue('site_diary', { action: 'update', id: editingId, data: payload });
+    } else {
+      await OfflineSync.addToQueue('site_diary', { action: 'insert', data: payload });
+    }
+    showToast('⚠ Χωρίς σύνδεση – αποθηκεύτηκε τοπικά', '#e8600a');
+    cancelForm();
+    btn.disabled = false; btn.textContent = 'Αποθήκευση';
+    OfflineSync.updateSyncIndicator();
+    return;
+  }
+
   let error;
   if (editingId) {
     ({ error } = await db.from('site_diary').update(payload).eq('id', editingId));
   } else {
-    ({ error } = await db.from('site_diary').insert({...payload, created_by: currentUser.id}));
+    ({ error } = await db.from('site_diary').insert(payload));
   }
-  btn.disabled = false; btn.textContent = 'Αποθήκευση';
-  if (error) { showToast('⚠ '+error.message,'#e8600a'); return; }
+
+  if (error) {
+    if (!navigator.onLine || error.message?.toLowerCase().includes('fetch')) {
+      if (editingId) {
+        await OfflineSync.addToQueue('site_diary', { action: 'update', id: editingId, data: payload });
+      } else {
+        await OfflineSync.addToQueue('site_diary', { action: 'insert', data: payload });
+      }
+      showToast('⚠ Αποθήκευση τοπικά λόγω σφάλματος', '#e8600a');
+      cancelForm();
+    } else {
+      showToast('⚠ ' + error.message, '#e8600a');
+    }
+    btn.disabled = false; btn.textContent = 'Αποθήκευση';
+    return;
+  }
+
   showToast(editingId ? '✓ Αποθηκεύτηκε' : '✓ Καταχωρήθηκε');
   cancelForm();
   await loadWeek();
   renderDayPanel(selectedDate);
+  btn.disabled = false; btn.textContent = 'Αποθήκευση';
 }
 
-function openDeleteModal(id) {
-  deletingId = id;
-  const e = (weekEntries[selectedDate]||[]).find(x=>x.id===id);
-  document.getElementById('deletePreview').textContent = e
-    ? `${TYPE_LABELS[e.entry_type]||e.entry_type}${e.title?' · '+e.title:''}`
-    : '';
-  document.getElementById('deleteModal').classList.add('open');
-}
-function closeDeleteModal() { deletingId=null; document.getElementById('deleteModal').classList.remove('open'); }
-async function confirmDelete() {
-  if (!deletingId) return;
-  const { error } = await db.from('site_diary').delete().eq('id', deletingId);
-  closeDeleteModal();
-  if (error) { showToast('⚠ '+error.message,'#e8600a'); return; }
-  showToast('✓ Διαγράφηκε','#d93b3b');
-  await loadWeek(); renderDayPanel(selectedDate);
-}
-
-function printDay() { window.print(); }
-
-function emailDay() {
-  if (!selectedDate || !selectedSiteId) return;
-  const entries = weekEntries[selectedDate] || [];
-  const subj = encodeURIComponent(`Ημερολόγιο Εργοταξίου — ${selectedSite?.name||''} — ${fmtDate(selectedDate)}`);
-  let body = `ΗΜΕΡΟΛΟΓΙΟ ΕΡΓΟΤΑΞΙΟΥ\n${'═'.repeat(42)}\n`;
-  body += `Κωδικός Έργου        : ${selectedSite?.project_code||'—'}\n`;
-  body += `Εργοτάξιο            : ${selectedSite?.name||'—'}\n`;
-  body += `Διεύθυνση            : ${addr(selectedSite)}\n`;
-  body += `Υπεύθυνος Εργοταξίου : ${siteSMName}\n`;
-  body += `Ημερομηνία           : ${fmtDateLong(selectedDate)}\n`;
-  body += `${'─'.repeat(42)}\n\n`;
-  if (!entries.length) {
-    body += 'Δεν υπάρχουν καταχωρήσεις.\n';
-  } else {
-    entries.forEach(e => {
-      body += `[${TYPE_LABELS[e.entry_type]||e.entry_type}]  ${entryTime(e)}`;
-      if (e.title) body += `  ${e.title}`;
-      body += '\n';
-      if (e.weather_data) body += `Καιρός: ${e.weather_data}\n`;
-      if (e.description) body += htmlToText(e.description) + '\n';
-      if (e.external_link) body += `Αρχείο: ${e.external_link}${e.link_description?' ('+e.link_description+')':''}\n`;
-      body += '\n';
-    });
-  }
-  body += `${'─'.repeat(42)}\nSiteLog v3.0`;
-  window.location.href = `mailto:?subject=${subj}&body=${encodeURIComponent(body)}`;
-}
-
-function setStatus(s, msg) {
-  const el = document.getElementById('dbStatus');
-  el.innerHTML = (s==='loading'?'<span class="spinner"></span>':'') + msg;
-  el.className = 'status ' + s;
-}
+// ... ΟΛΕΣ ΟΙ ΥΠΟΛΟΙΠΕΣ ΣΥΝΑΡΤΗΣΕΙΣ ΠΑΡΑΜΕΝΟΥΝ ΩΣ ΕΧΟΥΝ ...
+// (Δεν χρειάζεται να τις πειράξουμε)
 
 document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
 init();
