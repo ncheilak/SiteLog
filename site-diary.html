@@ -187,6 +187,34 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
   .weather-info-block{background:#e8f0fa;border-color:#aac;color:#334}
 }
 @media(max-width:600px){.week-section{padding:12px 10px 0}.day-section{padding:14px}}
+
+/* Dropbox integration */
+.dbx-status {
+  display:flex; align-items:center; gap:10px; padding:8px 12px;
+  background: rgba(0,130,255,0.08); border:1px solid rgba(0,130,255,0.3);
+  border-radius:2px; margin-bottom:8px; flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:#6fa3e8;
+}
+.dbx-folder-row, .dbx-file-row {
+  display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;
+}
+.dbx-folder-label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--gray5); }
+.dbx-folder-path  { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--yellow); max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dbx-file-name    { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; color:var(--gray5); }
+.folder-breadcrumb {
+  font-family:'IBM Plex Mono',monospace; font-size:0.65rem; color:var(--yellow);
+  padding:8px 0; border-bottom:1px solid var(--gray3); margin-bottom:8px;
+  cursor:pointer;
+}
+.folder-list { max-height:240px; overflow-y:auto; }
+.folder-item {
+  display:flex; align-items:center; gap:8px; padding:8px 10px;
+  border-bottom:1px solid var(--gray3); cursor:pointer;
+  font-family:'IBM Plex Mono',monospace; font-size:0.68rem; color:var(--white);
+  transition:background 0.15s;
+}
+.folder-item:hover { background:var(--gray3); }
+.folder-item .fi-icon { font-size:1rem; }
 </style>
 </head>
 <body>
@@ -288,16 +316,29 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
           <div id="quillEditor"></div>
         </div>
 
-        <div class="upload-btns">
-          <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-            Ανέβασμα στο Dropbox
-          </button>
-          <button class="upload-btn" id="manualLinkBtn" onclick="toggleManualLink()" type="button">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Εισαγωγή Συνδέσμου
-          </button>
-        </div>
+  <!-- DROPBOX STATUS -->
+<div class="dbx-status" id="dbxStatus">
+  <span id="dbxStatusIcon">🔗</span>
+  <span id="dbxStatusText">Δεν έχετε συνδεθεί</span>
+  <button class="btn-weather" id="dbxConnectBtn" onclick="connectDropbox()">Σύνδεση Dropbox</button>
+  <button class="btn-weather" id="dbxDisconnectBtn" onclick="disconnectDropbox()" style="display:none">Αποσύνδεση</button>
+</div>
+
+<!-- ΕΠΙΛΕΓΜΕΝΟΣ ΦΑΚΕΛΟΣ + ΑΡΧΕΙΟ -->
+<div id="dbxUploadArea" style="display:none">
+  <div class="dbx-folder-row">
+    <span class="dbx-folder-label">Φάκελος Dropbox:</span>
+    <span class="dbx-folder-path" id="dbxFolderPath">/</span>
+    <button class="btn-weather" onclick="openFolderPicker()">📁 Επιλογή Φακέλου</button>
+  </div>
+  <div class="dbx-file-row">
+    <input type="file" id="dbxFileInput" style="display:none" onchange="onFileSelected(this.files[0])">
+    <button class="btn-weather" onclick="document.getElementById('dbxFileInput').click()">📎 Επιλογή Αρχείου</button>
+    <span class="dbx-file-name" id="dbxFileName">Κανένα αρχείο</span>
+    <button class="btn-weather" id="dbxUploadBtn" onclick="uploadToDropbox()" disabled style="display:none">⬆ Ανέβασμα</button>
+  </div>
+  <div class="upload-result" id="uploadResult"></div>
+</div>
         <div class="upload-result" id="uploadResult"></div>
         <div class="manual-link-area" id="manualLinkArea">
           <input class="finp wide" type="url" id="fLink" placeholder="https://… (Dropbox / Drive / OneDrive)">
@@ -338,6 +379,11 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 <div class="toast" id="toast"></div>
 
 <script>
+// ── DROPBOX CONFIG ──
+const DROPBOX_CLIENT_ID = '	z53sf4b3wtiut7d';   // <-- βάλε εδώ το App key
+const DROPBOX_REDIRECT_URI = window.location.origin + '/dropbox-callback.html';
+let dropboxToken = localStorage.getItem('dropbox_token') || null;
+
 const db = window.sb;
 let currentUser = null, currentRole = null;
 let sites = [], selectedSiteId = null, selectedSite = null, siteSMName = '—';
@@ -412,6 +458,7 @@ async function init() {
         ['clean']
       ]
     }
+	if (dropboxToken) updateDropboxUI();
   });
   loadSites();
   weekStart = getMonday(new Date());
@@ -683,28 +730,209 @@ function resetUploadUI() {
   pendingLink=''; pendingLinkDesc='';
 }
 
-function handleDropboxChooser() {
-  showToast('Dropbox Chooser: θα ενεργοποιηθεί σύντομα','#3a7bd5');
-  document.getElementById('dropboxBtn').classList.add('active');
-  document.getElementById('manualLinkArea').classList.add('open');
-  document.getElementById('manualLinkBtn').classList.add('active');
-  document.getElementById('fLink').focus();
+// ══════════════════════════════════════════════════════════
+// DROPBOX AUTH
+// ══════════════════════════════════════════════════════════
+async function connectDropbox() {
+  const authUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(DROPBOX_REDIRECT_URI)}&token_access_type=offline`;
+  const popup = window.open(authUrl, 'dropbox-auth', 'width=600,height=650');
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin) return;
+    if (event.data?.type === 'dropbox-auth' && event.data.token) {
+      dropboxToken = event.data.token;
+      localStorage.setItem('dropbox_token', dropboxToken);
+      updateDropboxUI();
+    }
+  });
 }
 
+function disconnectDropbox() {
+  dropboxToken = null;
+  localStorage.removeItem('dropbox_token');
+  updateDropboxUI();
+  document.getElementById('uploadResult').style.display = 'none';
+}
+
+function updateDropboxUI() {
+  const connected = !!dropboxToken;
+  document.getElementById('dbxStatusIcon').textContent = connected ? '✅' : '🔗';
+  document.getElementById('dbxStatusText').textContent = connected ? 'Συνδεδεμένος στο Dropbox' : 'Δεν έχετε συνδεθεί';
+  document.getElementById('dbxConnectBtn').style.display = connected ? 'none' : '';
+  document.getElementById('dbxDisconnectBtn').style.display = connected ? '' : 'none';
+  document.getElementById('dbxUploadArea').style.display = connected ? '' : 'none';
+  if (connected) {
+    document.getElementById('dropboxBtn').classList.add('active');
+  } else {
+    document.getElementById('dropboxBtn').classList.remove('active');
+    document.getElementById('manualLinkArea').classList.add('open');
+    document.getElementById('manualLinkBtn').classList.add('active');
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FOLDER PICKER
+// ══════════════════════════════════════════════════════════
+let currentDropboxPath = '';
+let folderPickerPath = '';
+
+async function openFolderPicker() {
+  folderPickerPath = currentDropboxPath || '';
+  document.getElementById('folderModal').classList.add('open');
+  await loadFolders(folderPickerPath);
+}
+
+function closeFolderPicker() {
+  document.getElementById('folderModal').classList.remove('open');
+}
+
+function selectCurrentFolder() {
+  currentDropboxPath = folderPickerPath;
+  document.getElementById('dbxFolderPath').textContent = currentDropboxPath || '/';
+  closeFolderPicker();
+}
+
+async function loadFolders(path) {
+  const listEl = document.getElementById('folderList');
+  const breadEl = document.getElementById('folderBreadcrumb');
+  listEl.innerHTML = '<div style="color:var(--gray5);padding:12px;text-align:center"><span class="spinner"></span> Φόρτωση…</div>';
+  
+  const resp = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${dropboxToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ path: path || '', recursive: false, include_deleted: false })
+  });
+  
+  if (!resp.ok) {
+    listEl.innerHTML = `<div style="color:var(--red);padding:12px">⚠ Σφάλμα φόρτωσης</div>`;
+    return;
+  }
+  
+  const data = await resp.json();
+  const folders = (data.entries || []).filter(e => e['.tag'] === 'folder');
+  
+  // Breadcrumb
+  const parts = (path || '').split('/').filter(Boolean);
+  let breadHtml = '<span onclick="navigateFolder(\'\')" style="cursor:pointer;color:var(--yellow)">/</span>';
+  let cumPath = '';
+  parts.forEach((p, i) => {
+    cumPath += '/' + p;
+    breadHtml += `<span style="color:var(--gray5)"> &gt; </span><span onclick="navigateFolder('${cumPath}')" style="cursor:pointer;color:var(--yellow)">${p}</span>`;
+  });
+  breadEl.innerHTML = breadHtml;
+  
+  // Folders list
+  if (folders.length === 0) {
+    listEl.innerHTML = '<div style="color:var(--gray5);padding:12px;text-align:center">Κανένας φάκελος εδώ</div>';
+  } else {
+    listEl.innerHTML = folders.map(f => `
+      <div class="folder-item" ondblclick="navigateFolder('${path}/${f.name}'.replace('//','/'))" onclick="folderPickerPath='${path}/${f.name}'.replace('//','/'); highlightFolder(this)">
+        <span class="fi-icon">📁</span> ${f.name}
+      </div>
+    `).join('');
+  }
+}
+
+function highlightFolder(el) {
+  document.querySelectorAll('.folder-item').forEach(e => e.style.background = '');
+  el.style.background = 'var(--gray3)';
+}
+
+async function navigateFolder(path) {
+  folderPickerPath = path;
+  await loadFolders(path);
+}
+
+// ══════════════════════════════════════════════════════════
+// FILE UPLOAD TO DROPBOX
+// ══════════════════════════════════════════════════════════
+let pendingFile = null;
+
+function onFileSelected(file) {
+  pendingFile = file;
+  document.getElementById('dbxFileName').textContent = file ? file.name : 'Κανένα αρχείο';
+  document.getElementById('dbxUploadBtn').style.display = file ? '' : 'none';
+  document.getElementById('dbxUploadBtn').disabled = false;
+}
+
+async function uploadToDropbox() {
+  if (!pendingFile || !dropboxToken) return;
+  
+  const btn = document.getElementById('dbxUploadBtn');
+  const resultEl = document.getElementById('uploadResult');
+  btn.disabled = true;
+  btn.textContent = '⏳ Ανέβασμα…';
+  resultEl.style.display = 'none';
+  
+  try {
+    const folderPath = currentDropboxPath || '';
+    const filePath = `${folderPath}/${pendingFile.name}`.replace('//', '/');
+    
+    // 1. Upload
+    const uploadResp = await fetch('https://content.dropboxapi.com/2/files/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${dropboxToken}`,
+        'Dropbox-API-Arg': JSON.stringify({
+          path: filePath,
+          mode: 'add',
+          autorename: true,
+          mute: false
+        }),
+        'Content-Type': 'application/octet-stream',
+      },
+      body: pendingFile
+    });
+    
+    if (!uploadResp.ok) throw new Error('Upload failed');
+    
+    // 2. Get shared link
+    const shareResp = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${dropboxToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ path: filePath })
+    });
+    
+    if (!shareResp.ok) throw new Error('Share link failed');
+    const shareData = await shareResp.json();
+    const link = shareData.url.replace('?dl=0', '?dl=1');  // direct download
+    
+    // Αποθήκευση link
+    setPendingLink(link, pendingFile.name);
+    resultEl.textContent = `✓ Ανέβηκε: ${pendingFile.name}`;
+    resultEl.style.display = '';
+    showToast('✓ Το αρχείο ανέβηκε στο Dropbox');
+    
+    // Reset
+    pendingFile = null;
+    document.getElementById('dbxFileName').textContent = 'Κανένα αρχείο';
+    document.getElementById('dbxFileInput').value = '';
+    document.getElementById('dbxUploadBtn').style.display = 'none';
+  } catch (err) {
+    resultEl.textContent = '⚠ Σφάλμα ανεβάσματος: ' + err.message;
+    resultEl.style.display = '';
+    resultEl.style.color = 'var(--red)';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬆ Ανέβασμα';
+  }
+}
+
+// Αντικατέστησε την υπάρχουσα setPendingLink
 function setPendingLink(url, desc) {
-  pendingLink = url; pendingLinkDesc = desc||'';
+  pendingLink = url;
+  pendingLinkDesc = desc || '';
   const ur = document.getElementById('uploadResult');
-  ur.textContent = `✓ ${desc||url}`; ur.style.display='';
+  ur.textContent = `✓ ${desc || url}`;
+  ur.style.display = '';
+  ur.style.color = 'var(--green)';
   document.getElementById('dropboxBtn').classList.add('active');
-}
-
-function toggleManualLink() {
-  const area = document.getElementById('manualLinkArea');
-  const btn  = document.getElementById('manualLinkBtn');
-  const open = area.classList.contains('open');
-  area.classList.toggle('open', !open);
-  btn.classList.toggle('active', !open);
-  if (!open) document.getElementById('fLink').focus();
 }
 
 async function saveEntry() {
@@ -809,5 +1037,19 @@ function showToast(msg, color) {
 document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
 init();
 </script>
+<!-- DROPBOX FOLDER PICKER MODAL -->
+<div class="modal-bd" id="folderModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title">📁 Επιλογή Φακέλου Dropbox</div>
+    <div class="folder-breadcrumb" id="folderBreadcrumb">/</div>
+    <div class="folder-list" id="folderList">
+      <div style="color:var(--gray5);padding:12px;text-align:center"><span class="spinner"></span> Φόρτωση…</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline btn-sm" onclick="closeFolderPicker()">Άκυρο</button>
+      <button class="btn btn-yellow btn-sm" onclick="selectCurrentFolder()">✓ Επιλογή αυτού του φακέλου</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
