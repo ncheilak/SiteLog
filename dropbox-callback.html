@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="el">
+<head><meta charset="UTF-8"><title>SiteLog — Dropbox Σύνδεση</title></head>
+<body style="background:#0c0c0c;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;margin:0">
+<script>
+(async () => {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const token = params.get('access_token');
+
+  if (token && window.opener) {
+    window.opener.postMessage({ type: 'dropbox-auth', token }, window.location.origin);
+    window.close();
+  } else {
+    document.body.innerHTML = '<p style="color:#e53e3e">⚠ Η σύνδεση απέτυχε. Κλείστε το παράθυρο.</p>';
+  }
+})();
+</script>
+</body>
+</html>
