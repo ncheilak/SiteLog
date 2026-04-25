@@ -10,9 +10,12 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 <script src="shared/auth.js"></script>
-<script src="shared/offline-sync.js"></script>
-<script src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="szydo67fl9prnzz"></script>
 <style>
+:root{
+  --black:#0d0d0d;--yellow:#f5c800;--orange:#e8600a;
+  --white:#f4efe6;--gray:#1e1e1e;--gray2:#2a2a2a;--gray3:#3d3d3d;
+  --gray4:#5a5a5a;--green:#2ea84f;--red:#d93b3b;--blue:#3a7bd5;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
 
@@ -185,7 +188,6 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 }
 @media(max-width:600px){.week-section{padding:12px 10px 0}.day-section{padding:14px}}
 </style>
-  <script src="shared/toast.js"></script>
 </head>
 <body>
 
@@ -286,9 +288,6 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
           <div id="quillEditor"></div>
         </div>
 
-        <input type="file" id="dropboxFileInput" style="display:none"
-               accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.dwg,.zip"
-               onchange="onDropboxFileSelected(this)">
         <div class="upload-btns">
           <button class="upload-btn" id="dropboxBtn" onclick="handleDropboxChooser()" type="button">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2L6 6.5 12 11 6 15.5 12 20l6-4.5L12 11l6-4.5L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -300,11 +299,6 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
           </button>
         </div>
         <div class="upload-result" id="uploadResult"></div>
-		<!-- Επιλογή φακέλου προορισμού στο Dropbox -->
-		<div style="display: flex; gap: 8px; align-items: center; margin: 8px 0;">
-		<span class="field-lbl" style="margin-bottom:0;">📁 Φάκελος στο Dropbox:</span>
-		<input type="text" id="dropboxFolderPath" class="finp" style="flex:1; font-family:'IBM Plex Mono',monospace; font-size:0.7rem;" readonly placeholder="Δεν έχει επιλεγεί" value="/SiteLog">
-		</div>
         <div class="manual-link-area" id="manualLinkArea">
           <input class="finp wide" type="url" id="fLink" placeholder="https://… (Dropbox / Drive / OneDrive)">
           <input class="finp wide" type="text" id="fLinkDesc" placeholder="Σύντομη περιγραφή αρχείου">
@@ -343,17 +337,6 @@ header{background:var(--yellow);color:var(--black);padding:0 20px;height:54px;fl
 
 <div class="toast" id="toast"></div>
 
-<div class="modal-bd" id="folderModal">
-  <div class="modal" style="max-width:500px;">
-    <div class="modal-title">Επιλογή φακέλου στο Dropbox</div>
-    <div style="margin-bottom:12px; max-height:300px; overflow-y:auto; background:var(--black); border:1px solid var(--gray3); border-radius:2px; padding:8px;" id="folderBrowserContent"></div>
-    <div id="currentFolderPath" style="font-size:0.6rem; color:var(--gray4); margin-bottom:10px;"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline btn-sm" onclick="closeFolderModal()">Άκυρο</button>
-      <button class="btn btn-orange btn-sm" onclick="confirmSelectedFolder()">Επιλογή</button>
-    </div>
-  </div>
-</div>
 <script>
 const db = window.sb;
 let currentUser = null, currentRole = null;
@@ -361,15 +344,9 @@ let sites = [], selectedSiteId = null, selectedSite = null, siteSMName = '—';
 let weekStart = null, selectedDate = null;
 let weekEntries = {}, editingId = null, deletingId = null;
 let pendingLink = '', pendingLinkDesc = '';
-let dropboxToken = null;
-const DROPBOX_APP_KEY = 'szydo67fl9prnzz';
-const DROPBOX_REDIRECT = location.origin + location.pathname;
 let quill = null;      // Quill instance
 let weatherApiData = ''; // last fetched weather string
 const TODAY = todayLocal();
-
-let currentFolderStack = [];
-let selectedFolderPath = null;
 
 const TYPE_LABELS = {weather:'Καιρός',inspection:'Επίσκεψη',work_stoppage:'Διακοπή',work_log:'Εργασίες',event:'Συμβάν'};
 const TYPE_BADGE  = {weather:'badge-weather',inspection:'badge-inspection',work_stoppage:'badge-work_stoppage',work_log:'badge-work_log',event:'badge-event'};
@@ -377,103 +354,6 @@ const DOT_CLASS   = {weather:'dot-weather',inspection:'dot-inspection',work_stop
 const DAY_SHORT   = ['Δευτ','Τρίτ','Τετ','Πέμπ','Παρ','Σάββ','Κυρ'];
 const DAY_LONG    = ['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
 const MONTH       = ['Ιανουαρίου','Φεβρουαρίου','Μαρτίου','Απριλίου','Μαΐου','Ιουνίου','Ιουλίου','Αυγούστου','Σεπτεμβρίου','Οκτωβρίου','Νοεμβρίου','Δεκεμβρίου'];
-
-async function handleDropboxChooser() {
-  // Καθαρισμός παλιάς επιλογής φακέλου
-  document.getElementById('dropboxFolderPath').value = '';
-  // Αν υπάρχει ήδη token, πάμε κατευθείαν στην επιλογή φακέλου
-  if (dropboxToken) {
-    browseDropboxFolders();
-    return;
-  }
-  // Αλλιώς ξεκινάμε ροή OAuth (ίδια όπως πριν)
-  const verifier = dbxGenVerifier();
-  const challenge = await dbxGenChallenge(verifier);
-  const state = Math.random().toString(36).slice(2);
-  sessionStorage.setItem('dbx_verifier', verifier);
-  sessionStorage.setItem('dbx_state', state);
-  const params = new URLSearchParams({
-    client_id: DROPBOX_APP_KEY,
-    response_type: 'code',
-    code_challenge: challenge,
-    code_challenge_method: 'S256',
-    redirect_uri: DROPBOX_REDIRECT,
-    state,
-    token_access_type: 'online',
-    scope: 'files.content.write files.content.read sharing.write',
-  });
-  const popup = window.open('https://www.dropbox.com/oauth2/authorize?' + params, 'dropbox-auth', 'width=620,height=700,left=200,top=80');
-  if (!popup) { showToast('⚠ Επιτρέψτε τα popups','#e8600a'); return; }
-  const timer = setInterval(() => {
-    try {
-      if (popup.closed) { clearInterval(timer); return; }
-      const url = popup.location.href;
-      if (url.startsWith(DROPBOX_REDIRECT) && url.includes('code=')) {
-        const p = new URL(url).searchParams;
-        popup.close(); clearInterval(timer);
-        dbxExchangeCode(p.get('code'), p.get('state'));
-      }
-    } catch(_) {}
-  }, 400);
-}
-
-async function renderFolderBrowser(path) {
-  const container = document.getElementById('folderBrowserContent');
-  const currentPathSpan = document.getElementById('currentFolderPath');
-  currentPathSpan.textContent = `Τρέχων φάκελος: ${path === '' ? 'Root' : path}`;
-  container.innerHTML = '<div class="spinner"></div> Φόρτωση...';
-  
-  const response = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
-    method: 'POST',
-    headers: { 'Authorization': 'Bearer ' + dropboxToken, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: path || '', recursive: false })
-  });
-  const data = await response.json();
-  if (data.error_summary) {
-    container.innerHTML = `<div style="color:var(--red);">Σφάλμα: ${data.error_summary}</div>`;
-    return;
-  }
-  const folders = data.entries.filter(e => e['.tag'] === 'folder');
-  if (folders.length === 0) {
-    container.innerHTML = '<div style="color:var(--gray4);">⚠️ Κανένας υποφάκελος</div>';
-  } else {
-    let html = '<ul style="list-style:none; padding-left:0;">';
-    folders.forEach(f => {
-      html += `<li style="margin-bottom:8px; cursor:pointer; padding:4px 8px; border-bottom:1px solid var(--gray3);" onclick="navigateToFolder('${f.path_display.replace(/'/g, "\\'")}')">📁 ${f.name}</li>`;
-    });
-    html += '</ul>';
-    container.innerHTML = html;
-  }
-  if (currentFolderStack.length > 1) {
-    const btn = document.createElement('button');
-    btn.textContent = '⬅ Πίσω';
-    btn.className = 'btn-outline btn-sm';
-    btn.onclick = goBackFolder;
-    container.appendChild(btn);
-  }
-}
-
-function navigateToFolder(folderPath) {
-  currentFolderStack.push(folderPath);
-  renderFolderBrowser(folderPath);
-}
-
-function goBackFolder() {
-  if (currentFolderStack.length > 1) {
-    currentFolderStack.pop();
-    renderFolderBrowser(currentFolderStack[currentFolderStack.length - 1]);
-  }
-}
-
-function confirmSelectedFolder() {
-  const currentPath = document.getElementById('currentFolderPath').textContent.replace('Τρέχων φάκελος: ', '');
-  const finalPath = currentPath === 'Root' ? '/' : currentPath;
-  document.getElementById('dropboxFolderPath').value = finalPath;
-  closeFolderModal();
-  showToast(`✓ Φάκελος: ${finalPath} → Επιλέξτε αρχείο`, '#2ea84f');
-  // Τώρα ανοίγουμε το file picker
-  document.getElementById('dropboxFileInput').click();
-}
 
 function todayLocal() { const n = new Date(); return isoDate(n); }
 function isoDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -537,12 +417,8 @@ async function init() {
   weekStart = getMonday(new Date());
   renderWeekNav();
   renderWeekGrid();
-  OfflineSync.updateSyncIndicator();
   setStatus('ok','✓ Συνδεδεμένος');
-   OfflineSync.updateSyncIndicator()
 }
-
-
 
 function loadSites() {
   sites = Auth.getAssignedSites();
@@ -807,173 +683,19 @@ function resetUploadUI() {
   pendingLink=''; pendingLinkDesc='';
 }
 
-// ── Dropbox OAuth2 PKCE ──────────────────────────────────────────────────
-function dbxGenVerifier() {
-  const arr = new Uint8Array(32);
-  crypto.getRandomValues(arr);
-  return btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-async function dbxGenChallenge(v) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v));
-  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-}
-
-async function handleDropboxChooser() {
-  if (dropboxToken) { document.getElementById('dropboxFileInput').click(); return; }
-
-  const verifier  = dbxGenVerifier();
-  const challenge = await dbxGenChallenge(verifier);
-  const state     = Math.random().toString(36).slice(2);
-
-  sessionStorage.setItem('dbx_verifier', verifier);
-  sessionStorage.setItem('dbx_state',    state);
-
- const params = new URLSearchParams({
-  client_id: DROPBOX_APP_KEY,
-  response_type: 'code',
-  code_challenge: challenge,
-  code_challenge_method: 'S256',
-  redirect_uri: DROPBOX_REDIRECT,
-  state,
-  token_access_type: 'online',
-  scope: 'files.content.write files.content.read sharing.write',  // ΠΡΟΣΘΗΚΗ
-});
-
-  const popup = window.open(
-    'https://www.dropbox.com/oauth2/authorize?' + params,
-    'dropbox-auth',
-    'width=620,height=700,left=200,top=80'
-  );
-  if (!popup) { showToast('⚠ Επιτρέψτε τα popups για αυτή τη σελίδα','#e8600a'); return; }
-
-  const timer = setInterval(() => {
-    try {
-      if (popup.closed) { clearInterval(timer); return; }
-      const url = popup.location.href;
-      if (url.startsWith(DROPBOX_REDIRECT) && url.includes('code=')) {
-        const p = new URL(url).searchParams;
-        popup.close();
-        clearInterval(timer);
-        dbxExchangeCode(p.get('code'), p.get('state'));
-      }
-    } catch(_) { /* cross-origin — still on dropbox.com */ }
-  }, 400);
-}
-
-async function dbxExchangeCode(code, retState) {
-  if (retState !== sessionStorage.getItem('dbx_state')) { showToast('⚠ Auth error'); return; }
-  const verifier = sessionStorage.getItem('dbx_verifier');
-  showToast('⟳ Σύνδεση Dropbox…','#3a7bd5');
-  const resp = await fetch('https://api.dropboxapi.com/oauth2/token', {
-    method: 'POST',
-    headers: { 'Content-Type':'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ code, grant_type:'authorization_code', client_id:DROPBOX_APP_KEY, code_verifier:verifier, redirect_uri:DROPBOX_REDIRECT }),
-  });
-  const data = await resp.json();
-  if (!data.access_token) { showToast('⚠ Αποτυχία','#e8600a'); return; }
-  dropboxToken = data.access_token;
-  showToast('✓ Dropbox συνδέθηκε','#2ea84f');
-  // ΚΑΘΑΡΙΣΜΟΣ ΠΑΛΙΑΣ ΕΠΙΛΟΓΗΣ και άνοιγμα modal
-  document.getElementById('dropboxFolderPath').value = '';
-  browseDropboxFolders();
-}
-
-async function onDropboxFileSelected(input) {
-  const file = input.files[0];
-  if (!file || !dropboxToken) return;
-  input.value = '';
-
-  let folder = document.getElementById('dropboxFolderPath').value.trim();
-  if (!folder) {
-    showToast('Δεν επιλέχθηκε φάκελος. Ξεκινήστε ξανά.', '#e8600a');
-    return;
-  }
-  let basePath = folder.replace(/\/$/, '');
-  const filename = file.name.replace(/[^a-zA-Z0-9._\-()\s]/g, '_');
-  const path = basePath + '/' + isoDate(new Date()) + '_' + filename;
-  // 1. Upload
-  const uploadResp = await fetch('https://content.dropboxapi.com/2/files/upload', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + dropboxToken,
-      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'add', autorename: true }),
-      'Content-Type': 'application/octet-stream',
-    },
-    body: file,
-  });
-  const uploaded = await uploadResp.json();
-  if (uploaded.error_summary) {
-    showToast('⚠ Upload error: ' + uploaded.error_summary, '#e8600a');
-    btn.disabled = false;
-    return;
-  }
-  if (!uploaded.path_display) {
-    showToast('⚠ Upload failed – no path returned', '#e8600a');
-    btn.disabled = false;
-    return;
-  }
-  showToast('✓ Αρχείο ανέβηκε, δημιουργία link...', '#2ea84f');
-
-  // 2. Δημιουργία shared link – ΔΟΚΙΜΑΣΜΕΝΟΣ ΤΡΟΠΟΣ
-  let sharedUrl = null;
-  try {
-    const linkResp = await fetch('https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + dropboxToken,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        path: uploaded.path_display,
-        settings: { requested_visibility: 'public' }  // 'public' ή 'team_only'
-      }),
-    });
-    const linkData = await linkResp.json();
-    if (linkData.url) {
-      sharedUrl = linkData.url;
-    } else if (linkData.error_summary) {
-      // Αν υπάρχει ήδη link, προσπάθησε να το πάρεις
-      console.warn('Create link error:', linkData.error_summary);
-      const existingResp = await fetch('https://api.dropboxapi.com/2/sharing/list_shared_links', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + dropboxToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: uploaded.path_display }),
-      });
-      const existing = await existingResp.json();
-      if (existing.links && existing.links.length > 0) {
-        sharedUrl = existing.links[0].url;
-      }
-    }
-  } catch (err) {
-    console.error('Link creation exception:', err);
-  }
-
-  if (sharedUrl) {
-    setPendingLink(sharedUrl, file.name);
-    showToast('✓ Link δημιουργήθηκε και προστέθηκε στη φόρμα', '#2ea84f');
-  } else {
-    showToast('⚠ Δεν δημιουργήθηκε link. Δοκιμάστε ξανά.', '#e8600a');
-  }
-  btn.disabled = false;
+function handleDropboxChooser() {
+  showToast('Dropbox Chooser: θα ενεργοποιηθεί σύντομα','#3a7bd5');
+  document.getElementById('dropboxBtn').classList.add('active');
+  document.getElementById('manualLinkArea').classList.add('open');
+  document.getElementById('manualLinkBtn').classList.add('active');
+  document.getElementById('fLink').focus();
 }
 
 function setPendingLink(url, desc) {
-  pendingLink = url;
-  pendingLinkDesc = desc || '';
+  pendingLink = url; pendingLinkDesc = desc||'';
   const ur = document.getElementById('uploadResult');
-  ur.textContent = `✓ ${desc || url}`;
-  ur.style.display = '';
+  ur.textContent = `✓ ${desc||url}`; ur.style.display='';
   document.getElementById('dropboxBtn').classList.add('active');
-
-  // Αυτόματο άνοιγμα της περιοχής εισαγωγής link
-  const area = document.getElementById('manualLinkArea');
-  const btn = document.getElementById('manualLinkBtn');
-  if (!area.classList.contains('open')) {
-    area.classList.add('open');
-    btn.classList.add('active');
-  }
-  document.getElementById('fLink').value = url;
-  document.getElementById('fLinkDesc').value = desc || '';
 }
 
 function toggleManualLink() {
@@ -988,7 +710,7 @@ function toggleManualLink() {
 async function saveEntry() {
   const type     = document.getElementById('fType').value;
   const title    = document.getElementById('fTitle').value.trim();
-  const descHtml = quill.getSemanticHTML();
+  const descHtml = quill.getSemanticHTML(); // HTML from Quill
   const isEmptyDesc = quill.getText().trim() === '';
   const link     = document.getElementById('fLink').value.trim() || pendingLink || '';
   const linkDesc = document.getElementById('fLinkDesc').value.trim() || pendingLinkDesc || '';
@@ -1010,52 +732,18 @@ async function saveEntry() {
     link_description: linkDesc || null,
   };
 
-  if (!editingId) {
-    payload.created_by = currentUser.id;
-  }
-
-  // Offline fallback
-  if (!navigator.onLine) {
-    if (editingId) {
-      await OfflineSync.addToQueue('site_diary', { action: 'update', id: editingId, data: payload });
-    } else {
-      await OfflineSync.addToQueue('site_diary', { action: 'insert', data: payload });
-    }
-    showToast('⚠ Χωρίς σύνδεση – αποθηκεύτηκε τοπικά', '#e8600a');
-    cancelForm();
-    btn.disabled = false; btn.textContent = 'Αποθήκευση';
-    OfflineSync.updateSyncIndicator();
-    return;
-  }
-
   let error;
   if (editingId) {
     ({ error } = await db.from('site_diary').update(payload).eq('id', editingId));
   } else {
-    ({ error } = await db.from('site_diary').insert(payload));
+    ({ error } = await db.from('site_diary').insert({...payload, created_by: currentUser.id}));
   }
-
-  if (error) {
-    if (!navigator.onLine || error.message?.toLowerCase().includes('fetch')) {
-      if (editingId) {
-        await OfflineSync.addToQueue('site_diary', { action: 'update', id: editingId, data: payload });
-      } else {
-        await OfflineSync.addToQueue('site_diary', { action: 'insert', data: payload });
-      }
-      showToast('⚠ Αποθήκευση τοπικά λόγω σφάλματος', '#e8600a');
-      cancelForm();
-    } else {
-      showToast('⚠ ' + error.message, '#e8600a');
-    }
-    btn.disabled = false; btn.textContent = 'Αποθήκευση';
-    return;
-  }
-
+  btn.disabled = false; btn.textContent = 'Αποθήκευση';
+  if (error) { showToast('⚠ '+error.message,'#e8600a'); return; }
   showToast(editingId ? '✓ Αποθηκεύτηκε' : '✓ Καταχωρήθηκε');
   cancelForm();
   await loadWeek();
   renderDayPanel(selectedDate);
-  btn.disabled = false; btn.textContent = 'Αποθήκευση';
 }
 
 function openDeleteModal(id) {
@@ -1110,6 +798,12 @@ function setStatus(s, msg) {
   const el = document.getElementById('dbStatus');
   el.innerHTML = (s==='loading'?'<span class="spinner"></span>':'') + msg;
   el.className = 'status ' + s;
+}
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = color||'#2ea84f';
+  t.classList.add('show'); clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
 }
 
 document.getElementById('deleteModal').addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });

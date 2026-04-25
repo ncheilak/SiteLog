@@ -7,6 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/theme.css">
 <style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
@@ -160,7 +165,6 @@
   .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
   .footer-logo em { color:var(--orange); font-style:normal; }
 </style>
-  <script src="shared/toast.js"></script>
 </head>
 <body>
 
@@ -401,7 +405,7 @@
   // ── LOAD SITES ──
   async function loadSites() {
     if (isAdmin) {
-      const { data } = await window.sb.from('sites').select('id,project_code,name').eq('is_active',true).order('project_code');
+      const { data } = await sb.from('sites').select('id,project_code,name').eq('is_active',true).order('project_code');
       allSites = data || [];
     } else {
       // Project manager: μόνο τα δικά του sites
@@ -611,7 +615,7 @@
     setModalLoading(document.getElementById('inviteSubmitBtn'), true);
 
     // ── Λήψη JWT του τρέχοντος χρήστη ──
-    const { data: { session } } = await window.sb.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     if (!session) {
       showModalMsg(msgEl, 'Η συνεδρία έχει λήξει. Κάνε login ξανά.', 'error');
       setModalLoading(document.getElementById('inviteSubmitBtn'), false);
@@ -760,7 +764,7 @@
 
     // 2. Update assignments: διαγραφή παλαιών + εισαγωγή νέων
     if (user.role !== 'admin') {
-      await window.sb.from('user_site_assignments').delete().eq('user_id', userId);
+      await sb.from('user_site_assignments').delete().eq('user_id', userId);
 
       if (newSiteIds.length > 0) {
         const inserts = newSiteIds.map(sid => ({
@@ -768,7 +772,7 @@
           site_id:     sid,
           assigned_by: myId,
         }));
-        const { error: assErr } = await window.sb.from('user_site_assignments').insert(inserts);
+        const { error: assErr } = await sb.from('user_site_assignments').insert(inserts);
         if (assErr) {
           showModalMsg(msgEl, 'Σφάλμα αναθέσεων: ' + assErr.message, 'error');
           setModalLoading(document.getElementById('editSubmitBtn'), false);
@@ -795,7 +799,7 @@
 
   document.getElementById('deactivateConfirmBtn').addEventListener('click', async () => {
     const userId = document.getElementById('deactivateOverlay').dataset.userId;
-    const { error } = await window.sb.from('profiles').update({ is_active: false }).eq('id', userId);
+    const { error } = await sb.from('profiles').update({ is_active: false }).eq('id', userId);
     document.getElementById('deactivateOverlay').classList.remove('show');
     if (error) { showToast('Σφάλμα: ' + error.message, true); return; }
     showToast('Ο χρήστης απενεργοποιήθηκε.');
@@ -835,6 +839,13 @@
   function setModalLoading(btn, val) {
     btn.disabled = val;
     btn.classList.toggle('loading', val);
+  }
+
+  function showToast(msg, isError=false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => { t.className = 'toast'; }, 3500);
   }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

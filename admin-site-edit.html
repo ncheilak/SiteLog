@@ -10,6 +10,11 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e;
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
@@ -425,10 +430,10 @@
 
     let error;
     if (isEdit) {
-      ({ error } = await window.sb.from('sites').update(payload).eq('id', siteId));
+      ({ error } = await sb.from('sites').update(payload).eq('id', siteId));
     } else {
       payload.created_by = Auth.getCurrentUser().id;
-      ({ error } = await window.sb.from('sites').insert(payload));
+      ({ error } = await sb.from('sites').insert(payload));
     }
 
     setLoading(false);
@@ -463,7 +468,7 @@
       document.getElementById('confirmOverlay').classList.remove('show');
       setLoading(true);
 
-      const { error } = await window.sb.from('sites').delete().eq('id', siteId);
+      const { error } = await sb.from('sites').delete().eq('id', siteId);
       setLoading(false);
 
       if (error) {

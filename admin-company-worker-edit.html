@@ -7,6 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/theme.css">
 <style>
+  :root {
+    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
+    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e; --blue:#3b82f6;
+  }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
 
@@ -428,12 +433,12 @@
 
     let error;
     if (isEdit) {
-      ({ error } = await window.sb.from('workers_company').update(payload).eq('id', workerId));
+      ({ error } = await sb.from('workers_company').update(payload).eq('id', workerId));
     } else {
       const newId = document.getElementById('autoIdDisplay').dataset.nextId;
       payload.id         = newId;
       payload.created_by = Auth.getCurrentUser().id;
-      ({ error } = await window.sb.from('workers_company').insert(payload));
+      ({ error } = await sb.from('workers_company').insert(payload));
     }
 
     setLoading(false);
@@ -462,7 +467,7 @@
     document.getElementById('confirmOk').addEventListener('click', async () => {
       document.getElementById('confirmOverlay').classList.remove('show');
       setLoading(true);
-      const { error } = await window.sb.from('workers_company').delete().eq('id', workerId);
+      const { error } = await sb.from('workers_company').delete().eq('id', workerId);
       setLoading(false);
       if (error) {
         showMsg('Δεν είναι δυνατή η διαγραφή: ' + error.message, 'error');
