@@ -357,7 +357,7 @@ header{
     const efkaAgm      = site.efka_agm          || '___________________________';
     const address      = [site.address_street, site.address_number].filter(Boolean).join(' ') || '_______________';
     const city         = site.address_city      || '_______________';
-    const ownerName    = site.owner_name        || '______________________________';
+    const ownerName    = site.client            || '______________________________';  // client = Ιδιοκτήτης στο ΒΗΔΑΠ
     const ownerAfm     = site.owner_afm         || '_______________';
     const ergolabos    = settings.company_name  || '______________________________';
     const ergAfm       = settings.company_afm   || '_______________';

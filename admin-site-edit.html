@@ -10,126 +10,86 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/gr.js"></script>
 <style>
-  :root {
-    --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000; --yellow-dim:rgba(245,200,0,0.08);
-    --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
-    --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e;
-  }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
-
-  /* HEADER */
-  header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
-  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
-  .logo em { color:var(--orange); font-style:normal; }
-  .logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
-  .header-right { display:flex; align-items:center; gap:12px; }
-  .user-name { font-size:0.82rem; font-weight:600; }
-  .btn-signout { background:var(--black); color:var(--yellow); border:none; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:7px 12px; cursor:pointer; }
-  .btn-signout:hover { opacity:.8; }
-
-  /* PAGE */
-  .page { flex:1; padding:36px 28px 80px; max-width:720px; width:100%; margin:0 auto; }
-
-  /* BREADCRUMB */
-  .breadcrumb { display:flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; letter-spacing:1px; color:var(--gray5); margin-bottom:28px; }
-  .breadcrumb a { color:var(--gray5); text-decoration:none; transition:color .15s; }
-  .breadcrumb a:hover { color:var(--yellow); }
-  .breadcrumb span { color:var(--gray4); }
-
-  /* PAGE HEADER */
-  .page-header { margin-bottom:32px; }
-  .page-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:4px; color:var(--white); line-height:1; }
-  .page-title span { color:var(--yellow); }
-  .site-id-badge { display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; background:var(--gray2); border:1px solid var(--gray3); color:var(--gray5); padding:5px 10px; border-radius:2px; margin-top:10px; }
-
-  /* FORM SECTIONS */
-  .form-section { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; overflow:hidden; margin-bottom:20px; }
-  .section-header { background:var(--gray2); border-bottom:1px solid var(--gray3); padding:12px 20px; }
-  .section-title { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--gray5); }
-  .section-body { padding:20px; }
-
-  /* FIELDS */
-  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-  .field-row.single { grid-template-columns:1fr; }
-  .field-row:last-child { margin-bottom:0; }
-  .field { display:flex; flex-direction:column; gap:6px; }
-  label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
-  label .req { color:var(--orange); margin-left:2px; }
-  input[type=text] {
-    background:var(--gray2); border:1px solid var(--gray3); border-radius:2px;
-    color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.9rem;
-    padding:10px 14px; outline:none; transition:border-color .18s; width:100%;
-  }
-  input:focus { border-color:var(--yellow); }
-  input::placeholder { color:var(--gray4); }
-  input.error-field { border-color:var(--red) !important; }
-
-  /* Flatpickr overrides */
-  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-  .flatpickr-day{color:var(--white)}
-  .flatpickr-day:hover{background:var(--gray3)}
-  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
-  .flatpickr-day.today{border-color:var(--orange)}
-  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
-  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
-  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
-  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
-  .numInputWrapper:hover{background:var(--gray3)}
-  .numInput{color:var(--white)!important;background:transparent}
-
-  /* TOGGLE (is_active) */
-  .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-top:1px solid var(--gray3); margin-top:4px; }
-  .toggle-label { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
-  .toggle-desc { font-size:0.75rem; color:var(--gray5); margin-top:3px; }
-  .toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
-  .toggle input { opacity:0; width:0; height:0; position:absolute; }
-  .toggle-slider { position:absolute; inset:0; background:var(--gray3); border-radius:24px; transition:background .2s; }
-  .toggle-slider::after { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:transform .2s; }
-  .toggle input:checked + .toggle-slider { background:var(--green); }
-  .toggle input:checked + .toggle-slider::after { transform:translateX(20px); }
-
-  /* ACTIONS */
-  .actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-  .btn-save { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:12px 22px; cursor:pointer; transition:background .18s; }
-  .btn-save:hover:not(:disabled) { background:var(--yellow-dk); }
-  .btn-save:disabled { opacity:.5; cursor:not-allowed; }
-  .btn-cancel { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:12px 18px; cursor:pointer; text-decoration:none; transition:border-color .15s,color .15s; display:inline-flex; align-items:center; }
-  .btn-cancel:hover { border-color:var(--white); color:var(--white); }
-
-  /* DANGER ZONE */
-  .danger-zone { background:rgba(229,62,62,.05); border:1px solid rgba(229,62,62,.2); border-radius:3px; padding:20px; margin-bottom:20px; }
-  .danger-title { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; }
-  .danger-desc { font-size:0.8rem; color:var(--gray5); margin-bottom:14px; line-height:1.55; }
-  .btn-danger { background:none; border:1px solid rgba(229,62,62,.4); border-radius:2px; color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:9px 16px; cursor:pointer; transition:all .15s; }
-  .btn-danger:hover { background:rgba(229,62,62,.1); border-color:var(--red); }
-
-  /* SPINNER */
-  .spinner { width:15px; height:15px; border:2px solid rgba(0,0,0,.3); border-top-color:var(--black); border-radius:50%; animation:spin .7s linear infinite; display:none; }
-  .btn-save.loading .spinner { display:block; }
-  .btn-save.loading .btn-text { display:none; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-
-  /* MSG */
-  .msg { padding:11px 16px; border-radius:2px; font-size:0.82rem; margin-bottom:16px; display:none; line-height:1.5; }
-  .msg.error   { background:rgba(229,62,62,.12); border:1px solid rgba(229,62,62,.35); color:#fc8181; display:block; }
-  .msg.success { background:rgba(31,166,68,.12); border:1px solid rgba(31,166,68,.35); color:#68d391; display:block; }
-
-  /* CONFIRM DIALOG */
-  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:500; display:none; align-items:center; justify-content:center; }
-  .overlay.show { display:flex; }
-  .dialog { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; padding:28px; max-width:380px; width:90%; }
-  .dialog-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; margin-bottom:10px; color:var(--red); }
-  .dialog-body { font-size:0.85rem; color:var(--gray5); line-height:1.6; margin-bottom:22px; }
-  .dialog-actions { display:flex; gap:10px; }
-  .btn-dialog-cancel { flex:1; background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:11px; cursor:pointer; }
-  .btn-dialog-confirm { flex:1; background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px; cursor:pointer; }
-
-  @media(max-width:600px) { .field-row { grid-template-columns:1fr; } .page { padding:24px 16px 60px; } }
-
-  footer { border-top:1px solid var(--gray3); padding:16px 28px; }
-  .footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
-  .footer-logo em { color:var(--orange); font-style:normal; }
+:root {
+  --black:#0c0c0c; --yellow:#f5c800; --yellow-dk:#c9a000;
+  --orange:#e8600a; --white:#f0ebe0; --gray:#181818; --gray2:#222; --gray3:#2e2e2e;
+  --gray4:#444; --gray5:#666; --green:#1fa644; --red:#e53e3e;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--black); color:var(--white); font-family:'IBM Plex Sans',sans-serif; min-height:100vh; display:flex; flex-direction:column; }
+header { background:var(--yellow); color:var(--black); padding:0 28px; height:54px; display:flex; align-items:center; justify-content:space-between; border-bottom:4px solid var(--orange); position:sticky; top:0; z-index:200; gap:12px; }
+.logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; flex-shrink:0; }
+.logo em { color:var(--orange); font-style:normal; }
+.logo sub { font-size:0.6rem; letter-spacing:1px; opacity:.55; vertical-align:middle; margin-left:7px; font-family:'IBM Plex Mono',monospace; font-weight:600; }
+.user-name { font-size:0.82rem; font-weight:600; }
+.btn-signout { background:var(--black); color:var(--yellow); border:none; border-radius:2px; font-family:'IBM Plex Mono',monospace; font-size:0.58rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:7px 12px; cursor:pointer; }
+.btn-signout:hover { opacity:.8; }
+.page { flex:1; padding:36px 28px 80px; max-width:720px; width:100%; margin:0 auto; }
+.page-header { margin-bottom:32px; }
+.page-title { font-family:'Bebas Neue',sans-serif; font-size:2rem; letter-spacing:4px; color:var(--white); line-height:1; }
+.page-title span { color:var(--yellow); }
+.site-id-badge { display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; background:var(--gray2); border:1px solid var(--gray3); color:var(--gray5); padding:5px 10px; border-radius:2px; margin-top:10px; }
+.form-section { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; overflow:hidden; margin-bottom:20px; }
+.section-header { background:var(--gray2); border-bottom:1px solid var(--gray3); padding:12px 20px; }
+.section-title { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--gray5); }
+.section-body { padding:20px; }
+.field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.field-row.single { grid-template-columns:1fr; }
+.field-row:last-child { margin-bottom:0; }
+.field { display:flex; flex-direction:column; gap:6px; }
+label { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
+label .req { color:var(--orange); margin-left:2px; }
+input[type=text] { background:var(--gray2); border:1px solid var(--gray3); border-radius:2px; color:var(--white); font-family:'IBM Plex Sans',sans-serif; font-size:0.9rem; padding:10px 14px; outline:none; transition:border-color .18s; width:100%; }
+input:focus { border-color:var(--yellow); }
+input::placeholder { color:var(--gray4); }
+input.error-field { border-color:var(--red) !important; }
+.flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.flatpickr-day{color:var(--white)} .flatpickr-day:hover{background:var(--gray3)}
+.flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+.flatpickr-day.today{border-color:var(--orange)}
+.flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+.flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+.flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+.numInputWrapper:hover{background:var(--gray3)} .numInput{color:var(--white)!important;background:transparent}
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-top:1px solid var(--gray3); margin-top:4px; }
+.toggle-label { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--gray5); }
+.toggle-desc { font-size:0.75rem; color:var(--gray5); margin-top:3px; }
+.toggle { position:relative; width:44px; height:24px; cursor:pointer; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; position:absolute; }
+.toggle-slider { position:absolute; inset:0; background:var(--gray3); border-radius:24px; transition:background .2s; }
+.toggle-slider::after { content:''; position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:transform .2s; }
+.toggle input:checked + .toggle-slider { background:var(--green); }
+.toggle input:checked + .toggle-slider::after { transform:translateX(20px); }
+.actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.btn-save { display:inline-flex; align-items:center; gap:8px; background:var(--yellow); color:var(--black); border:none; border-radius:2px; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:12px 22px; cursor:pointer; transition:background .18s; }
+.btn-save:hover:not(:disabled) { background:var(--yellow-dk); }
+.btn-save:disabled { opacity:.5; cursor:not-allowed; }
+.btn-cancel { background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:12px 18px; cursor:pointer; text-decoration:none; transition:border-color .15s,color .15s; display:inline-flex; align-items:center; }
+.btn-cancel:hover { border-color:var(--white); color:var(--white); }
+.danger-zone { background:rgba(229,62,62,.05); border:1px solid rgba(229,62,62,.2); border-radius:3px; padding:20px; margin-bottom:20px; }
+.danger-title { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; }
+.danger-desc { font-size:0.8rem; color:var(--gray5); margin-bottom:14px; line-height:1.55; }
+.btn-danger { background:none; border:1px solid rgba(229,62,62,.4); border-radius:2px; color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; padding:9px 16px; cursor:pointer; transition:all .15s; }
+.btn-danger:hover { background:rgba(229,62,62,.1); border-color:var(--red); }
+.spinner { width:15px; height:15px; border:2px solid rgba(0,0,0,.3); border-top-color:var(--black); border-radius:50%; animation:spin .7s linear infinite; display:none; }
+.btn-save.loading .spinner { display:block; } .btn-save.loading .btn-text { display:none; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.msg { padding:11px 16px; border-radius:2px; font-size:0.82rem; margin-bottom:16px; display:none; line-height:1.5; }
+.msg.error  { background:rgba(229,62,62,.12); border:1px solid rgba(229,62,62,.35); color:#fc8181; display:block; }
+.msg.success{ background:rgba(31,166,68,.12);  border:1px solid rgba(31,166,68,.35);  color:#68d391; display:block; }
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:500; display:none; align-items:center; justify-content:center; }
+.overlay.show { display:flex; }
+.dialog { background:var(--gray); border:1px solid var(--gray3); border-radius:3px; padding:28px; max-width:380px; width:90%; }
+.dialog-title { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; letter-spacing:3px; margin-bottom:10px; color:var(--red); }
+.dialog-body { font-size:0.85rem; color:var(--gray5); line-height:1.6; margin-bottom:22px; }
+.dialog-actions { display:flex; gap:10px; }
+.btn-dialog-cancel  { flex:1; background:none; border:1px solid var(--gray3); border-radius:2px; color:var(--gray5); font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; padding:11px; cursor:pointer; }
+.btn-dialog-confirm { flex:1; background:var(--red); border:none; border-radius:2px; color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:2px; padding:11px; cursor:pointer; }
+@media(max-width:600px) { .field-row { grid-template-columns:1fr; } .page { padding:24px 16px 60px; } }
+footer { border-top:1px solid var(--gray3); padding:16px 28px; }
+.footer-logo { font-family:'Bebas Neue',sans-serif; font-size:1rem; letter-spacing:3px; color:var(--gray4); }
+.footer-logo em { color:var(--orange); font-style:normal; }
 </style>
 </head>
 <body>
@@ -148,9 +108,6 @@
 
 <div class="page">
 
-  <!-- BREADCRUMB -->
-
-  <!-- PAGE HEADER -->
   <div class="page-header">
     <div class="page-title" id="pageTitle">ΝΕΟ <span>ΕΡΓΟΤΑΞΙΟ</span></div>
     <div class="site-id-badge" id="siteIdBadge" style="display:none;">
@@ -161,7 +118,7 @@
 
   <div class="msg" id="topMsg"></div>
 
-  <!-- SECTION 1: Κύρια στοιχεία -->
+  <!-- SECTION 1: Κύρια Στοιχεία -->
   <div class="form-section">
     <div class="section-header"><div class="section-title">Κύρια Στοιχεία</div></div>
     <div class="section-body">
@@ -175,10 +132,15 @@
           <input type="text" id="fName" placeholder="Ονομασία εργοταξίου" maxlength="120">
         </div>
       </div>
-      <div class="field-row single">
+      <!-- Πελάτης = Ιδιοκτήτης στο ΒΗΔΑΠ · owner_afm είναι νέο πεδίο -->
+      <div class="field-row">
         <div class="field">
-          <label>Πελάτης</label>
-          <input type="text" id="fClient" placeholder="Επωνυμία πελάτη" maxlength="120">
+          <label>Πελάτης / Ιδιοκτήτης</label>
+          <input type="text" id="fClient" placeholder="Επωνυμία / Ονοματεπώνυμο" maxlength="120">
+        </div>
+        <div class="field">
+          <label>ΑΦΜ Ιδιοκτήτη</label>
+          <input type="text" id="fOwnerAfm" placeholder="π.χ. 123456789" maxlength="20">
         </div>
       </div>
     </div>
@@ -214,13 +176,13 @@
     </div>
   </div>
 
-  <!-- SECTION 3: Στοιχεία ΣΕΠΕ -->
+  <!-- SECTION 3: Στοιχεία ΣΕΠΕ / ΕΦΚΑ / ΒΗΔΑΠ -->
   <div class="form-section">
-    <div class="section-header"><div class="section-title">Στοιχεία ΣΕΠΕ / ΕΦΚΑ</div></div>
+    <div class="section-header"><div class="section-title">Στοιχεία ΣΕΠΕ / ΕΦΚΑ / ΒΗΔΑΠ</div></div>
     <div class="section-body">
       <div class="field-row single">
         <div class="field">
-          <label>Αριθμός Οικοδομικής Άδειας</label>
+          <label>Αριθμός Οικοδομικής Άδειας (Α.Μ.Ο.Ε.)</label>
           <input type="text" id="fPermitNumber" placeholder="π.χ. 1234/2024" maxlength="80">
         </div>
       </div>
@@ -254,7 +216,7 @@
     </div>
   </div>
 
-  <!-- SECTION 4: Κατάσταση (μόνο σε edit mode) -->
+  <!-- SECTION 4: Κατάσταση (μόνο edit) -->
   <div class="form-section" id="statusSection" style="display:none;">
     <div class="section-header"><div class="section-title">Κατάσταση</div></div>
     <div class="section-body">
@@ -271,7 +233,6 @@
     </div>
   </div>
 
-  <!-- ACTIONS -->
   <div class="actions" style="margin-bottom:24px;">
     <button class="btn-save" id="saveBtn">
       <div class="spinner"></div>
@@ -280,7 +241,6 @@
     <a class="btn-cancel" href="admin-sites.html">Ακύρωση</a>
   </div>
 
-  <!-- DANGER ZONE (μόνο σε edit) -->
   <div class="danger-zone" id="dangerZone" style="display:none;">
     <div class="danger-title">⚠ Επικίνδυνη Ζώνη</div>
     <p class="danger-desc">
@@ -292,17 +252,14 @@
 
 </div>
 
-<footer>
-  <div class="footer-logo">Site<em>Log</em></div>
-</footer>
+<footer><div class="footer-logo">Site<em>Log</em></div></footer>
 
-<!-- CONFIRM DIALOG -->
 <div class="overlay" id="confirmOverlay">
   <div class="dialog">
     <div class="dialog-title">ΔΙΑΓΡΑΦΗ;</div>
     <p class="dialog-body" id="confirmBody"></p>
     <div class="dialog-actions">
-      <button class="btn-dialog-cancel" id="confirmCancel">Ακύρωση</button>
+      <button class="btn-dialog-cancel"  id="confirmCancel">Ακύρωση</button>
       <button class="btn-dialog-confirm" id="confirmOk">Διαγραφή</button>
     </div>
   </div>
@@ -312,43 +269,40 @@
 <script src="shared/auth.js"></script>
 <script>
 (async () => {
-
   const ok = await Auth.requireRole(['admin']);
   if (!ok) return;
 
   document.getElementById('userName').textContent = Auth.getCurrentUser().full_name;
-  const _rl = document.getElementById('userRoleLabel'); if (_rl) _rl.textContent = Auth.getRoleLabel();
+  const _rl = document.getElementById('userRoleLabel');
+  if (_rl) _rl.textContent = Auth.getRoleLabel();
 
-  // ── URL PARAM ──
   const params  = new URLSearchParams(window.location.search);
   const siteId  = params.get('id') ? parseInt(params.get('id')) : null;
   const isEdit  = siteId !== null;
 
-  // ── FIELDS ──
-  const fProjectCode = document.getElementById('fProjectCode');
-  const fName        = document.getElementById('fName');
-  const fClient      = document.getElementById('fClient');
-  const fAddress     = document.getElementById('fAddress');
-  const fRegion      = document.getElementById('fRegion');
-  const fStartDate   = document.getElementById('fStartDate');
-  const fEndDate     = document.getElementById('fEndDate');
-  const fIsActive    = document.getElementById('fIsActive');
+  const fProjectCode   = document.getElementById('fProjectCode');
+  const fName          = document.getElementById('fName');
+  const fClient        = document.getElementById('fClient');       // = ΙΔΙΟΚΤΗΤΗΣ στο ΒΗΔΑΠ
+  const fOwnerAfm      = document.getElementById('fOwnerAfm');     // ✦ ΝΕΟ πεδίο
+  const fAddress       = document.getElementById('fAddress');
+  const fRegion        = document.getElementById('fRegion');
+  const fStartDate     = document.getElementById('fStartDate');
+  const fEndDate       = document.getElementById('fEndDate');
+  const fIsActive      = document.getElementById('fIsActive');
   const fPermitNumber  = document.getElementById('fPermitNumber');
   const fAddressStreet = document.getElementById('fAddressStreet');
   const fAddressNumber = document.getElementById('fAddressNumber');
   const fAddressCity   = document.getElementById('fAddressCity');
   const fEfkaBranch    = document.getElementById('fEfkaBranch');
   const fEfkaAgm       = document.getElementById('fEfkaAgm');
-  const saveBtn      = document.getElementById('saveBtn');
-  const topMsg       = document.getElementById('topMsg');
+  const saveBtn        = document.getElementById('saveBtn');
+  const topMsg         = document.getElementById('topMsg');
 
-  // ── FLATPICKR ──
-  const fpConfig = { locale:'gr', dateFormat:'d/m/Y', allowInput:false, disableMobile:true };
-  const fpStart  = flatpickr('#fStartDate', fpConfig);
-  const fpEnd    = flatpickr('#fEndDate',   fpConfig);
+  const fpCfg   = { locale:'gr', dateFormat:'d/m/Y', allowInput:false, disableMobile:true };
+  const fpStart = flatpickr('#fStartDate', fpCfg);
+  const fpEnd   = flatpickr('#fEndDate',   fpCfg);
 
-  // Μετατρέπει 'YYYY-MM-DD' σε τοπικό Date (αποφεύγει UTC offset)
-  function isoToLocalDate(iso) {
+  function isoToLocal(iso) {
     if (!iso) return null;
     const [y, m, d] = iso.split('-').map(Number);
     return new Date(y, m - 1, d);
@@ -357,7 +311,6 @@
     return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
   }
 
-  // ── LOAD EXISTING ──
   if (isEdit) {
     document.getElementById('pageTitle').innerHTML = 'ΕΠΕΞΕΡΓΑΣΙΑ <span>ΕΡΓΟΤΑΞΙΟΥ</span>';
     document.getElementById('statusSection').style.display = 'block';
@@ -365,47 +318,34 @@
     document.getElementById('siteIdBadge').style.display   = 'inline-flex';
     document.getElementById('siteIdVal').textContent       = '#' + siteId;
 
-    const { data, error } = await sb
-      .from('sites')
-      .select('*')
-      .eq('id', siteId)
-      .single();
+    const { data, error } = await sb.from('sites').select('*').eq('id', siteId).single();
+    if (error || !data) { showMsg('Το εργοτάξιο δεν βρέθηκε.', 'error'); saveBtn.disabled = true; return; }
 
-    if (error || !data) {
-      showMsg('Το εργοτάξιο δεν βρέθηκε.', 'error');
-      saveBtn.disabled = true;
-      return;
-    }
-
-    fProjectCode.value    = data.project_code || '';
-    fName.value           = data.name         || '';
-    fClient.value         = data.client        || '';
-    fAddress.value        = data.address       || '';
-    fRegion.value         = data.region        || '';
-    fStartDate.value      = '';
-    fEndDate.value        = '';
-    if (data.start_date) fpStart.setDate(isoToLocalDate(data.start_date), false);
-    if (data.end_date)   fpEnd.setDate(isoToLocalDate(data.end_date),     false);
-    fIsActive.checked     = data.is_active;
-    fPermitNumber.value   = data.permit_number   || '';
-    fAddressStreet.value  = data.address_street  || '';
-    fAddressNumber.value  = data.address_number  || '';
-    fAddressCity.value    = data.address_city    || '';
-    fEfkaBranch.value     = data.efka_branch     || '';
-    fEfkaAgm.value        = data.efka_agm        || '';
+    fProjectCode.value   = data.project_code   || '';
+    fName.value          = data.name           || '';
+    fClient.value        = data.client         || '';
+    fOwnerAfm.value      = data.owner_afm      || '';  // ✦ ΝΕΟ
+    fAddress.value       = data.address        || '';
+    fRegion.value        = data.region         || '';
+    if (data.start_date) fpStart.setDate(isoToLocal(data.start_date), false);
+    if (data.end_date)   fpEnd.setDate(isoToLocal(data.end_date),     false);
+    fIsActive.checked    = data.is_active;
+    fPermitNumber.value  = data.permit_number  || '';
+    fAddressStreet.value = data.address_street || '';
+    fAddressNumber.value = data.address_number || '';
+    fAddressCity.value   = data.address_city   || '';
+    fEfkaBranch.value    = data.efka_branch    || '';
+    fEfkaAgm.value       = data.efka_agm       || '';
   }
 
-  // ── SAVE ──
   saveBtn.addEventListener('click', async () => {
     const project_code = fProjectCode.value.trim();
     const name         = fName.value.trim();
-
-    // Validation
     let hasError = false;
     [fProjectCode, fName].forEach(f => f.classList.remove('error-field'));
     if (!project_code) { fProjectCode.classList.add('error-field'); hasError = true; }
     if (!name)         { fName.classList.add('error-field');         hasError = true; }
-    if (hasError) { showMsg('Συμπλήρωσε τα υποχρεωτικά πεδία (*).',  'error'); return; }
+    if (hasError) { showMsg('Συμπλήρωσε τα υποχρεωτικά πεδία (*).', 'error'); return; }
 
     setLoading(true);
     topMsg.className = 'msg';
@@ -413,18 +353,19 @@
     const payload = {
       project_code,
       name,
-      client:     fClient.value.trim()    || null,
-      address:    fAddress.value.trim()   || null,
-      region:     fRegion.value.trim()    || null,
-      start_date: getISO(fpStart) || null,
-      end_date:   getISO(fpEnd)   || null,
-      is_active:  fIsActive.checked,
-      permit_number:  fPermitNumber.value.trim()  || null,
-      address_street: fAddressStreet.value.trim() || null,
-      address_number: fAddressNumber.value.trim() || null,
-      address_city:   fAddressCity.value.trim()   || null,
-      efka_branch:    fEfkaBranch.value.trim()    || null,
-      efka_agm:       fEfkaAgm.value.trim()       || null,
+      client:         fClient.value.trim()        || null,
+      owner_afm:      fOwnerAfm.value.trim()       || null,  // ✦ ΝΕΟ
+      address:        fAddress.value.trim()        || null,
+      region:         fRegion.value.trim()         || null,
+      start_date:     getISO(fpStart)              || null,
+      end_date:       getISO(fpEnd)                || null,
+      is_active:      fIsActive.checked,
+      permit_number:  fPermitNumber.value.trim()   || null,
+      address_street: fAddressStreet.value.trim()  || null,
+      address_number: fAddressNumber.value.trim()  || null,
+      address_city:   fAddressCity.value.trim()    || null,
+      efka_branch:    fEfkaBranch.value.trim()     || null,
+      efka_agm:       fEfkaAgm.value.trim()        || null,
     };
 
     let error;
@@ -436,54 +377,39 @@
     }
 
     setLoading(false);
-
     if (error) {
-      if (error.code === '23505') { // unique violation
-        showMsg('Ο Κωδικός Έργου χρησιμοποιείται ήδη από άλλο εργοτάξιο.', 'error');
-        fProjectCode.classList.add('error-field');
-      } else {
-        showMsg('Σφάλμα αποθήκευσης: ' + error.message, 'error');
-      }
+      showMsg(error.code === '23505'
+        ? 'Ο Κωδικός Έργου χρησιμοποιείται ήδη από άλλο εργοτάξιο.'
+        : 'Σφάλμα αποθήκευσης: ' + error.message, 'error');
+      if (error.code === '23505') fProjectCode.classList.add('error-field');
       return;
     }
-
-    // Redirect back with success flag
     window.location.href = 'admin-sites.html?saved=' + (isEdit ? '1' : 'new');
   });
 
-  // ── DELETE ──
   if (isEdit) {
     document.getElementById('deleteBtn').addEventListener('click', () => {
       document.getElementById('confirmBody').textContent =
         'Πρόκειται να διαγράψεις οριστικά αυτό το εργοτάξιο. Αν υπάρχουν παρουσίες ή αναθέσεις, η διαγραφή θα αποτύχει.';
       document.getElementById('confirmOverlay').classList.add('show');
     });
-
-    document.getElementById('confirmCancel').addEventListener('click', () => {
-      document.getElementById('confirmOverlay').classList.remove('show');
-    });
-
+    document.getElementById('confirmCancel').addEventListener('click', () =>
+      document.getElementById('confirmOverlay').classList.remove('show'));
     document.getElementById('confirmOk').addEventListener('click', async () => {
       document.getElementById('confirmOverlay').classList.remove('show');
       setLoading(true);
-
       const { error } = await sb.from('sites').delete().eq('id', siteId);
       setLoading(false);
-
       if (error) {
-        if (error.code === '23503') { // FK violation
-          showMsg('Δεν είναι δυνατή η διαγραφή: υπάρχουν παρουσίες ή αναθέσεις σε αυτό το εργοτάξιο. Απενεργοποίησέ το αντί να το διαγράψεις.', 'error');
-        } else {
-          showMsg('Σφάλμα διαγραφής: ' + error.message, 'error');
-        }
+        showMsg(error.code === '23503'
+          ? 'Δεν είναι δυνατή η διαγραφή: υπάρχουν παρουσίες ή αναθέσεις. Απενεργοποίησέ το.'
+          : 'Σφάλμα διαγραφής: ' + error.message, 'error');
         return;
       }
-
       window.location.href = 'admin-sites.html?saved=1';
     });
   }
 
-  // ── HELPERS ──
   function showMsg(text, type) {
     topMsg.textContent = text;
     topMsg.className   = 'msg ' + type;
@@ -494,11 +420,8 @@
     saveBtn.classList.toggle('loading', val);
   }
 
-  // Enter key
-  document.querySelectorAll('input').forEach(inp => {
-    inp.addEventListener('keydown', e => { if (e.key === 'Enter') saveBtn.click(); });
-  });
-
+  document.querySelectorAll('input').forEach(inp =>
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') saveBtn.click(); }));
 })();
 </script>
 </body>
