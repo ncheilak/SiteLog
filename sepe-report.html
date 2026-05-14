@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SiteLog — ΣΕΠΕ Παρουσιολόγιο</title>
+<title>SiteLog — ΒΗΔΑΠ / ΣΕΠΕ</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/theme.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -12,170 +12,203 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="shared/auth.js"></script>
 <style>
-  /* ── SCREEN STYLES ── */
-  :root {
-    --black:#0d0d0d; --yellow:#f5c800; --yellow-dk:#c9a200; --orange:#e8600a;
-    --white:#f4efe6; --gray:#1e1e1e; --gray2:#2a2a2a; --gray3:#3d3d3d;
-    --gray4:#5a5a5a; --green:#2ea84f; --red:#d93b3b;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+/* ── SCREEN STYLES ── */
+:root {
+  --black:#0d0d0d; --yellow:#f5c800; --orange:#e8600a;
+  --white:#f4efe6; --gray:#1e1e1e; --gray2:#2a2a2a; --gray3:#3d3d3d;
+  --gray4:#5a5a5a; --green:#2ea84f; --red:#d93b3b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--black);color:var(--white);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{
+  background:var(--yellow);color:var(--black);
+  padding:0 24px;height:54px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:4px solid var(--orange);position:sticky;top:0;z-index:100;
+}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
+.logo em{color:var(--orange);font-style:normal}
+.logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
+.controls-bar{
+  background:var(--gray2);border-bottom:1px solid var(--gray3);
+  padding:12px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;
+}
+.controls-bar select,.controls-bar input[type="text"]{
+  background:var(--black);border:1px solid var(--gray3);border-radius:2px;
+  color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.88rem;
+  padding:7px 10px;outline:none;
+}
+.controls-bar select:focus,.controls-bar input:focus{border-color:var(--yellow)}
+.controls-bar .spacer{flex:1}
+.flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.flatpickr-day{color:var(--white)}
+.flatpickr-day:hover{background:var(--gray3)}
+.flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
+.flatpickr-day.today{border-color:var(--orange)}
+.flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
+.flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
+.flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
+.flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
+.numInputWrapper:hover{background:var(--gray3)}
+.numInput{color:var(--white)!important;background:transparent}
+.btn{border:none;border-radius:2px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;transition:opacity 0.15s;white-space:nowrap}
+.btn-orange{background:var(--orange);color:#fff;padding:8px 18px;font-size:0.9rem}
+.btn-orange:hover{opacity:0.88}
+.btn-outline{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:7px 14px;font-size:0.82rem}
+.btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
+.status-bar{
+  background:var(--gray);border-bottom:1px solid var(--gray3);
+  padding:6px 24px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
+  color:var(--gray4);display:flex;align-items:center;gap:8px;
+}
+.status-bar.ok{color:var(--green)}
+.status-bar.err{color:var(--red)}
+.spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  header{
-    background:var(--yellow);color:var(--black);
-    padding:0 24px;height:54px;flex-shrink:0;
-    display:flex;align-items:center;justify-content:space-between;
-    border-bottom:4px solid var(--orange);
-    position:sticky;top:0;z-index:100;
-  }
-  .logo{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:3px}
-  .logo em{color:var(--orange);font-style:normal}
-  .logo sub{font-size:0.6rem;letter-spacing:1px;opacity:0.6;vertical-align:middle;margin-left:6px;font-family:'IBM Plex Mono',monospace}
-  .back-btn{
-    display:flex;align-items:center;gap:6px;
-    font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;
-    letter-spacing:1px;text-transform:uppercase;
-    background:rgba(0,0,0,0.12);border:none;border-radius:2px;
-    color:var(--black);padding:6px 12px;cursor:pointer;
-    text-decoration:none;transition:background 0.15s;
-  }
-  .back-btn:hover{background:rgba(0,0,0,0.22)}
+/* ── PREVIEW ── */
+.preview-wrap{flex:1;padding:24px;overflow:auto;background:var(--black)}
+.preview-sheet{
+  background:#fff;color:#000;
+  max-width:1200px;margin:0 auto;
+  padding:15mm 12mm;
+  border-radius:2px;
+  box-shadow:0 4px 32px rgba(0,0,0,0.5);
+}
+.empty-state{
+  text-align:center;padding:80px 20px;
+  color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
+}
 
-  .controls-bar{
-    background:var(--gray2);border-bottom:1px solid var(--gray3);
-    padding:12px 24px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;
+/* ── ΒΗΔΑΠ DOCUMENT STYLES ── */
+.vhdap { font-family: Arial, sans-serif; font-size: 9pt; color: #000; }
+
+/* Κεφαλίδα ΒΗΔΑΠ */
+.vhdap-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1.5px solid #000;
+  margin-bottom: 8pt;
+}
+.vhdap-header-title {
+  grid-column: 1 / -1;
+  background: #d0d0d0;
+  font-size: 10pt;
+  font-weight: bold;
+  text-align: center;
+  padding: 4pt 6pt;
+  border-bottom: 1px solid #000;
+  letter-spacing: 1px;
+}
+.vhdap-header-field {
+  display: flex;
+  border-bottom: 1px solid #bbb;
+  border-right: 1px solid #bbb;
+  font-size: 8pt;
+}
+.vhdap-header-field:nth-child(even) { border-right: none; }
+.vhdap-header-field.full { grid-column: 1 / -1; border-right: none; }
+.vhdap-header-field .lbl {
+  background: #ebebeb;
+  font-weight: bold;
+  padding: 3pt 5pt;
+  white-space: nowrap;
+  min-width: 130pt;
+  border-right: 1px solid #bbb;
+  font-size: 7.5pt;
+}
+.vhdap-header-field .val {
+  padding: 3pt 5pt;
+  flex: 1;
+  font-size: 8pt;
+}
+.vhdap-header-section {
+  grid-column: 1 / -1;
+  background: #e8e8e8;
+  font-weight: bold;
+  font-size: 8pt;
+  padding: 3pt 6pt;
+  border-bottom: 1px solid #bbb;
+  letter-spacing: 0.5px;
+}
+
+/* Πίνακας ΒΗΔΑΠ — ακριβής σειρά στηλών */
+.vhdap-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 6pt;
+  font-size: 7pt;
+}
+.vhdap-table th {
+  background: #d8d8d8;
+  border: 1px solid #444;
+  padding: 3pt 2pt;
+  text-align: center;
+  font-weight: bold;
+  vertical-align: middle;
+  line-height: 1.25;
+  font-size: 6.5pt;
+}
+.vhdap-table td {
+  border: 1px solid #666;
+  padding: 2pt 2pt;
+  vertical-align: middle;
+  text-align: center;
+  height: 18pt;
+  font-size: 7pt;
+}
+.vhdap-table td.td-l { text-align: left; }
+
+/* Πλάτη στηλών (ΒΗΔΑΠ σειρά) */
+.c-aa   { width: 2%;  }  /* Α/Α */
+.c-ama  { width: 6%;  }  /* Α.Μ.Α. */
+.c-amka { width: 7%;  }  /* Α.Μ.Κ.Α. */
+.c-afm  { width: 6%;  }  /* Α.Φ.Μ. */
+.c-arad { width: 6%;  }  /* Αρ.Αδ.Εργ. */
+.c-ep   { width: 7%;  }  /* Επώνυμο */
+.c-on   { width: 6%;  }  /* Όνομα */
+.c-pa   { width: 6%;  }  /* Πατρώνυμο */
+.c-eid  { width: 6%;  }  /* Ειδικότητα */
+.c-mis  { width: 4%;  }  /* Μικτό Ημ.Μίσθιο */
+.c-fas  { width: 7%;  }  /* Φάση Κατασκευής */
+.c-pro  { width: 5%;  }  /* Ημερομ.Πρόσληψης */
+.c-ore  { width: 7%;  }  /* Ώρες Εργ./Έναρξη–Λήξη */
+.c-ana  { width: 5%;  }  /* Ημέρα Ανάπαυσης */
+.c-sig1 { width: 5%;  }  /* Υπογραφή Εργαζόμενου */
+.c-sig2 { width: 5%;  }  /* Υπογραφή Εργοδότη */
+.c-erg  { width: 7%;  }  /* Εργολάβος ή Υπεργολάβος */
+.c-afgerg { width: 5%; } /* ΑΦΜ Εργολάβου */
+
+/* ── PRINT ── */
+@media print {
+  @page { size: A4 landscape; margin: 8mm 6mm; }
+  body { background: #fff !important; }
+  header, .controls-bar, .status-bar { display: none !important; }
+  .preview-wrap { padding: 0 !important; overflow: visible !important; }
+  .preview-sheet {
+    box-shadow: none !important; border-radius: 0 !important;
+    padding: 0 !important; max-width: none !important; margin: 0 !important;
   }
-  .controls-bar select,.controls-bar input[type="text"]{
-    background:var(--black);border:1px solid var(--gray3);border-radius:2px;
-    color:var(--white);font-family:'IBM Plex Sans',sans-serif;font-size:0.88rem;
-    padding:7px 10px;outline:none;
-  }
-  .controls-bar select:focus,.controls-bar input:focus{border-color:var(--yellow)}
-  .controls-bar .spacer{flex:1}
-
-  /* Flatpickr overrides */
-  .flatpickr-calendar{background:var(--gray2);border:1px solid var(--gray3);border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
-  .flatpickr-day{color:var(--white)}
-  .flatpickr-day:hover{background:var(--gray3)}
-  .flatpickr-day.selected{background:var(--yellow);border-color:var(--yellow);color:var(--black)}
-  .flatpickr-day.today{border-color:var(--orange)}
-  .flatpickr-months,.flatpickr-weekdays{background:var(--gray)}
-  .flatpickr-month,.flatpickr-weekday,.flatpickr-current-month{color:var(--white)!important;fill:var(--white)!important}
-  .flatpickr-prev-month,.flatpickr-next-month{fill:var(--white)!important}
-  .flatpickr-prev-month:hover svg,.flatpickr-next-month:hover svg{fill:var(--yellow)!important}
-  .numInputWrapper:hover{background:var(--gray3)}
-  .numInput{color:var(--white)!important;background:transparent}
-
-  .btn{border:none;border-radius:2px;cursor:pointer;font-family:'Bebas Neue',sans-serif;letter-spacing:1.5px;transition:opacity 0.15s;white-space:nowrap}
-  .btn-orange{background:var(--orange);color:#fff;padding:8px 18px;font-size:0.9rem}
-  .btn-orange:hover{opacity:0.88}
-  .btn-outline{background:transparent;border:1px solid var(--gray3);color:var(--white);padding:7px 14px;font-size:0.82rem}
-  .btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
-
-  .status-bar{
-    background:var(--gray);border-bottom:1px solid var(--gray3);
-    padding:6px 24px;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;
-    color:var(--gray4);display:flex;align-items:center;gap:8px;
-  }
-  .status-bar.ok{color:var(--green)}
-  .status-bar.err{color:var(--red)}
-  .spinner{display:inline-block;width:11px;height:11px;border:2px solid var(--gray3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:4px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* ── PREVIEW AREA (screen) ── */
-  .preview-wrap{flex:1;padding:24px;overflow:auto;background:var(--black)}
-  .preview-sheet{
-    background:#fff;color:#000;
-    max-width:1100px;margin:0 auto;
-    padding:20mm 15mm;
-    border-radius:2px;
-    box-shadow:0 4px 32px rgba(0,0,0,0.5);
-  }
-  .empty-state{
-    text-align:center;padding:80px 20px;
-    color:var(--gray4);font-family:'IBM Plex Mono',monospace;font-size:0.8rem;
-  }
-
-  /* ── SEPE DOCUMENT STYLES ── */
-  .sepe-doc { font-family: Arial, sans-serif; font-size: 9pt; color: #000; }
-
-  .sepe-title-block { margin-bottom: 10pt; }
-  .sepe-no { font-size: 10pt; font-weight: bold; margin-bottom: 4pt; }
-  .sepe-header-text { font-size: 8.5pt; line-height: 1.6; }
-  .sepe-header-text strong { font-weight: bold; }
-
-  .sepe-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10pt;
-    font-size: 7.5pt;
-  }
-  .sepe-table th {
-    background: #e8e8e8;
-    border: 1px solid #555;
-    padding: 4pt 3pt;
-    text-align: center;
-    font-weight: bold;
-    vertical-align: middle;
-    line-height: 1.3;
-  }
-  .sepe-table td {
-    border: 1px solid #555;
-    padding: 3pt 3pt;
-    vertical-align: middle;
-    text-align: center;
-    height: 20pt;
-  }
-  .sepe-table td.td-left { text-align: left; }
-  .sepe-table .col-aa     { width: 2%; }
-  .sepe-table .col-eponimo{ width: 7%; }
-  .sepe-table .col-onoma  { width: 6%; }
-  .sepe-table .col-patron { width: 6%; }
-  .sepe-table .col-ama    { width: 7%; }
-  .sepe-table .col-amka   { width: 8%; }
-  .sepe-table .col-afm    { width: 7%; }
-  .sepe-table .col-arad   { width: 6%; }
-  .sepe-table .col-eid    { width: 7%; }
-  .sepe-table .col-fasi   { width: 6%; }
-  .sepe-table .col-erg    { width: 8%; }
-  .sepe-table .col-afgerg { width: 7%; }
-  .sepe-table .col-time   { width: 4%; }
-  .sepe-table .col-misth  { width: 4%; }
-  .sepe-table .col-prosl  { width: 5%; }
-  .sepe-table .col-repos  { width: 5%; }
-  .sepe-table .col-sign   { width: 5%; }
-
-  /* ── PRINT STYLES ── */
-  @media print {
-    @page { size: A4 landscape; margin: 10mm 8mm; }
-
-    body { background: #fff !important; }
-    header, .controls-bar, .status-bar { display: none !important; }
-    .preview-wrap { padding: 0 !important; overflow: visible !important; }
-    .preview-sheet {
-      box-shadow: none !important;
-      border-radius: 0 !important;
-      padding: 0 !important;
-      max-width: none !important;
-      margin: 0 !important;
-    }
-    .empty-state { display: none !important; }
-
-    .sepe-table { font-size: 7pt; }
-    .sepe-table th, .sepe-table td { padding: 2pt 2pt; }
-  }
+  .empty-state { display: none !important; }
+  .vhdap-table { font-size: 6pt; }
+  .vhdap-table th { font-size: 5.5pt; padding: 2pt 1pt; }
+  .vhdap-table td { padding: 1pt 1pt; height: 14pt; }
+  .vhdap-header-field .lbl { min-width: 100pt; font-size: 6.5pt; }
+  .vhdap-header-field .val { font-size: 7pt; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Site<em>Log</em><sub>ΣΕΠΕ</sub></div>
+  <div class="logo">Site<em>Log</em><sub>ΒΗΔΑΠ</sub></div>
   <div class="user-menu">
     <div class="user-info">
       <div class="user-name" id="userName"></div>
       <div class="user-role" id="userRoleLabel"></div>
     </div>
-    <a href="attendance.html" class="btn-back">← Αρχική</a>
+    <a href="attendance.html" class="btn-back">← Παρουσιολόγιο</a>
     <button class="btn-signout" onclick="Auth.signOut()">Έξοδος</button>
   </div>
 </header>
@@ -202,10 +235,9 @@
 
 <script>
 (async () => {
-
-  // ── AUTH ──
   const ok = await Auth.requireRole(['admin', 'project_manager', 'site_manager']);
   if (!ok) return;
+
   const user = Auth.getCurrentUser();
   if (user) {
     document.getElementById('userName').textContent = user.full_name || user.email;
@@ -216,17 +248,15 @@
 
   // ── FLATPICKR ──
   const fp = flatpickr('#filterDate', {
-    locale: 'gr',
-    dateFormat: 'd/m/Y',
-    allowInput: false,
-    disableMobile: true,
+    locale: 'gr', dateFormat: 'd/m/Y',
+    allowInput: false, disableMobile: true,
     onChange: () => load(),
   });
 
-  // ── URL PARAMS (από attendance.html) ──
+  // ── URL PARAMS ──
   const params = new URLSearchParams(window.location.search);
   const presetSite = params.get('site');
-  const presetDate = params.get('date'); // YYYY-MM-DD
+  const presetDate = params.get('date');
 
   // ── SITES ──
   const sites = Auth.getAssignedSites();
@@ -237,8 +267,6 @@
     o.textContent = s.project_code ? `${s.project_code} · ${s.name}` : s.name;
     sel.appendChild(o);
   });
-
-  // Preset από URL
   if (presetSite) sel.value = presetSite;
   else if (!Auth.isAdmin() && sites.length === 1) sel.value = sites[0].id;
 
@@ -250,9 +278,8 @@
   }
 
   // ── HELPERS ──
-  function setToday() {
-    fp.setDate(new Date(), true);
-  }
+  function setToday() { fp.setDate(new Date(), true); }
+  window.setToday = setToday;
 
   function fmtDate(iso) {
     if (!iso) return '';
@@ -261,9 +288,7 @@
   }
 
   function isoFromFp() {
-    return fp.selectedDates[0]
-      ? fp.formatDate(fp.selectedDates[0], 'Y-m-d')
-      : null;
+    return fp.selectedDates[0] ? fp.formatDate(fp.selectedDates[0], 'Y-m-d') : null;
   }
 
   function setStatus(cls, msg) {
@@ -286,9 +311,10 @@
 
     setStatus('loading', 'Φόρτωση δεδομένων…');
 
-    // Παράλληλα: settings + site info + attendance
     const [settingsRes, siteRes, attRes] = await Promise.all([
-      db.from('settings').select('key, value').in('key', ['company_name', 'company_afm']),
+      db.from('settings').select('key, value').in('key', [
+        'company_name','company_afm','sepe_service','sepe_code'
+      ]),
       db.from('sites').select('*').eq('id', siteId).single(),
       db.from('attendance_log')
         .select(`
@@ -305,16 +331,9 @@
         .order('time_in', { ascending: true })
     ]);
 
-    if (siteRes.error) {
-      setStatus('err', '⚠ Δεν φορτώθηκαν τα στοιχεία εργοταξίου: ' + siteRes.error.message);
-      return;
-    }
-    if (attRes.error) {
-      setStatus('err', '⚠ Σφάλμα φόρτωσης παρουσιών: ' + attRes.error.message);
-      return;
-    }
+    if (siteRes.error) { setStatus('err', '⚠ ' + siteRes.error.message); return; }
+    if (attRes.error)  { setStatus('err', '⚠ ' + attRes.error.message);  return; }
 
-    // Εξαγωγή company settings
     const settingsMap = {};
     (settingsRes.data || []).forEach(({ key, value }) => { settingsMap[key] = value; });
 
@@ -325,120 +344,174 @@
     renderDocument(site, records, dateISO, settingsMap);
   }
 
-  // ── RENDER ──
-  function renderDocument(site, records, dateISO, settings = {}) {
-    // Δόμηση διεύθυνσης
-    const addrParts = [site.address_street, site.address_number].filter(Boolean).join(' ');
-    const cityPart  = site.address_city || '';
-    const fullAddr  = [addrParts, cityPart].filter(Boolean).join(', ') || '_______________';
+  window.load = load;
 
-    // Στοιχεία εταιρείας από settings
-    const companyName  = settings.company_name || '______________________________';
-    const companyAfm   = settings.company_afm  || '_______________';
-    const permitNumber = site.permit_number  || '______________________';
-    const efkaBranch   = site.efka_branch    || '_______________________________________';
-    const efkaAgm      = site.efka_agm       || '___________________________________________';
+  // ── RENDER ──
+  function renderDocument(site, records, dateISO, settings) {
+    const companyName  = settings.company_name  || '______________________________';
+    const companyAfm   = settings.company_afm   || '_______________';
+    const sepeService  = settings.sepe_service  || '______________________________';
+    const sepeCode     = settings.sepe_code     || '______________________________';
+    const permitNumber = site.permit_number     || '______________________';
+    const efkaBranch   = site.efka_branch       || '_______________________________';
+    const efkaAgm      = site.efka_agm          || '___________________________';
+    const address      = [site.address_street, site.address_number].filter(Boolean).join(' ') || '_______________';
+    const city         = site.address_city      || '_______________';
+    const ownerName    = site.owner_name        || '______________________________';
+    const ownerAfm     = site.owner_afm         || '_______________';
+    const ergolabos    = settings.company_name  || '______________________________';
+    const ergAfm       = settings.company_afm   || '_______________';
+    const phone        = site.phone             || '_______________';
+    const fax          = site.fax               || '_______________';
+    const email        = site.email             || '_______________';
     const dateDisplay  = fmtDate(dateISO);
 
-    // Γραμμές πίνακα
-    const rows = records.length > 0
-      ? records.map((r, i) => {
-          const w = r.workers || {};
-          return `
-            <tr>
-              <td>${i + 1}</td>
-              <td class="td-left">${w.eponimo || ''}</td>
-              <td class="td-left">${w.onoma || ''}</td>
-              <td class="td-left">${w.patronimo || ''}</td>
-              <td>${w.ama || ''}</td>
-              <td>${w.amka || ''}</td>
-              <td>${w.afm || ''}</td>
-              <td>${w.ar_ad_ergasias || ''}</td>
-              <td class="td-left">${w.eidikotita || ''}</td>
-              <td class="td-left">${r.fasi || ''}</td>
-              <td class="td-left">${w.ergolabos || ''}</td>
-              <td>${w.afm_ergolabou || ''}</td>
-              <td>${r.time_in ? r.time_in.slice(0,5) : ''}</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>`;
-        }).join('')
-      : `<tr><td colspan="18" style="text-align:center;padding:12pt;color:#888;font-style:italic">
-           Δεν βρέθηκαν παρουσίες για την επιλεγμένη ημερομηνία.
-         </td></tr>`;
+    // ── ΓΡΑΜΜΕΣ ΠΙΝΑΚΑ (σειρά στηλών ΒΗΔΑΠ) ──
+    const dataRows = records.map((r, i) => {
+      const w = r.workers || {};
+      return `<tr>
+        <td>${i + 1}</td>
+        <td>${w.ama            || ''}</td>
+        <td>${w.amka           || ''}</td>
+        <td>${w.afm            || ''}</td>
+        <td>${w.ar_ad_ergasias || ''}</td>
+        <td class="td-l">${w.eponimo   || ''}</td>
+        <td class="td-l">${w.onoma     || ''}</td>
+        <td class="td-l">${w.patronimo || ''}</td>
+        <td class="td-l">${w.eidikotita || ''}</td>
+        <td></td>
+        <td class="td-l">${r.fasi      || ''}</td>
+        <td></td>
+        <td>${r.time_in ? r.time_in.slice(0,5) : ''}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td class="td-l">${w.ergolabos     || ''}</td>
+        <td>${w.afm_ergolabou  || ''}</td>
+      </tr>`;
+    }).join('');
 
-    // Κενές γραμμές για εκτύπωση (min 15 σειρές)
-    const minRows = 15;
-    const emptyNeeded = Math.max(0, minRows - records.length);
-    const emptyRows = Array(emptyNeeded).fill(`
-      <tr>
-        <td></td><td></td><td></td><td></td><td></td>
-        <td></td><td></td><td></td><td></td><td></td>
-        <td></td><td></td><td></td><td></td><td></td>
-        <td></td><td></td><td></td>
-      </tr>`).join('');
+    // Κενές γραμμές (min 15)
+    const emptyCount = Math.max(0, 15 - records.length);
+    const emptyRows  = Array(emptyCount).fill(
+      `<tr>${Array(18).fill('<td></td>').join('')}</tr>`
+    ).join('');
 
     document.getElementById('previewSheet').innerHTML = `
-      <div class="sepe-doc">
+<div class="vhdap">
 
-        <div class="sepe-title-block">
-          <div class="sepe-no">Νο ___________</div>
-          <div class="sepe-header-text">
-            Ημερήσιο Δελτίο της <strong>${companyName}</strong> (ΑΦΜ: <strong>${companyAfm}</strong>),
-            Απασχολούμενου προσωπικού στο με αριθ. αδείας <strong>${permitNumber}</strong> Οικοδομικού Έργου
-          </div>
-          <div class="sepe-header-text" style="margin-top:4pt;">
-            Στην πόλη <strong>${cityPart || '_______________'}</strong>,
-            οδός <strong>${site.address_street || '_______________'}</strong>
-            αριθμός <strong>${site.address_number || '_____'}</strong>
-            για οικοδομικές εργασίες
-          </div>
-          <div class="sepe-header-text" style="margin-top:4pt;">
-            Το οποίο έχει απογραφεί στο Υποκατάστημα ΕΦΚΑ <strong>${efkaBranch}</strong>
-            με Α.Γ.Μ. <strong>${efkaAgm}</strong>
-          </div>
-          <div class="sepe-header-text" style="margin-top:6pt;">
-            <strong>Ημερομηνία: ${dateDisplay}</strong>
-          </div>
-        </div>
+  <!-- ══ ΚΕΦΑΛΙΔΑ ΒΗΔΑΠ ══ -->
+  <div class="vhdap-header">
 
-        <table class="sepe-table">
-          <thead>
-            <tr>
-              <th class="col-aa">Α/Α</th>
-              <th class="col-eponimo">Επώνυμο</th>
-              <th class="col-onoma">Όνομα</th>
-              <th class="col-patron">Πατρώνυμο</th>
-              <th class="col-ama">Α.Μ.Α.</th>
-              <th class="col-amka">Α.Μ.Κ.Α.</th>
-              <th class="col-afm">Α.Φ.Μ.</th>
-              <th class="col-arad">Αρ. Αδ. Εργασίας</th>
-              <th class="col-eid">Ειδικότητα</th>
-              <th class="col-fasi">Φάση</th>
-              <th class="col-erg">Εργολάβος</th>
-              <th class="col-afgerg">ΑΦΜ Εργολάβου</th>
-              <th class="col-time">Ώρα Έναρξης</th>
-              <th class="col-time">Ώρα Λήξης</th>
-              <th class="col-misth">Μικτό Ημερο-μίσθιο</th>
-              <th class="col-prosl">Ημ/νία Πρόσληψης</th>
-              <th class="col-repos">Ημέρα Αναπαύσεως</th>
-              <th class="col-sign">Υπογραφή Εργαζομένου</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-            ${emptyRows}
-          </tbody>
-        </table>
+    <div class="vhdap-header-title">
+      ΒΗΔΑΠ &nbsp;—&nbsp; ΒΙΒΛΙΟ ΗΜΕΡΗΣΙΩΝ ΔΕΛΤΙΩΝ ΑΠΑΣΧΟΛΟΥΜΕΝΟΥ ΠΡΟΣΩΠΙΚΟΥ
+    </div>
 
-      </div>`;
+    <div class="vhdap-header-field">
+      <div class="lbl">ΗΜΕΡΟΜΗΝΙΑ</div>
+      <div class="val"><strong>${dateDisplay}</strong></div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">ΥΠΗΡΕΣΙΑ Σ.Ε.Π.Ε.</div>
+      <div class="val">${sepeService}</div>
+    </div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">ΚΩΔΙΚΟΣ ΥΠΗΡΕΣΙΑΣ</div>
+      <div class="val">${sepeCode}</div>
+    </div>
+    <div class="vhdap-header-field"><!-- spacer --><div class="lbl"></div><div class="val"></div></div>
+
+    <div class="vhdap-header-section">ΓΕΝΙΚΑ ΣΤΟΙΧΕΙΑ ΕΡΓΟΥ</div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">Α.Μ.Ο.Ε.</div>
+      <div class="val">${permitNumber}</div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">ΣΤΟΙΧΕΙΑ ΥΠΟΚ. ΕΦΚΑ ΕΚΤΕΛΕΣΗΣ ΕΡΓΟΥ</div>
+      <div class="val">${efkaBranch}</div>
+    </div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">ΔΙΕΥΘΥΝΣΗ</div>
+      <div class="val">${address}, ${city}</div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">Α.Γ.Μ. ΕΦΚΑ</div>
+      <div class="val">${efkaAgm}</div>
+    </div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">ΙΔΙΟΚΤΗΤΗΣ</div>
+      <div class="val">${ownerName}</div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">ΑΦΜ ΙΔΙΟΚΤΗΤΗ</div>
+      <div class="val">${ownerAfm}</div>
+    </div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">ΕΡΓΟΛΑΒΟΣ</div>
+      <div class="val">${ergolabos}</div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">ΑΦΜ ΕΡΓΟΛΑΒΟΥ</div>
+      <div class="val">${ergAfm}</div>
+    </div>
+
+    <div class="vhdap-header-field">
+      <div class="lbl">ΤΗΛΕΦΩΝΟ</div>
+      <div class="val">${phone}</div>
+    </div>
+    <div class="vhdap-header-field">
+      <div class="lbl">ΦΑΞ</div>
+      <div class="val">${fax}</div>
+    </div>
+
+    <div class="vhdap-header-field full">
+      <div class="lbl">E-mail</div>
+      <div class="val">${email}</div>
+    </div>
+
+  </div><!-- /vhdap-header -->
+
+  <div style="font-size:8pt;margin-bottom:4pt;font-weight:bold;">
+    ΣΤΟΙΧΕΙΑ ΑΠΑΣΧΟΛΟΥΜΕΝΟΥ ΠΡΟΣΩΠΙΚΟΥ
+  </div>
+
+  <!-- ══ ΠΙΝΑΚΑΣ ΒΗΔΑΠ (ακριβής σειρά στηλών) ══ -->
+  <table class="vhdap-table">
+    <thead>
+      <tr>
+        <th class="c-aa">Α/Α</th>
+        <th class="c-ama">Α.Μ.Α.</th>
+        <th class="c-amka">Α.Μ.Κ.Α.</th>
+        <th class="c-afm">Α.Φ.Μ.</th>
+        <th class="c-arad">Αρ. Αδ.<br>Εργασίας</th>
+        <th class="c-ep">Επώνυμο</th>
+        <th class="c-on">Όνομα</th>
+        <th class="c-pa">Πατρώνυμο</th>
+        <th class="c-eid">Ειδικότητα</th>
+        <th class="c-mis">Μικτό<br>Ημερο-<br>μίσθιο</th>
+        <th class="c-fas">Φάση<br>Κατασκευής</th>
+        <th class="c-pro">Ημερομ.<br>Πρόσληψης</th>
+        <th class="c-ore">Ώρες Εργασίας<br>Έναρξη – Λήξη</th>
+        <th class="c-ana">Ημέρα<br>Ανάπαυσης</th>
+        <th class="c-sig1">Υπογραφή<br>Εργαζόμενου</th>
+        <th class="c-sig2">Υπογραφή<br>Εργοδότη</th>
+        <th class="c-erg">Εργολάβος<br>ή Υπεργολάβος</th>
+        <th class="c-afgerg">ΑΦΜ<br>Εργολάβου</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${dataRows}
+      ${emptyRows}
+    </tbody>
+  </table>
+
+</div>`;
   }
-
-  // Expose load για onchange
-  window.load = load;
 
 })();
 </script>
