@@ -154,7 +154,7 @@ td{padding:8px 10px;vertical-align:middle}
       <tr class="header-group">
         <th colspan="3">ΣΤΟΙΧΕΙΑ ΕΓΓΡΑΦΗΣ</th>
         <th colspan="7">ΣΤΟΙΧΕΙΑ ΑΠΑΣΧΟΛΟΥΜΕΝΟΥ ΠΡΟΣΩΠΙΚΟΥ</th>
-        <th colspan="4">ΣΤΟΙΧΕΙΑ ΑΠΑΣΧΟΛΗΣΗΣ</th>
+        <th colspan="2">ΣΤΟΙΧΕΙΑ ΑΠΑΣΧΟΛΗΣΗΣ</th>
         <th colspan="3">ΥΠΟΓΡΑΦΕΣ</th>
         <th colspan="2">ΕΡΓΟΛΑΒΟΣ / ΥΠΕΡΓΟΛΑΒΟΣ</th>
       </tr>
@@ -173,11 +173,8 @@ td{padding:8px 10px;vertical-align:middle}
         <th>Πατρώνυμο</th>
         <!-- ΣΤΟΙΧΕΙΑ ΑΠΑΣΧΟΛΗΣΗΣ -->
         <th>Ειδικότητα</th>
-        <th>Μικτό Ημερ. Μίσθιο</th>
         <th>Φάση Κατασκευής</th>
-        <th>Ημερομ. Πρόσληψης</th>
         <th>Ώρες Εργασίας / Έναρξη – Λήξη</th>
-        <th>Ημέρα Ανάπαυσης</th>
         <!-- ΥΠΟΓΡΑΦΕΣ -->
         <th>Υπογραφή Εργαζόμενου</th>
         <th>Υπογραφή Εργοδότη</th>
@@ -187,7 +184,7 @@ td{padding:8px 10px;vertical-align:middle}
       </tr>
     </thead>
     <tbody id="attBody">
-      <tr><td colspan="20"><div class="empty">Φόρτωση…</div></td></tr>
+      <tr><td colspan="17"><div class="empty">Φόρτωση…</div></td></tr>
     </tbody>
   </table>
 </div>
@@ -267,10 +264,7 @@ async function loadAttendance() {
         eponimo, onoma, patronimo,
         eidikotita, ergolabos,
         ama, amka, afm,
-        ar_ad_ergasias, afm_ergolabou,
-        mikto_imero_misthio,
-        imerom_proslipsis,
-        imera_anapafsis
+        ar_ad_ergasias, afm_ergolabou
       )
     `)
     .order('log_date', { ascending: false })
@@ -295,7 +289,7 @@ function renderAttendance() {
   document.getElementById('attCount').textContent = `${attRecords.length} εγγραφές`;
   if (!attRecords.length) {
     document.getElementById('attBody').innerHTML =
-      '<tr><td colspan="20"><div class="empty">Δεν βρέθηκαν παρουσίες για τα επιλεγμένα φίλτρα.</div></td></tr>';
+      '<tr><td colspan="17"><div class="empty">Δεν βρέθηκαν παρουσίες για τα επιλεγμένα φίλτρα.</div></td></tr>';
     return;
   }
   document.getElementById('attBody').innerHTML = attRecords.map((r, i) => {
@@ -312,11 +306,8 @@ function renderAttendance() {
       <td>${w.onoma                            || '—'}</td>
       <td class="td-mono">${w.patronimo        || '—'}</td>
       <td><span class="badge badge-yellow">${w.eidikotita || '—'}</span></td>
-      <td class="td-mono">${w.mikto_imero_misthio != null ? w.mikto_imero_misthio : '—'}</td>
       <td class="td-mono" style="font-size:0.7rem">${r.fasi || '—'}</td>
-      <td class="td-mono">${fmtDate(w.imerom_proslipsis) || '—'}</td>
-      <td class="td-time">${r.time_in          || '—'}</td>
-      <td class="td-mono">${w.imera_anapafsis  || '—'}</td>
+      <td class="td-time">${r.time_in || '—'}</td>
       <td class="td-signature"></td>
       <td class="td-signature"></td>
       <td class="td-mono">${w.ergolabos        || '—'}</td>
@@ -348,8 +339,7 @@ function exportCSV() {
     'Α/Α','Εργοτάξιο','Ημερομηνία',
     'Α.Μ.Α.','Α.Μ.Κ.Α.','Α.Φ.Μ.','Αρ. Αδ. Εργασίας',
     'Επώνυμο','Όνομα','Πατρώνυμο',
-    'Ειδικότητα','Μικτό Ημερ. Μίσθιο','Φάση Κατασκευής','Ημερομ. Πρόσληψης',
-    'Ώρες Εργασίας / Έναρξη-Λήξη','Ημέρα Ανάπαυσης',
+    'Ειδικότητα','Φάση Κατασκευής','Ώρες Εργασίας / Έναρξη-Λήξη',
     'Υπογραφή Εργαζόμενου','Υπογραφή Εργοδότη',
     'Εργολάβος ή Υπεργολάβος','ΑΦΜ Εργολάβου'
   ];
@@ -362,11 +352,8 @@ function exportCSV() {
       w.ama || '', w.amka || '', w.afm || '', w.ar_ad_ergasias || '',
       w.eponimo || '', w.onoma || '', w.patronimo || '',
       w.eidikotita || '',
-      w.mikto_imero_misthio != null ? w.mikto_imero_misthio : '',
       r.fasi || '',
-      fmtDate(w.imerom_proslipsis) || '',
       r.time_in || '',
-      w.imera_anapafsis || '',
       '', '', // υπογραφές
       w.ergolabos || '', w.afm_ergolabou || ''
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
